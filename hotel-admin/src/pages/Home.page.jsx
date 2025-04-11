@@ -1,9 +1,13 @@
 import React from 'react'
+import {Container} from 'react-bootstrap';
 
-function Home() {
+
+const Home = () => {
   return (
-    <div>Home</div>
+    <Container className="px-5" fluid>
+        Hola
+    </Container>
   )
 }
 
-export default Home
+export default Home;

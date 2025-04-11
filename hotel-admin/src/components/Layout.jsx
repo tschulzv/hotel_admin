@@ -1,16 +1,21 @@
 import React from 'react'
-import Navigation from './Navbar'
-import Footer from './Footer';
+import Navigation from './Navigation'
 import {Container} from 'react-bootstrap';
 
-export const Layout = ({children}) => {
+const Layout = ({children}) => {
   return (
-    <div className="d-flex flex-column min-vh-100">
-      <Navigation />
+    <div className="d-flex min-vh-100">
+      <div className="min-vh-100" style={{ width: "250px", height: "100%"}}>
+        <Navigation />
+      </div>
+
       <main className="flex-grow-1 w-100">
-        <Container fluid className='px-3'>{children}</Container>
+        <Container fluid>
+          {children}
+        </Container>
       </main>
-      <Footer />
     </div>
   );
 }
+
+export default Layout;
