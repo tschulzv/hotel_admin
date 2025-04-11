@@ -5,6 +5,7 @@ import '../layout.css';
 const Layout = ({children}) => {
   return (
     <div className="d-flex min-vh-100">
+      <div className="min-vh-100 h-100" style={{ width: "250px"}}>
       <div className="sidebar min-vh-100" style={{ width: "250px", height: "100%"}}>
         <Navigation />
       </div>
