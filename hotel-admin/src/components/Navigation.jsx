@@ -22,7 +22,7 @@ function Navigation() {
 
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
-      <Container className="min-vh-100">
+      <Container className="min-vh-100 h-100">
         <Nav className="ms-auto d-flex flex-column">
           <Navbar.Brand href="/"><img src={logo} height="150" alt="Logo" /></Navbar.Brand>
 

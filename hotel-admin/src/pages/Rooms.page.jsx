@@ -7,7 +7,23 @@ const habitaciones = [
     { numero: 101, tipo: "ESTÁNDAR", estado: "EN LIMPIEZA" },
     { numero: 102, tipo: "ESTÁNDAR", estado: "DISPONIBLE" },
     { numero: 103, tipo: "ESTÁNDAR", estado: "OCUPADO" },
+    { numero: 104, tipo: "DELUXE", estado: "DISPONIBLE" },
+    { numero: 200, tipo: "PRESIDENCIAL", estado: "DISPONIBLE" },
+    { numero: 201, tipo: "DELUXE", estado: "OCUPADO" },
+    { numero: 202, tipo: "ESTÁNDAR", estado: "DISPONIBLE" },
+    { numero: 203, tipo: "EJECUTIVA", estado: "OCUPADO" },
+    { numero: 300, tipo: "ESTÁNDAR", estado: "DISPONIBLE" },
+    { numero: 301, tipo: "EJECUTIVA", estado: "DISPONIBLE" },
+    { numero: 302, tipo: "PRESIDENCIAL", estado: "OCUPADO" },
+    { numero: 303, tipo: "ESTÁNDAR", estado: "DISPONIBLE" },
+    { numero: 400, tipo: "DELUXE", estado: "OCUPADO" },
+    { numero: 401, tipo: "EJECUTIVA", estado: "DISPONIBLE" },
+    { numero: 402, tipo: "DELUXE", estado: "EN LIMPIEZA" },
+    { numero: 403, tipo: "EJECUTIVA", estado: "DISPONIBLE" },
     { numero: 501, tipo: "ESTÁNDAR", estado: "LATE CHECKOUT" },
+    { numero: 502, tipo: "DELUXE", estado: "DISPONIBLE" },
+    { numero: 503, tipo: "PRESIDENCIAL", estado: "EN LIMPIEZA" },
+    { numero: 504, tipo: "PRESIDENCIAL", estado: "DISPONIBLE" },
     // ...otras habitaciones
 ];
 
@@ -61,7 +77,7 @@ function Rooms() {
                 {habitaciones.map((hab, idx) => {
                     const { color, icono } = getEstado(hab.estado);
                     return (
-                        <Col xs={6} sm={4} md={3} lg={2} key={idx} className="mb-3">
+                        <Col xs={6} sm={4} md={4} lg={3} key={idx} className="mb-3">
                             <RoomCard
                                 numero={hab.numero}
                                 tipo={hab.tipo}
