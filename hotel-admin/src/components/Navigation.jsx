@@ -1,27 +1,44 @@
-import React from 'react'
+import React from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
 import logo from '../img/whitetextLogo.png';
+import { useLocation } from 'react-router-dom';
 
 function Navigation() {
+  const location = useLocation();
+  const isActive = (path) => location.pathname === path;
+
+  const navItems = [
+    { href: '/', label: 'Panel de Control', icon: 'dashboard' },
+    { href: '/checkin', label: 'Check-In', icon: 'login' },
+    { href: '/checkout', label: 'Check-Out', icon: 'logout' },
+    { href: '/notifications', label: 'Notificaciones', icon: 'notifications' },
+    { href: '/rooms', label: 'Habitaciones', icon: 'hotel' },
+    { href: '/reservations', label: 'Reservas', icon: 'event' },
+    { href: '/clients', label: 'Clientes', icon: 'people' },
+    { href: '/reports', label: 'Reportes', icon: 'bar_chart' },
+  ];
+
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" className="bg-body-primary">
-    <Container className="min-vh-100">
+    <Navbar bg="dark" variant="dark" expand="lg">
+      <Container className="min-vh-100">
         <Nav className="ms-auto d-flex flex-column">
-          <Navbar.Brand href="/"><img src={logo} height="150"></img></Navbar.Brand>
-          <Nav.Link href="/">Panel de Control</Nav.Link>
-          <Nav.Link href="/checkin">Check-In</Nav.Link>
-          <Nav.Link href="/checkout">Check-Out</Nav.Link>
-          <Nav.Link href="/notifications">Notificaciones</Nav.Link>
-          <Nav.Link href="/rooms">Habitaciones</Nav.Link>
-          <Nav.Link href="/booking">Reservas</Nav.Link>
-          <Nav.Link href="/clients">Clientes</Nav.Link>
-          <Nav.Link href="/reports">Reportes</Nav.Link>
+          <Navbar.Brand href="/"><img src={logo} height="150" alt="Logo" /></Navbar.Brand>
+
+          {navItems.map(({ href, label, icon }) => (
+            <Nav.Link
+              key={href}
+              href={href}
+              className={`d-flex align-items-center gap-2 ${isActive(href) ? 'text-white rounded px-2 my-1 bg-secondary' : 'px-2 my-1'}`}
+            >
+              <span className="material-icons">{icon}</span>
+              {label}
+            </Nav.Link>
+          ))}
         </Nav>
-    </Container>
-  </Navbar>
+      </Container>
+    </Navbar>
   );
 }
 
