@@ -9,7 +9,7 @@ const Layout = ({children}) => {
       <div className="sidebar min-vh-100" style={{ width: "250px", height: "100%"}}>
         <Navigation />
       </div>
-
+    </div>
       <main className="page-content flex-grow-1 w-100">
         <Container fluid>
           {children}
