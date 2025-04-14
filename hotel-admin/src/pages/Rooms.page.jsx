@@ -1,6 +1,7 @@
 import React from 'react'
 import RoomCard from '../components/RoomCard.jsx'
 import { Container, Dropdown, Button, Row, Col } from 'react-bootstrap'
+import PensionChart from '../components/PensionChart.jsx';
 
 
 const habitaciones = [
@@ -86,8 +87,10 @@ function Rooms() {
                                 icono={icono}
                             />
                         </Col>
+                        
                     );
                 })}
+                <PensionChart className="mb-3" />
             </Row>
         </Container>
     )
