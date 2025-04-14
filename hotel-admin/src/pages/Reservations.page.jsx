@@ -3,6 +3,27 @@ import {Container} from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 
 const Reservations = () => {
+
+    // array de acciones para la tabla
+    const actions = [
+        {
+            icon: <i className="material-icons">visibility</i>, // o el nombre del ícono
+            label: "Ver",
+            onClick: (rowData) => alert("ver datos"), // acción a ejecutar
+        },
+        {
+            icon: <i className="material-icons">edit</i>, // o el nombre del ícono
+            label: "Editar",
+            onClick: (rowData) => alert("editar"), // acción a ejecutar
+        },
+        {
+            icon: <i className="material-icons">delete</i>, // o el nombre del ícono
+            label: "Eliminar",
+            onClick: (rowData) => alert("borrar!"), // acción a ejecutar
+        },
+
+    ]
+
     const data = [
         {
           id: 1,
@@ -183,28 +204,7 @@ const Reservations = () => {
           checkIn: "2025-04-15",
           checkOut: "2025-04-17",
           estado: "Pendiente",
-        }]
-
-    const actions = [
-        {
-            icon: <i className="material-icons">visibility</i>, // o el nombre del ícono
-            label: "Ver",
-            onClick: (rowData) => alert("ver datos"), // acción a ejecutar
-        },
-        {
-            icon: <i className="material-icons">edit</i>, // o el nombre del ícono
-            label: "Editar",
-            onClick: (rowData) => alert("editar"), // acción a ejecutar
-        },
-        {
-            icon: <i className="material-icons">delete</i>, // o el nombre del ícono
-            label: "Eliminar",
-            onClick: (rowData) => alert("borrar!"), // acción a ejecutar
-        },
-
-    ]
-      
-      
+        }]      
 
   return (
     <Container className="px-5" fluid>

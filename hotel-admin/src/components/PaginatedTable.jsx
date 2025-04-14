@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import { Table, Pagination } from 'react-bootstrap';
 
+/*
+DATA: recibe un array con objetos 
+
+ROW ACTIONS: recibe un array de acciones con este formato
+{
+    icon: visibility, // NOMBRE DE ICONO DE GOOGLE MATERIAL ICONS
+    label: "Ver",
+    onClick: (rowData) => alert("ver datos"), // acción a ejecutar
+},
+
+ROWS PER PAGE: recibe la cantidad de filas que se quiere mostrar por página, por defecto 10
+
+*/
+
 function PaginatedTable({ data, rowActions, rowsPerPage = 10 }) {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -25,6 +39,7 @@ function PaginatedTable({ data, rowActions, rowsPerPage = 10 }) {
             {columns.map((col) => (
               <th key={col}>{col.charAt(0).toUpperCase() + col.slice(1)}</th>
             ))}
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -34,7 +49,7 @@ function PaginatedTable({ data, rowActions, rowsPerPage = 10 }) {
                 <td key={col}>{item[col]}</td>
               ))}
               {rowActions.length > 0 && (
-                <td className="d-flex gap-2">
+                <td className="d-flex gap-2 justify-content-center">
                   {rowActions.map((action, i) => (
                     <span
                       key={i}

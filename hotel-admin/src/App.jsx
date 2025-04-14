@@ -4,6 +4,7 @@ import Rooms from "./pages/Rooms.page"
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import Reservations from './pages/Reservations.page';
+import Clients from './pages/Clients.page';
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/reservations" element={<Reservations />} />
+        <Route path="/clients" element={<Clients />} />
       </Routes>
     </Layout>
   </Router>
