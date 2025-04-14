@@ -1,7 +1,7 @@
-import React from 'react'
+import { useState } from 'react'
 import RoomCard from '../components/RoomCard.jsx'
 import { Container, Dropdown, Button, Row, Col } from 'react-bootstrap'
-import PensionChart from '../components/PensionChart.jsx';
+import { useNavigate } from 'react-router-dom';
 
 
 const habitaciones = [
@@ -44,38 +44,62 @@ const getEstado = (estado) => {
 };
 
 function Rooms() {
+    const navigate = useNavigate();
+
+    const [estadoFiltro, setEstadoFiltro] = useState('');
+    const [tipoFiltro, setTipoFiltro] = useState('');
+
+    const habitacionesFiltradas = habitaciones.filter(hab => {
+        return (
+            (estadoFiltro === '' || hab.estado === estadoFiltro) &&
+            (tipoFiltro === '' || hab.tipo === tipoFiltro)
+        );
+    });
+
     return (
         <Container fluid>
             <h4 className="text-center my-4">VISTA GENERAL DE HABITACIONES</h4>
 
             <div className="d-flex justify-content-between mb-3">
                 <div className="d-flex gap-2">
-                    <Dropdown>
-                        <Dropdown.Toggle variant="outline-secondary">Estado</Dropdown.Toggle>
+                    <Dropdown onSelect={(selected) => setEstadoFiltro(selected)}>
+                        <Dropdown.Toggle variant="outline-secondary">
+                            {estadoFiltro || "Estado"}
+                        </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item>Disponible</Dropdown.Item>
-                            <Dropdown.Item>Ocupado</Dropdown.Item>
-                            <Dropdown.Item>En Limpieza</Dropdown.Item>
-                            <Dropdown.Item>Late Checkout</Dropdown.Item>
+                            <Dropdown.Item eventKey="">Todos</Dropdown.Item>
+                            <Dropdown.Item eventKey="DISPONIBLE">Disponible</Dropdown.Item>
+                            <Dropdown.Item eventKey="OCUPADO">Ocupado</Dropdown.Item>
+                            <Dropdown.Item eventKey="EN LIMPIEZA">En Limpieza</Dropdown.Item>
+                            <Dropdown.Item eventKey="LATE CHECKOUT">Late Checkout</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
-                    <Dropdown>
-                        <Dropdown.Toggle variant="outline-secondary">Tipo Habitación</Dropdown.Toggle>
+
+                    <Dropdown onSelect={(selected) => setTipoFiltro(selected)}>
+                        <Dropdown.Toggle variant="outline-secondary">
+                            {tipoFiltro || "Tipo Habitación"}
+                        </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item>Estándar</Dropdown.Item>
-                            <Dropdown.Item>Deluxe</Dropdown.Item>
-                            <Dropdown.Item>Ejecutiva</Dropdown.Item>
-                            <Dropdown.Item>Presidencial</Dropdown.Item>
+                            <Dropdown.Item eventKey="">Todos</Dropdown.Item>
+                            <Dropdown.Item eventKey="ESTÁNDAR">Estándar</Dropdown.Item>
+                            <Dropdown.Item eventKey="DELUXE">Deluxe</Dropdown.Item>
+                            <Dropdown.Item eventKey="EJECUTIVA">Ejecutiva</Dropdown.Item>
+                            <Dropdown.Item eventKey="PRESIDENCIAL">Presidencial</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>
-                <Button variant="primary">
-                    Nueva Habitación
-                </Button>
+                <div className="d-flex gap-2">
+                    <Button variant="primary" onClick={() => navigate('/rooms/new')}>
+                        Nueva Habitación
+                    </Button>
+                    <Button variant="primary" onClick={() => navigate('/roomstype/new')}>
+                        Nuevo Tipo Habitación
+                    </Button>
+                </div>
             </div>
 
             <Row>
-                {habitaciones.map((hab, idx) => {
+                {habitacionesFiltradas.map((hab, idx) => {
                     const { color, icono } = getEstado(hab.estado);
                     return (
                         <Col xs={6} sm={4} md={4} lg={3} key={idx} className="mb-3">
@@ -87,10 +111,11 @@ function Rooms() {
                                 icono={icono}
                             />
                         </Col>
-                        
                     );
                 })}
-                <PensionChart className="mb-3" />
+                {habitacionesFiltradas.length === 0 && (
+                    <p className="text-center mt-4">No hay habitaciones que coincidan con los filtros.</p>
+                )}
             </Row>
         </Container>
     )
