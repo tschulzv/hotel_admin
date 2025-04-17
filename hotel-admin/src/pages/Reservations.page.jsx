@@ -1,9 +1,11 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
+import { useNavigate } from 'react-router-dom';
 import {Container} from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
+import TableFilterBar from '../components/TableFilterBar';
 
 const Reservations = () => {
-
+    const navigate = useNavigate();
     // array de acciones para la tabla
     const actions = [
         {
@@ -24,7 +26,7 @@ const Reservations = () => {
 
     ]
 
-    const data = [
+    const originalData = [
         {
           id: 1,
           nombre: "María Pérez",
@@ -205,11 +207,48 @@ const Reservations = () => {
           checkOut: "2025-04-17",
           estado: "Pendiente",
         }]      
+    const [searchTerm, setSearchTerm] = useState();
+    const [sortKey, setSort] = useState(["nombre"]);
+    const [filteredData, setFilteredData] = useState(originalData);
+    const onSearch = () => { 
+    // filtramos los datos
+      setFilteredData(originalData.filter((client) =>
+      Object.values(client)
+        .join(' ')
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())))
+    }
+  
+    const onBtnClick = () => {
+      navigate('/reservations/new')
+    }
+  
+    // revierte los datos filtrados en la busqueda a los originales
+    const clearSearch = () => {
+      setFilteredData(originalData);
+    }
+
+     // sort options
+  const sortOptions = [
+    { value: 'nombre', label: 'Nombre' },
+    { value: 'codigo', label: 'Código' },
+    { value: 'habitaciones', label: 'Habitación(es)' },
+  ];
+  
+  //  ordenar los datos
+  let sortedData = [...filteredData].sort((a, b) => {
+    const aVal = a[sortKey]?.toString().toLowerCase();
+    const bVal = b[sortKey]?.toString().toLowerCase();
+    return aVal.localeCompare(bVal);
+  });
+  
+    
 
   return (
     <Container className="px-5" fluid>
          <h1>Reservas</h1>
-        <PaginatedTable data={data} rowsPerPage={10} rowActions={actions}/>
+         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} btnText="Crear Reserva" onBtnClick={onBtnClick} />
+        <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
     </Container>
   )
 }
