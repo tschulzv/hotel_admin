@@ -4,14 +4,22 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select'
 import countryList from 'react-select-country-list'
 
-const ClientForm = ({client}) => {
+const ClientForm = () => {
+  // CLIENTE DE EJEMPLO, BORRAR CUANDO FUNCIONE LA API!!
+  // useEffect y obtener datos del cliente de la db si se le pasa un id
+  let client = {id: 1,
+  nombre: "Ana Martínez",
+  documento: "4567890",
+  telefono: "+595 21 123 4567",
+  email: "ana.martinez@example.com",
+  nacionalidad: "Paraguaya"}
+  // 
   const navigate = useNavigate();
   const countries = useMemo(() => countryList().getData(), []);
-  //let id = useParams();
+  
+  let id = useParams();
   // si existe un id como parametro, es modo edicion
   let isEditMode = id != null;
-
-  // useEffect y obtener datos del cliente de la db si se le pasa un id
 
   const [clientData, setClientData] = useState({
     nombre: isEditMode ? client.nombre : '',
@@ -32,7 +40,12 @@ const ClientForm = ({client}) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Nuevo tipo de habitación:', clientData);
+    console.log('Nuevo cliente:', clientData);
+    if (isEditMode){
+      // hacer put a la api
+    } else {
+      // hacer post a la api
+    }
     navigate('/clients');  // redirigir de vuelta después de guardar.
   };
 

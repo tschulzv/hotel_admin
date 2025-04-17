@@ -55,7 +55,7 @@ function PaginatedTable({ data, rowActions, rowsPerPage = 10 }) {
                       key={i}
                       role="button"
                       title={action.label}
-                      onClick={() => action.onClick(item)}
+                      onClick={() => action.onClick(item, i)}
                       style={{ cursor: 'pointer', color: '#808080' }}
                     >
                       {typeof action.icon === 'string' ? (

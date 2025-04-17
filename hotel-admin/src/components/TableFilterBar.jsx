@@ -15,7 +15,7 @@ const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortO
               <i className="material-icons align-middle">search</i>
             </Button>
             <Button variant="outline-secondary" onClick={clearSearch}>
-              <i className="material-icons align-middle">restart_alt</i>
+              <i className="material-icons align-middle">refresh</i>
             </Button>
         </Col>
         {/*segunda columna: filtro de ordenacion*/}

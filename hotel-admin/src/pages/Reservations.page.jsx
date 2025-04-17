@@ -1,11 +1,14 @@
 import React, {useState, useEffect} from 'react'
 import { useNavigate } from 'react-router-dom';
-import {Container} from 'react-bootstrap';
+import {Container, Modal, Button, Form} from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 import TableFilterBar from '../components/TableFilterBar';
 
 const Reservations = () => {
     const navigate = useNavigate();
+      const [filaSeleccionada, setFilaSeleccionada] = useState(null);
+      const [show, setShow] = useState(false); // mostrar o no el modal
+      const [razon, setRazon] = useState('true');
     // array de acciones para la tabla
     const actions = [
         {
@@ -19,9 +22,13 @@ const Reservations = () => {
             onClick: (rowData) => alert("editar"), // acción a ejecutar
         },
         {
-            icon: <i className="material-icons">delete</i>, // o el nombre del ícono
-            label: "Eliminar",
-            onClick: (rowData) => alert("borrar!"), // acción a ejecutar
+            icon: <i className="material-icons">cancel</i>, 
+            label: "Cancelar",
+            onClick: (item) => {
+              setFilaSeleccionada(item);
+              setRazon('');
+              setShow(true);
+            }
         },
 
     ]
@@ -228,6 +235,19 @@ const Reservations = () => {
       setFilteredData(originalData);
     }
 
+     // funcion para manejar el cierre del modal
+  const handleClose = () => setShow(false);
+  
+  const handleEliminar = () => {
+    let updatedData = filteredData.map(reserv => 
+      reserv.id === filaSeleccionada.id ? {...reserv, estado: 'Cancelado'} : reserv
+    );
+    setFilteredData(updatedData);
+   
+    // llamado a API ]!!!!
+    setShow(false);
+  };
+
      // sort options
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
@@ -249,6 +269,38 @@ const Reservations = () => {
          <h1>Reservas</h1>
          <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} btnText="Crear Reserva" onBtnClick={onBtnClick} />
         <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
+
+        <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar eliminación</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {filaSeleccionada && (
+            <>
+              <p> ¿Estás seguro de que deseas cancelar la reserva?</p>
+              <p><strong>Cliente:</strong> {filaSeleccionada.nombre} <strong>Habitación(es):</strong> {filaSeleccionada.habitaciones}</p>
+              <Form.Group controlId="razonEliminacion">
+                <Form.Label>Razón de la cancelación</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={razon}
+                  onChange={(e) => setRazon(e.target.value)}
+                  placeholder="Escriba la razón aquí..."
+                />
+              </Form.Group>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Volver
+          </Button>
+          <Button variant="danger" onClick={handleEliminar}>
+            Cancelar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   )
 }

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {Container, Button} from 'react-bootstrap';
+import {Container, Button, Modal} from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 import { useNavigate } from 'react-router-dom';
 import TableFilterBar from '../components/TableFilterBar';
@@ -202,6 +202,8 @@ const Clients = () => {
   const [searchTerm, setSearchTerm] = useState();
   const [sortKey, setSort] = useState(["nombre"]);
   const [filteredData, setFilteredData] = useState(originalData);
+  const [filaSeleccionada, setFilaSeleccionada] = useState(null);
+  const [show, setShow] = useState(false); // mostrar o no el modal
 
   const navigate = useNavigate();
 
@@ -222,23 +224,43 @@ const Clients = () => {
   const clearSearch = () => {
     setFilteredData(originalData);
   }
+
+  // funcion para manejar el cierre del modal
+  const handleClose = () => setShow(false);
+  
+  const handleEliminar = () => {
+    let updatedData = filteredData.filter(client => client.id !== filaSeleccionada.id);
+    setFilteredData(updatedData);
+    // llamado a API ]!!!!
+    setShow(false);
+  };
   
   // array de acciones para la tabla
   const actions = [
         {
-            icon: <i className="material-icons">visibility</i>, // o el nombre del ícono
+            icon: <i className="material-icons">visibility</i>, 
             label: "Ver",
-            onClick: (rowData) => alert("ver datos"), // acción a ejecutar
+            onClick: (rowData) => alert("ver datos"), 
         },
         {
             icon: <i className="material-icons">edit</i>, // o el nombre del ícono
             label: "Editar",
-            onClick: (rowData) => alert("editar"), // acción a ejecutar
+            onClick: (item, i) => {
+              // CAMBIAR CUANDO FUNCIONE LA API!!!!
+              navigate("/clients/edit/1");
+              /*let updatedData = filteredData.map(client => 
+                client.id === updatedItem.id ? updatedItem : client
+              );
+              setFilteredData(updatedData);*/
+            }
         },
         {
             icon: <i className="material-icons">delete</i>, // o el nombre del ícono
             label: "Eliminar",
-            onClick: (rowData) => alert("borrar!"), // acción a ejecutar
+            onClick: (item) => {
+              setFilaSeleccionada(item);
+              setShow(true);
+            }
         },
 
     ]
@@ -263,6 +285,31 @@ const Clients = () => {
          <h1>Clientes</h1>
          <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} btnText="Nuevo Cliente" onBtnClick={onBtnClick} />
          <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
+         
+         {/* MODAL PARA ELIMINACION*/}
+         <Modal show={show} onHide={handleClose} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirmar eliminación</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {filaSeleccionada && (
+              <>
+                <p>
+                  ¿Estás seguro que deseas eliminar a <strong>{filaSeleccionada.nombre}</strong>?
+                </p>
+              </>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Cancelar
+            </Button>
+            <Button variant="danger" onClick={handleEliminar}>
+              Eliminar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
     </Container>
   )
 }
