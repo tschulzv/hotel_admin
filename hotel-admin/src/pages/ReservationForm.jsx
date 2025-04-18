@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select'
 import countryList from 'react-select-country-list'
 
@@ -20,7 +20,6 @@ const ReservationForm = () => {
   // 
   const navigate = useNavigate();
   const countries = useMemo(() => countryList().getData(), []);
-  const isDetailsMode = location.state?.isDetailsMode || false;
   
   let { id } = useParams();
   // si existe un id como parametro, es modo edicion
@@ -39,7 +38,7 @@ const ReservationForm = () => {
     const { name, value, type } = e.target;
     setReservationData(prev => ({
       ...prev,
-      [name]: type === value
+      [name]: value
     }));
   };
 
@@ -62,7 +61,7 @@ const ReservationForm = () => {
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Nombre</Form.Label>
+                <Form.Label>Cliente</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombre"
@@ -98,6 +97,7 @@ const ReservationForm = () => {
                   value= {reservationData.habitaciones}
                   onChange={handleChange}
                   disabled={isDetailsMode}
+                  required
                 />
               </Form.Group>
             </Col>
@@ -112,6 +112,7 @@ const ReservationForm = () => {
                   value= {reservationData.checkIn}
                   onChange={handleChange}
                   disabled={isDetailsMode}
+                  required
                 />
               </Form.Group>
             </Col>
@@ -124,6 +125,7 @@ const ReservationForm = () => {
                   value= {reservationData.checkOut}
                   onChange={handleChange}
                   disabled={isDetailsMode}
+                  required
                 />
               </Form.Group>
             </Col>

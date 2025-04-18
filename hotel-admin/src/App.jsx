@@ -11,6 +11,7 @@ import ClientForm from './pages/ClientForm';
 import ClientDetails from './pages/ClientDetails';
 import ClientHistory from './pages/ClientHistory'
 import ReservationForm from './pages/ReservationForm';
+import ReservationDetails from './pages/ReservationDetails';
 
 function App() {
 
@@ -21,7 +22,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/reservations" element={<Reservations />} />
-        <Route path="/reservations/:id" element={<ReservationForm />} />
+        <Route path="/reservations/:id" element={<ReservationDetails />} />
         <Route path="/reservations/new" element={<ReservationForm />} />
         <Route path="/reservations/edit/:id" element={<ReservationForm />} />
         <Route path="/clients" element={<Clients />} />

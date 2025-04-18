@@ -10,13 +10,21 @@ const ClientForm = () => {
   let client = {id: 1,
   nombre: "Ana Martínez",
   documento: "4567890",
+  tipoDocumento: "CI",
+  ruc: "4567890-1",
   telefono: "+595 21 123 4567",
   email: "ana.martinez@example.com",
-  nacionalidad: "Paraguaya"}
+  nacionalidad: "Paraguaya"
+}
   // 
   const navigate = useNavigate();
   const countries = useMemo(() => countryList().getData(), []);
-  
+  const tiposDocumento = [
+    { value: 'ci', label: 'C.I.' },
+    { value: 'dni', label: 'DNI' },
+    { value: 'pasaporte', label: 'Pasaporte' },
+    { value: 'licenciaConducir', label: 'Lic. de Conducir' },
+  ];
   let { id } = useParams();
   // si existe un id como parametro, es modo edicion
   let isEditMode = id !== undefined;
@@ -27,14 +35,17 @@ const ClientForm = () => {
     email: isEditMode ? client.email : '',
     telefono: isEditMode ? client.telefono : '',
     observaciones: isEditMode ? client.observaciones : '',
-    pais: isEditMode ? client.pais : ''
-  });
+    pais: isEditMode ? client.pais : '',
+    documento: isEditMode ? client.documento : '',
+    tipoDocumento: isEditMode ? client.tipoDocumento : '',
+    ruc: isEditMode ? client.ruc : '',
+  })
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setClientData(prev => ({
       ...prev,
-      [name]: type === value
+      [name]: value
     }));
   };
 
@@ -111,6 +122,36 @@ const ClientForm = () => {
                 <Select options={countries} value={clientData.pais} onChange={handleChange} />
             </Col>
           </Row>
+
+          <Row>
+            <Col md={5}>
+              <Form.Group className="mb-3">
+                <Form.Label>Número de Documento</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="documento"
+                  value={clientData.documento}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={2}>
+                <Form.Label>Tipo</Form.Label>
+                <Select options={tiposDocumento} value={clientData.tipoDocumento} onChange={handleChange} />
+            </Col>
+            <Col md={5}>
+              <Form.Group className="mb-3">
+                <Form.Label>RUC</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="ruc"
+                  value={clientData.ruc}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+
 
           <Form.Group className="mb-3">
             <Form.Label>Observaciones</Form.Label>

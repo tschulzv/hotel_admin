@@ -22,7 +22,7 @@ function ClientDetails() {
 
   return (
     <Container className="py-4">
-      <Card className="shadow-lg border-0 rounded-4">
+      <Card className="shadow-sm rounded-4">
         <Card.Body className="p-5">
           <h2 className="mb-4 text-center">Información del Cliente</h2>
 
@@ -39,6 +39,7 @@ function ClientDetails() {
                     <ListGroup.Item><strong>Email:</strong> {client.email}</ListGroup.Item>
                     <ListGroup.Item><strong>Nacionalidad:</strong> {client.nacionalidad}</ListGroup.Item>
                     <ListGroup.Item><strong>Fecha de Registro:</strong> 10/03/2025</ListGroup.Item>
+                    <ListGroup.Item><strong>Observaciones:</strong> {client.observaciones}</ListGroup.Item>
                   </ListGroup>
                 </Card.Body>
               </Card>
@@ -59,24 +60,29 @@ function ClientDetails() {
                   </Card.Body>
                 </Card>
 
-                <div className="d-flex justify-content-center gap-3">
+                <div className="d-flex justify-content-center gap-2">
                   <Button variant="primary" onClick={editClient}>Editar Cliente</Button>
                   <Button variant="outline-secondary" onClick={clientHistory}>Ver Historial</Button>
                 </div>
               </div>
             </Col>
           </Row>
-
-          <Row className="mt-5">
+          {
+            /*
+            <Row className="mt-5">
             <Col>
               <h4>Observaciones</h4>
               <p className="text-muted fs-5">{client.observaciones}</p>
             </Col>
           </Row>
+            
+          
 
           <div className="d-flex justify-content-center mt-4">
             <Button variant="secondary" onClick={() => {navigate('/clients')}}>Volver</Button>
           </div>
+          */
+        }
         </Card.Body>
       </Card>
     </Container>

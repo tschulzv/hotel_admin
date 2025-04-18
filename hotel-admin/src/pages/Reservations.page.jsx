@@ -15,7 +15,7 @@ const Reservations = () => {
             icon: <i className="material-icons">visibility</i>, // o el nombre del ícono
             label: "Ver",
             onClick: () => {
-              navigate('/reservations/1', { state: { isDetailsMode: true } });
+              navigate('/reservations/1');
             }, // acción a ejecutar
         },
         {
