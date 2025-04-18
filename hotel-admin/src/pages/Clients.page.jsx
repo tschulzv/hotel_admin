@@ -240,7 +240,9 @@ const Clients = () => {
         {
             icon: <i className="material-icons">visibility</i>, 
             label: "Ver",
-            onClick: (rowData) => alert("ver datos"), 
+            onClick: (item, i) => {
+              navigate("/clients/1");
+            }, 
         },
         {
             icon: <i className="material-icons">edit</i>, // o el nombre del ícono
@@ -283,7 +285,7 @@ const Clients = () => {
   return (
     <Container className="px-5" fluid>
          <h1>Clientes</h1>
-         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} btnText="Nuevo Cliente" onBtnClick={onBtnClick} />
+         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Nuevo Cliente" onBtnClick={onBtnClick} />
          <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
          
          {/* MODAL PARA ELIMINACION*/}

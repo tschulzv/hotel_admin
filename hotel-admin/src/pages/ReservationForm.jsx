@@ -1,38 +1,43 @@
 import React, { useState, useMemo } from 'react';
 import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Select from 'react-select'
 import countryList from 'react-select-country-list'
 
-const ClientForm = () => {
-  // CLIENTE DE EJEMPLO, BORRAR CUANDO FUNCIONE LA API!!
-  // useEffect y obtener datos del cliente de la db si se le pasa un id
-  let client = {id: 1,
-  nombre: "Ana Martínez",
-  documento: "4567890",
-  telefono: "+595 21 123 4567",
-  email: "ana.martinez@example.com",
-  nacionalidad: "Paraguaya"}
+const ReservationForm = () => {
+  // reserva DE EJEMPLO, BORRAR CUANDO FUNCIONE LA API!!
+  // useEffect y obtener datos del resevra de la db si se le pasa un id
+  let reservation = {
+    id: 1,
+    nombre: "María Pérez",
+    codigo: "ID12345",
+    habitaciones: "101, 102",
+    checkIn: "2025-04-10",
+    checkOut: "2025-04-15",
+    estado: "Activa",
+    observaciones: "Solicitó servicio de desayuno a la habitación"
+  }
   // 
   const navigate = useNavigate();
   const countries = useMemo(() => countryList().getData(), []);
+  const isDetailsMode = location.state?.isDetailsMode || false;
   
   let { id } = useParams();
   // si existe un id como parametro, es modo edicion
   let isEditMode = id !== undefined;
 
-  const [clientData, setClientData] = useState({
-    nombre: isEditMode ? client.nombre : '',
-    apellido: isEditMode ? client.apellido : '',
-    email: isEditMode ? client.email : '',
-    telefono: isEditMode ? client.telefono : '',
-    observaciones: isEditMode ? client.observaciones : '',
-    pais: isEditMode ? client.pais : ''
+  const [reservationData, setReservationData] = useState({
+    nombre: isEditMode ? reservation.nombre : '',
+    codigo: isEditMode ? reservation.codigo : '',
+    habitaciones: isEditMode ? reservation.habitaciones : '',
+    checkIn: isEditMode ? reservation.checkIn : '',
+    checkOut: isEditMode ? reservation.checkOut : '',
+    estado: isEditMode ? reservation.estado : ''
   });
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setClientData(prev => ({
+    const { name, value, type } = e.target;
+    setReservationData(prev => ({
       ...prev,
       [name]: type === value
     }));
@@ -40,19 +45,19 @@ const ClientForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Nuevo cliente:', clientData);
+    console.log('Nuevo reservatione:', reservationData);
     if (isEditMode){
       // hacer put a la api
     } else {
       // hacer post a la api
     }
-    navigate('/clients');  // redirigir de vuelta después de guardar.
+    navigate('/reservations');  // redirigir de vuelta después de guardar.
   };
 
   return (
     <Container className="py-4">
       <Card className="p-4 shadow-sm">
-        <h4 className="mb-4">{isEditMode ? "Editar Cliente" : "Nuevo Cliente"}</h4>
+        <h4 className="mb-4">{isEditMode ? "Editar reserva" : "Nueva reserva"}</h4>
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
@@ -61,20 +66,22 @@ const ClientForm = () => {
                 <Form.Control
                   type="text"
                   name="nombre"
-                  value={clientData.nombre}
+                  value= {reservationData.nombre}
                   onChange={handleChange}
+                  disabled={isDetailsMode}
                   required
                 />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Apellido</Form.Label>
+                <Form.Label>Codigo</Form.Label>
                 <Form.Control
                   type="text"
-                  name="apellido"
-                  value={clientData.apellido}
+                  name="codigo"
+                  value= {reservationData.codigo}
                   onChange={handleChange}
+                  disabled={isDetailsMode}
                   required
                 />
               </Form.Group>
@@ -84,12 +91,13 @@ const ClientForm = () => {
           <Row>
             <Col md={12}>
               <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
+                <Form.Label>Habitaciones</Form.Label>
                 <Form.Control
                   type="text"
-                  name="email"
-                  value={clientData.email}
+                  name="habitaciones"
+                  value= {reservationData.habitaciones}
                   onChange={handleChange}
+                  disabled={isDetailsMode}
                 />
               </Form.Group>
             </Col>
@@ -97,18 +105,27 @@ const ClientForm = () => {
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Número de Teléfono</Form.Label>
+                <Form.Label>Check-In</Form.Label>
                 <Form.Control
-                  type="text"
-                  name="telefono"
-                  value={clientData.telefono}
+                  type="date"
+                  name="checkIn"
+                  value= {reservationData.checkIn}
                   onChange={handleChange}
+                  disabled={isDetailsMode}
                 />
               </Form.Group>
             </Col>
             <Col md={6}>
-                <Form.Label>País</Form.Label>
-                <Select options={countries} value={clientData.pais} onChange={handleChange} />
+            <Form.Group className="mb-3">
+                <Form.Label>Check-Out</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="checkOut"
+                  value= {reservationData.checkOut}
+                  onChange={handleChange}
+                  disabled={isDetailsMode}
+                />
+              </Form.Group>
             </Col>
           </Row>
 
@@ -118,8 +135,9 @@ const ClientForm = () => {
               as="textarea"
               rows={3}
               name="observaciones"
-              value={clientData.observaciones}
+              value= {reservationData.observaciones}
               onChange={handleChange}
+              disabled={isDetailsMode}
             />
           </Form.Group>
 
@@ -138,4 +156,4 @@ const ClientForm = () => {
   );
 };
 
-export default ClientForm;
+export default ReservationForm;

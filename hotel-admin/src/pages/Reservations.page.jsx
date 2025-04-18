@@ -14,12 +14,16 @@ const Reservations = () => {
         {
             icon: <i className="material-icons">visibility</i>, // o el nombre del ícono
             label: "Ver",
-            onClick: (rowData) => alert("ver datos"), // acción a ejecutar
+            onClick: () => {
+              navigate('/reservations/1', { state: { isDetailsMode: true } });
+            }, // acción a ejecutar
         },
         {
             icon: <i className="material-icons">edit</i>, // o el nombre del ícono
             label: "Editar",
-            onClick: (rowData) => alert("editar"), // acción a ejecutar
+            onClick: () => {
+              navigate('/reservations/edit/1',);
+            }, // acción a ejecutar
         },
         {
             icon: <i className="material-icons">cancel</i>, 
@@ -267,7 +271,7 @@ const Reservations = () => {
   return (
     <Container className="px-5" fluid>
          <h1>Reservas</h1>
-         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} btnText="Crear Reserva" onBtnClick={onBtnClick} />
+         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Reserva" onBtnClick={onBtnClick} />
         <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
 
         <Modal show={show} onHide={handleClose}>

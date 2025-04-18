@@ -2,7 +2,7 @@ import React from 'react'
 import { Button, Row, Col } from 'react-bootstrap'
 
 // Barra que contiene barra de búsqueda, criterios de ordenacion y botón 'crear' para tablas
-const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortOptions, sortKey, setSort, btnText, onBtnClick}) => {
+const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortOptions, sortKey, setSort, showBtn, btnText, onBtnClick}) => {
   return (
     <Row className='align-items-center mb-2'>
         {/*primera columna: search bar*/ }
@@ -34,9 +34,12 @@ const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortO
           </select>
         </Col>
         {/* ultima columna: boton */}
-        <Col md={2}>
-          <Button variant="primary" onClick={onBtnClick}>{btnText}</Button>
-        </Col>
+        {
+          showBtn &&
+          <Col md={2}>
+            <Button variant="primary" onClick={onBtnClick}>{btnText}</Button>
+          </Col>
+        }
 
     </Row>
   )
