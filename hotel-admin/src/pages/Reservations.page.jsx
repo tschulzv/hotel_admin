@@ -301,7 +301,7 @@ const Reservations = () => {
             Volver
           </Button>
           <Button variant="danger" onClick={handleEliminar}>
-            Cancelar
+            Confirmar
           </Button>
         </Modal.Footer>
       </Modal>
