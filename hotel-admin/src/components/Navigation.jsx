@@ -10,7 +10,7 @@ function Navigation() {
   const isActive = (path) => location.pathname === path;
 
   const navItems = [
-    { href: '/', label: 'Panel de Control', icon: 'dashboard' },
+    { href: '/home', label: 'Panel de Control', icon: 'dashboard' },
     { href: '/checkin', label: 'Check-In', icon: 'login' },
     { href: '/checkout', label: 'Check-Out', icon: 'logout' },
     { href: '/notifications', label: 'Notificaciones', icon: 'notifications' },
