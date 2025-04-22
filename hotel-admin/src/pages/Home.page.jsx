@@ -36,34 +36,30 @@ const checkOutsPendientes = [
 ];
 const Home = () => {
   return (
-    <Container className="px-5" fluid>
+    <Container>
+      {/* Fila superior de tarjetas */}
       <Row>
-        {tarjetas.map((card, idx) => {
-          const color = card.color;
-          return (
-            <Col xs={1} sm={1} md={1} lg={3} key={idx} className="mb-3">
-              <RoomCard
-                numero={card.numero}
-                tipo={card.tipo}
-                estado={card.estado}
-                color={color}
-                icono=""
-              />
-            </Col>
-          );
-        })}
+        {tarjetas.map((card, idx) => (
+          <Col xs={12} sm={6} md={4} lg={3} key={idx} className="mb-3">
+            <RoomCard
+              numero={card.numero}
+              tipo={card.tipo}
+              estado={card.estado}
+              color={card.color}
+              icono=""
+            />
+          </Col>
+        ))}
       </Row>
+
       <Row>
-        {/* Parte Izquierda: Gráfico */}
-        <Col lg={6} md={12}>
+        {/* Columna Izquierda: Gráfico + Tabla Habitaciones Ocupadas */}
+        <Col lg={6} md={12} className="mb-4">
           <Card className="p-3 shadow-sm mb-4">
             <PensionChart />
           </Card>
-        </Col>
-
-        {/* Parte Derecha: Tabla */}
-        <Col lg={6} md={12}>
-          <Card className="p-3 shadow-sm mb-4">
+          
+          <Card className="p-3 shadow-sm">
             <h5 className="mb-3">Habitaciones Ocupadas</h5>
             <PaginatedTable
               data={habitacionesOcupadas}
@@ -72,25 +68,23 @@ const Home = () => {
             />
           </Card>
         </Col>
-      </Row>
-      {/* Listas de check-ins y check-outs pendientes */}
-      <Row>
+
+        {/* Columna Derecha: Tablas de Check-In y Check-Out */}
         <Col lg={6} md={12}>
           <Card className="p-3 shadow-sm mb-4">
             <h5 className="mb-3">Check-Ins Pendientes</h5>
             <PaginatedTable
               data={checkInsPendientes}
-              rowActions={[]}  // puedes agregar botones si quieres
+              rowActions={[]}
               rowsPerPage={5}
             />
           </Card>
-        </Col>
-        <Col lg={6} md={12}>
-          <Card className="p-3 shadow-sm mb-4">
+          
+          <Card className="p-3 shadow-sm">
             <h5 className="mb-3">Check-Outs Pendientes</h5>
             <PaginatedTable
               data={checkOutsPendientes}
-              rowActions={[]}  // puedes agregar botones si quieres
+              rowActions={[]}
               rowsPerPage={5}
             />
           </Card>
