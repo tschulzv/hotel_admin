@@ -285,7 +285,7 @@ const Clients = () => {
   return (
     <Container className="px-5" fluid>
          <h1>Clientes</h1>
-         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Nuevo Cliente" onBtnClick={onBtnClick} />
+         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Cliente" onBtnClick={onBtnClick} />
          <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
          
          {/* MODAL PARA ELIMINACION*/}
