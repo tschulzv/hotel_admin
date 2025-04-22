@@ -13,6 +13,8 @@ import ClientHistory from './pages/ClientHistory'
 import ReservationForm from './pages/ReservationForm';
 import ReservationDetails from './pages/ReservationDetails';
 import Calendar from './pages/Calendar.page';
+import Notifications from './pages/Notifications.page';
+import NotificationDetails from './pages/NotificationDetails';
 
 function App() {
 
@@ -35,6 +37,8 @@ function App() {
         <Route path="/rooms/edit/:id" element={<RoomForm />} />
         <Route path="/roomstype/new" element={<RoomTypeForm />} />
         <Route path="/calendar" element={<Calendar />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/notifications/:id" element={<NotificationDetails />} />
       </Routes>
     </Layout>
   </Router>
