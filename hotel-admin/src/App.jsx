@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
 import Home from "./pages/Home.page"
 import Rooms from "./pages/Rooms.page"
+import LoginPage from './pages/Login.page'
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import Reservations from './pages/Reservations.page';
+import ReservationCheckIn from './pages/ReservationCheckIn.page'
+import ReservationCheckOut from './pages/ReservationCheckOut.page';
 import Clients from './pages/Clients.page';
 import RoomForm from './pages/RoomForm';
 import RoomTypeForm from './pages/RoomTypeForm';
@@ -15,9 +18,6 @@ import ReservationDetails from './pages/ReservationDetails';
 import Calendar from './pages/Calendar.page';
 import Notifications from './pages/Notifications.page';
 import NotificationDetails from './pages/NotificationDetails';
-import ReservationCheckIn from './pages/ReservationCheckIn.page';
-import ReservationCheckOut from './pages/ReservationCheckOut.page';
-import LoginPage from './pages/Login.page';
 
 function App() {
 
@@ -25,6 +25,7 @@ function App() {
     <Router>
     <Layout>
       <Routes>
+        <Route path="/" element={<LoginPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/reservations" element={<Reservations />} />
@@ -44,7 +45,6 @@ function App() {
         <Route path="/notifications/:id" element={<NotificationDetails />} />
         <Route path="/checkin" element={<ReservationCheckIn/>} />
         <Route path="/checkout" element={<ReservationCheckOut/>} />
-        <Route path="/" element={<LoginPage />} />
       </Routes>
     </Layout>
   </Router>

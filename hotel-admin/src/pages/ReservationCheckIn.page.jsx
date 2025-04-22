@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Button, Row, Col, Table } from "react-bootstrap";
+import { Container, Button, Row, Col, Table, Modal } from "react-bootstrap";
 import { SlMinus, SlCheck, SlClose } from "react-icons/sl";
 
 const ReservationCheckIn = () => {
@@ -25,6 +25,13 @@ const ReservationCheckIn = () => {
   });
   const [error, setError] = useState("");
   const [verified, setVerified] = useState(null);
+  const [show, setShow] = useState(false); // mostrar o no el modal
+  const [modalTxt, setModalTxt] = useState("");
+  const [modalTitle, setModalTitle] = useState("Error");
+
+    // funcion para manejar el cierre del modal
+  const handleClose = () => setShow(false);
+  
 
   // Lo que pasa si se apreta el boton "Verificar Reserva"
   const handleVerification = (e) => {
@@ -53,7 +60,9 @@ const ReservationCheckIn = () => {
 
   const handleAddGuest = () => {
     if (guestList.length >= 2) {
-      alert("Cantidad maxima de huespedes alcanzada");
+      setModalTitle("Error");
+      setModalTxt("Cantidad máxima de huéspedes alcanzada");
+      setShow(true);
       return;
     }
     if (!guestDoc.trim() || !guestName.trim()) return;
@@ -61,6 +70,12 @@ const ReservationCheckIn = () => {
     setGuestDoc("");
     setGuestName("");
   };
+
+  const handleCheckIn = () => {
+    // logica de llamar a la api 
+    setModalTxt("Check-In realizado con éxito");
+    setShow(true);
+  }
 
   const renderGuestRows = () =>
     guestList.map((guest, index) => (
@@ -181,7 +196,7 @@ const ReservationCheckIn = () => {
                 <Row className="justify-content-start mt-3">
                   <Col xs="auto">
                     <Button
-                      onClick={() => alert("Check-In realizado con exito")}
+                      onClick={handleCheckIn}
                     >
                       Check-In
                     </Button>
@@ -200,6 +215,20 @@ const ReservationCheckIn = () => {
           </Row>
         )}
       </Col>
+      <Modal show={show} onHide={handleClose} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>{modalTitle}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>{modalTxt}</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
     </Container>
   );
 };

@@ -2,7 +2,7 @@ import React from 'react'
 import Navigation from './Navigation'
 import {Container} from 'react-bootstrap';
 import '../layout.css';
-import { useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 const Layout = ({children}) => {
   // PARA EL LOGIN

@@ -52,7 +52,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "101, 102",
           checkIn: "2025-04-10",
           checkOut: "2025-04-15",
-          estado: "Activa",
+          estado: "Confirmada",
         },
         {
           id: 2,
@@ -79,7 +79,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "108, 109",
           checkIn: "2025-04-11",
           checkOut: "2025-04-18",
-          estado: "Activa",
+          estado: "En curso",
         },
         {
           id: 5,
@@ -88,7 +88,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "210",
           checkIn: "2025-04-10",
           checkOut: "2025-04-12",
-          estado: "Pendiente",
+          estado: "A confirmar",
         },
         {
           id: 6,
@@ -106,7 +106,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "502",
           checkIn: "2025-04-14",
           checkOut: "2025-04-20",
-          estado: "Activa",
+          estado: "Confirmada",
         },
         {
           id: 8,
@@ -115,7 +115,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "303, 304",
           checkIn: "2025-04-15",
           checkOut: "2025-04-18",
-          estado: "Pendiente",
+          estado: "A confirmar",
         },
         {
           id: 9,
@@ -124,7 +124,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "103",
           checkIn: "2025-04-13",
           checkOut: "2025-04-16",
-          estado: "Activa",
+          estado: "En curso",
         },
         {
           id: 10,
@@ -151,7 +151,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "308",
           checkIn: "2025-04-12",
           checkOut: "2025-04-14",
-          estado: "Pendiente",
+          estado: "A confirmar",
         },
         {
           id: 13,
@@ -160,7 +160,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "503",
           checkIn: "2025-04-11",
           checkOut: "2025-04-17",
-          estado: "Activa",
+          estado: "Confirmada",
         },
         {
           id: 14,
@@ -169,7 +169,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "306",
           checkIn: "2025-04-16",
           checkOut: "2025-04-20",
-          estado: "Pendiente",
+          estado: "A confirmar",
         },
         {
           id: 15,
@@ -187,7 +187,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "209",
           checkIn: "2025-04-13",
           checkOut: "2025-04-14",
-          estado: "Activa",
+          estado: "Confirmada",
         },
         {
           id: 17,
@@ -196,7 +196,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "407",
           checkIn: "2025-04-14",
           checkOut: "2025-04-16",
-          estado: "Activa",
+          estado: "Confirmada",
         },
         {
           id: 18,
@@ -223,7 +223,7 @@ const fechaSeleccionada = queryParams.get('fecha');
           habitaciones: "206, 207",
           checkIn: "2025-04-15",
           checkOut: "2025-04-17",
-          estado: "Pendiente",
+          estado: "A confirmar",
         }]     
         
         
