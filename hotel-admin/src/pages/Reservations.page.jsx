@@ -354,7 +354,7 @@ const fechaSeleccionada = queryParams.get('fecha');
             Volver
           </Button>
           <Button variant="danger" onClick={handleEliminar}>
-            Cancelar
+            Confirmar
           </Button>
         </Modal.Footer>
       </Modal>

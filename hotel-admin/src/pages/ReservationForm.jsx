@@ -67,7 +67,6 @@ const ReservationForm = () => {
                   name="nombre"
                   value= {reservationData.nombre}
                   onChange={handleChange}
-                  disabled={isDetailsMode}
                   required
                 />
               </Form.Group>
@@ -80,7 +79,6 @@ const ReservationForm = () => {
                   name="codigo"
                   value= {reservationData.codigo}
                   onChange={handleChange}
-                  disabled={isDetailsMode}
                   required
                 />
               </Form.Group>
@@ -96,7 +94,6 @@ const ReservationForm = () => {
                   name="habitaciones"
                   value= {reservationData.habitaciones}
                   onChange={handleChange}
-                  disabled={isDetailsMode}
                   required
                 />
               </Form.Group>
@@ -111,7 +108,6 @@ const ReservationForm = () => {
                   name="checkIn"
                   value= {reservationData.checkIn}
                   onChange={handleChange}
-                  disabled={isDetailsMode}
                   required
                 />
               </Form.Group>
@@ -124,7 +120,6 @@ const ReservationForm = () => {
                   name="checkOut"
                   value= {reservationData.checkOut}
                   onChange={handleChange}
-                  disabled={isDetailsMode}
                   required
                 />
               </Form.Group>
@@ -139,7 +134,6 @@ const ReservationForm = () => {
               name="observaciones"
               value= {reservationData.observaciones}
               onChange={handleChange}
-              disabled={isDetailsMode}
             />
           </Form.Group>
 

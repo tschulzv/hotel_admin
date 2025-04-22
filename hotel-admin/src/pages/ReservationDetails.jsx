@@ -1,10 +1,8 @@
 import React from 'react'
-import { Container, Row, Col, Button, Card, ListGroup } from 'react-bootstrap'
-import { useNavigate, useParams } from 'react-router-dom';
+import { Container, Row, Col, Card, ListGroup,Accordion } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom';
 
 function ReservationDetails() {
-  // reserva DE EJEMPLO, BORRAR CUANDO FUNCIONE LA API!!
-  // useEffect y obtener datos del resevra de la db si se le pasa un id
   let reservation = {
     id: 1,
     nombre: "María Pérez",
@@ -27,8 +25,7 @@ function ReservationDetails() {
         }, {
             nombre: "Juana Perez",
             documento: 111111
-        }
-        ]
+        }]
     },
     {
         numHabitacion: "102",
@@ -49,59 +46,75 @@ function ReservationDetails() {
   ]
 
   const navigate = useNavigate();
-  
-  const editClient = () => {}
-  const clientHistory = () => {
-    navigate("/clients/1/history");
-  }
 
   return (
-    <Container className="py-4">
-      <Card className="p-4 shadow-sm rounded-4">
-        <Card.Body className="p-5">
-          <h2 className="mb-4 text-center">Detalles de la Reserva</h2>
-          <Row className="gy-4">
-            <Col md={6}>
-              <Card className="border-0 h-100">
-                <Card.Body>
-                  <h4 className="mb-3">Reserva</h4>
-                  <ListGroup variant="flush no-borders">
-                    <ListGroup.Item><strong>Titular:</strong> {reservation.nombre}</ListGroup.Item>
-                    <ListGroup.Item><strong>Código:</strong> {reservation.codigo}</ListGroup.Item>
-                    <ListGroup.Item><strong>Check-In:</strong> {reservation.checkIn}</ListGroup.Item>
-                    <ListGroup.Item><strong>Check-Out:</strong> {reservation.checkOut}</ListGroup.Item>
-                    <ListGroup.Item><strong>Hora estimada de llegada:</strong> {reservation.llegadaEstimada}</ListGroup.Item>
-                    <ListGroup.Item><strong>Estado:</strong> {reservation.estado}</ListGroup.Item>
-                    <ListGroup.Item><strong>Observaciones:</strong> {reservation.observaciones}</ListGroup.Item>
-                  </ListGroup>
-                </Card.Body>
-              </Card>
-            </Col>
+    <Container className="py-4" style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+      {/* Título + Icono volver */}
+      <div className='mb-4 d-flex align-items-center'>
+        <span
+          className="material-icons me-2"
+          role="button"
+          onClick={() => navigate(-1)}
+          style={{ cursor: 'pointer' }}
+          title="Volver"
+        >
+          arrow_back
+        </span>
+        <h2 style={{ color: '#2c3e50' }}>Reserva</h2>
+      </div>
 
-            <Col md={6} className="d-flex flex-column justify-content-between h-100">
-                <Card className="border-0">
-                  <Card.Body>
-                    <h4 className="mb-3">Habitaciones</h4>
-                    {
-                        reservation.estado === 'Pendiente' ? <h3>Aún no se asignaron habitaciones</h3> :
-                            details.map((detail, i) => (
-                            <div key={i} className="mb-3 p-3 border rounded">
-                            <ListGroup variant="flush no-borders">
-                                <ListGroup.Item><strong>Núm. Habitación:</strong> {detail.numHabitacion}</ListGroup.Item>
-                                <ListGroup.Item><strong>Cantidad de Adultos: </strong>{detail.cantidadAdultos}</ListGroup.Item>
-                                <ListGroup.Item><strong>Cantidad de Niños: </strong>{detail.cantidadNinhos}</ListGroup.Item>
-                                <ListGroup.Item><strong>Tipo de Pensión:</strong> {detail.pension}</ListGroup.Item>
-                            </ListGroup>
-                            </div>
-                            ))
-                        
-                    }
-                  </Card.Body>
-                </Card>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+      <Row className="gy-4">
+        {/* Card de Reserva */}
+        <Col md={6}>
+          <h4 className="mb-3">Detalles</h4>
+          <Card className="p-4 shadow-sm border-0 rounded-4">
+            <ListGroup variant="flush no-borders">
+              <ListGroup.Item><strong>Titular:</strong> {reservation.nombre}</ListGroup.Item>
+              <ListGroup.Item><strong>Código:</strong> {reservation.codigo}</ListGroup.Item>
+              <ListGroup.Item><strong>Check-In:</strong> {reservation.checkIn}</ListGroup.Item>
+              <ListGroup.Item><strong>Check-Out:</strong> {reservation.checkOut}</ListGroup.Item>
+              <ListGroup.Item><strong>Hora estimada de llegada:</strong> {reservation.llegadaEstimada}</ListGroup.Item>
+              <ListGroup.Item><strong>Estado:</strong> {reservation.estado}</ListGroup.Item>
+              <ListGroup.Item><strong>Observaciones:</strong> {reservation.observaciones}</ListGroup.Item>
+            </ListGroup>
+          </Card>
+        </Col>
+
+        {/* acordeon de habitaciones */}
+        <Col md={6}>
+        <h4 className="mb-3">Habitaciones</h4>
+{
+  reservation.estado === 'Pendiente' ? (
+    <h5 className="text-muted">Aún no se asignaron habitaciones</h5>
+  ) : (
+    <Accordion alwaysOpen defaultActiveKey="0">
+      {details.map((detail, i) => (
+        <Accordion.Item eventKey={i.toString()} key={i}>
+          <Accordion.Header>
+            Habitación {detail.numHabitacion}
+          </Accordion.Header>
+          <Accordion.Body>
+            <ListGroup variant="flush no-borders" className="no-item-borders">
+              <ListGroup.Item><strong>Cantidad de Adultos:</strong> {detail.cantidadAdultos}</ListGroup.Item>
+              <ListGroup.Item><strong>Cantidad de Niños:</strong> {detail.cantidadNinhos}</ListGroup.Item>
+              <ListGroup.Item><strong>Tipo de Pensión:</strong> {detail.pension}</ListGroup.Item>
+              {/*<ListGroup.Item>
+                <strong>Huéspedes:</strong>
+                <ul className="mb-0 ps-3">
+                  {detail.huespedes.map((h, idx) => (
+                    <li key={idx}>{h.nombre} – {h.documento}</li>
+                  ))}
+                </ul>
+              </ListGroup.Item>*/}
+            </ListGroup>
+          </Accordion.Body>
+        </Accordion.Item>
+      ))}
+    </Accordion>
+  )
+}
+        </Col>
+      </Row>
     </Container>
   )
 }
