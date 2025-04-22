@@ -1,9 +1,9 @@
 import React from "react";
 import Navigation from "./Navigation";
 import { Container } from "react-bootstrap";
-import { useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
-const Layout = ({ children }) => {
+const Layout = () => {
   return (
     <div className="d-flex min-vh-100">
       <div className="min-vh-100 h-100" style={{ width: "250px" }}>
@@ -16,7 +16,9 @@ const Layout = ({ children }) => {
       </div>
 
       <main className="page-content flex-grow-1 w-100">
-        <Container fluid>{children}</Container>
+        <Container fluid>
+          <Outlet />
+        </Container>
       </main>
     </div>
   );
