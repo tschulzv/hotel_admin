@@ -13,8 +13,14 @@ import ClientHistory from './pages/ClientHistory'
 import ReservationForm from './pages/ReservationForm';
 import ReservationDetails from './pages/ReservationDetails';
 import Calendar from './pages/Calendar.page';
+<<<<<<< HEAD
 import Notifications from './pages/Notifications.page';
 import NotificationDetails from './pages/NotificationDetails';
+=======
+import ReservationCheckIn from './pages/ReservationCheckIn.page';
+import ReservationCheckOut from './pages/ReservationCheckOut.page';
+import LoginPage from './pages/Login.page';
+>>>>>>> upstream/main
 
 function App() {
 
@@ -22,7 +28,7 @@ function App() {
     <Router>
     <Layout>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/reservations" element={<Reservations />} />
         <Route path="/reservations/:id" element={<ReservationDetails />} />
@@ -39,6 +45,9 @@ function App() {
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/notifications/:id" element={<NotificationDetails />} />
+        <Route path="/checkin" element={<ReservationCheckIn/>} />
+        <Route path="/checkout" element={<ReservationCheckOut/>} />
+        <Route path="/" element={<LoginPage />} />
       </Routes>
     </Layout>
   </Router>
