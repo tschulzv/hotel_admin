@@ -13,6 +13,9 @@ import ClientHistory from './pages/ClientHistory'
 import ReservationForm from './pages/ReservationForm';
 import ReservationDetails from './pages/ReservationDetails';
 import Calendar from './pages/Calendar.page';
+import ReservationCheckIn from './pages/ReservationCheckIn.page';
+import ReservationCheckOut from './pages/ReservationCheckOut.page';
+import LoginPage from './pages/Login.page';
 
 function App() {
 
@@ -20,7 +23,7 @@ function App() {
     <Router>
     <Layout>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/reservations" element={<Reservations />} />
         <Route path="/reservations/:id" element={<ReservationDetails />} />
@@ -34,7 +37,10 @@ function App() {
         <Route path="/rooms/new" element={<RoomForm />} />
         <Route path="/rooms/edit/:id" element={<RoomForm />} />
         <Route path="/roomstype/new" element={<RoomTypeForm />} />
-        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/calendar" element={<Calendar />} />        <Route path="/checkin" element={<ReservationCheckIn/>} />
+        <Route path="/checkin" element={<ReservationCheckIn/>} />
+        <Route path="/checkout" element={<ReservationCheckOut/>} />
+        <Route path="/" element={<LoginPage />} />
       </Routes>
     </Layout>
   </Router>
