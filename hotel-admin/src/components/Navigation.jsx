@@ -17,6 +17,7 @@ function Navigation() {
     { href: '/rooms', label: 'Habitaciones', icon: 'hotel' },
     { href: '/reservations', label: 'Reservas', icon: 'event' },
     { href: '/clients', label: 'Clientes', icon: 'people' },
+    { href: '/calendar', label: 'Calendario', icon: 'calendar_today' },
     { href: '/reports', label: 'Reportes', icon: 'bar_chart' },
   ];
 

@@ -12,6 +12,7 @@ import ClientDetails from './pages/ClientDetails';
 import ClientHistory from './pages/ClientHistory'
 import ReservationForm from './pages/ReservationForm';
 import ReservationDetails from './pages/ReservationDetails';
+import Calendar from './pages/Calendar.page';
 import ReservationCheckIn from './pages/ReservationCheckIn.page';
 import ReservationCheckOut from './pages/ReservationCheckOut.page';
 import LoginPage from './pages/Login.page';
@@ -36,6 +37,7 @@ function App() {
         <Route path="/rooms/new" element={<RoomForm />} />
         <Route path="/rooms/edit/:id" element={<RoomForm />} />
         <Route path="/roomstype/new" element={<RoomTypeForm />} />
+        <Route path="/calendar" element={<Calendar />} />        <Route path="/checkin" element={<ReservationCheckIn/>} />
         <Route path="/checkin" element={<ReservationCheckIn/>} />
         <Route path="/checkout" element={<ReservationCheckOut/>} />
         <Route path="/" element={<LoginPage />} />

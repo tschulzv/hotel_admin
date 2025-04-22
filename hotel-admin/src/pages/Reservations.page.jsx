@@ -1,11 +1,18 @@
 import React, {useState, useEffect} from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {Container, Modal, Button, Form} from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 import TableFilterBar from '../components/TableFilterBar';
 
 const Reservations = () => {
     const navigate = useNavigate();
+
+// ---------------Lo agregado reciente-----------------------
+const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+const fechaSeleccionada = queryParams.get('fecha'); 
+// ------------hasta aqui lo agregado--------------------------
+
       const [filaSeleccionada, setFilaSeleccionada] = useState(null);
       const [show, setShow] = useState(false); // mostrar o no el modal
       const [razon, setRazon] = useState('true');
@@ -217,7 +224,27 @@ const Reservations = () => {
           checkIn: "2025-04-15",
           checkOut: "2025-04-17",
           estado: "Pendiente",
-        }]      
+        }]     
+        
+        
+     // ---------------Lo agregado reciente-----------------------
+        useEffect(() => {
+            // Filtrar los datos originales según la fecha seleccionada y estado de reserva
+            if (fechaSeleccionada) {
+              const reservasFiltradas = originalData.filter((reserva) =>
+                reserva.checkIn <= fechaSeleccionada && 
+                reserva.checkOut >= fechaSeleccionada &&
+                reserva.estado !== 'Cancelada' &&
+                reserva.estado !== 'Finalizada'
+              );
+              setFilteredData(reservasFiltradas);
+            } else {
+              // Si no hay fecha seleccionada, mostramos todos los datos originales
+              setFilteredData(originalData);
+            }
+          }, [fechaSeleccionada]);
+        // ------------hasta aqui lo agregado--------------------------
+
     const [searchTerm, setSearchTerm] = useState();
     const [sortKey, setSort] = useState(["nombre"]);
     const [filteredData, setFilteredData] = useState(originalData);
@@ -266,11 +293,37 @@ const Reservations = () => {
     return aVal.localeCompare(bVal);
   });
   
-    
+  // formatear la fecha
+  const obtenerFormatoFecha = (fechaStr) => {
+    const [anio, mes, dia] = fechaStr.split('-').map(Number);
+    const fecha = new Date(anio, mes - 1, dia);
+
+    const opcionesDia = { weekday: 'long' };
+    const opcionesFecha = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  
+    const diaSemana = fecha.toLocaleDateString('es-ES', opcionesDia);
+    const fechaFormateada = fecha.toLocaleDateString('es-ES', opcionesFecha);
+  
+    return {
+      diaSemana: diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1),
+      fechaFormateada,
+    };
+  };   
+
+
 
   return (
     <Container className="px-5" fluid>
          <h1>Reservas</h1>
+         {/*Subtitulo de fecha y dia seleccionados */}
+         {fechaSeleccionada && (
+          <div className="mb-3">
+            <h5 className="text-muted">
+              Día: {obtenerFormatoFecha(fechaSeleccionada).diaSemana}<br />
+              Fecha: {obtenerFormatoFecha(fechaSeleccionada).fechaFormateada}
+            </h5>
+          </div>
+        )}
          <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Reserva" onBtnClick={onBtnClick} />
         <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
 
