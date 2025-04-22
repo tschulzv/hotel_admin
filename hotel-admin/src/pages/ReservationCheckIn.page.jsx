@@ -73,6 +73,7 @@ const ReservationCheckIn = () => {
 
   const handleCheckIn = () => {
     // logica de llamar a la api 
+    // cambiar esto a q muestre un mensaje al lado del boton
     setModalTxt("Check-In realizado con éxito");
     setShow(true);
   }
