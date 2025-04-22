@@ -12,6 +12,7 @@ import ClientDetails from './pages/ClientDetails';
 import ClientHistory from './pages/ClientHistory'
 import ReservationForm from './pages/ReservationForm';
 import ReservationDetails from './pages/ReservationDetails';
+import Calendar from './pages/Calendar.page';
 
 function App() {
 
@@ -33,7 +34,7 @@ function App() {
         <Route path="/rooms/new" element={<RoomForm />} />
         <Route path="/rooms/edit/:id" element={<RoomForm />} />
         <Route path="/roomstype/new" element={<RoomTypeForm />} />
-
+        <Route path="/calendar" element={<Calendar />} />
       </Routes>
     </Layout>
   </Router>

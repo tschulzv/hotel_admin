@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import Select from 'react-select'
+//import Select from 'react-select'
 import countryList from 'react-select-country-list'
 
 const ReservationForm = () => {
