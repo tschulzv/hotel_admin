@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import RoomCard from '../components/RoomCard.jsx'
-import { Container, Dropdown, Button, Row, Col } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom';
-
+import { useState } from 'react';
+import RoomCard from '../components/RoomCard.jsx';
+import PaginatedTable from '../components/PaginatedTable.jsx'; // Asegúrate de la ruta correcta
+import { Container, Dropdown, Button, Row, Col } from 'react-bootstrap';
+import { useNavigate, Link } from 'react-router-dom';
 
 const habitaciones = [
     { numero: 101, tipo: "ESTÁNDAR", estado: "EN LIMPIEZA" },
@@ -45,7 +45,7 @@ const getEstado = (estado) => {
 
 function Rooms() {
     const navigate = useNavigate();
-
+    const [mostrarTabla, setMostrarTabla] = useState(false);
     const [estadoFiltro, setEstadoFiltro] = useState('');
     const [tipoFiltro, setTipoFiltro] = useState('');
 
@@ -89,6 +89,9 @@ function Rooms() {
                     </Dropdown>
                 </div>
                 <div className="d-flex gap-2">
+                    <Button variant="outline-primary" onClick={() => setMostrarTabla(!mostrarTabla)}>
+                        {mostrarTabla ? 'Mostrar Tarjetas' : 'Mostrar Tabla'}
+                    </Button>
                     <Button variant="primary" onClick={() => navigate('/rooms/new')}>
                         Nueva Habitación
                     </Button>
@@ -98,27 +101,42 @@ function Rooms() {
                 </div>
             </div>
 
-            <Row>
-                {habitacionesFiltradas.map((hab, idx) => {
-                    const { color, icono } = getEstado(hab.estado);
-                    return (
-                        <Col xs={6} sm={4} md={4} lg={3} key={idx} className="mb-3">
-                            <RoomCard
-                                numero={hab.numero}
-                                tipo={hab.tipo}
-                                estado={hab.estado}
-                                color={color}
-                                icono={icono}
-                            />
-                        </Col>
-                    );
-                })}
-                {habitacionesFiltradas.length === 0 && (
-                    <p className="text-center mt-4">No hay habitaciones que coincidan con los filtros.</p>
-                )}
-            </Row>
+            {mostrarTabla ? (
+                <PaginatedTable
+                    data={habitacionesFiltradas}
+                    rowActions={[
+                        {
+                            icon: 'visibility',
+                            label: 'Ver',
+                            onClick: (rowData) => navigate(`/rooms/edit/${rowData.numero}`),
+                        },
+                    ]}
+                />
+            ) : (
+                <Row>
+                    {habitacionesFiltradas.map((hab, idx) => {
+                        const { color, icono } = getEstado(hab.estado);
+                        return (
+                            <Col xs={6} sm={4} md={4} lg={3} key={idx} className="mb-3">
+                                <Link to={`/rooms/edit/${hab.numero}`} style={{ textDecoration: 'none' }}>
+                                    <RoomCard
+                                        numero={hab.numero}
+                                        tipo={hab.tipo}
+                                        estado={hab.estado}
+                                        color={color}
+                                        icono={icono}
+                                    />
+                                </Link>
+                            </Col>
+                        );
+                    })}
+                    {habitacionesFiltradas.length === 0 && (
+                        <p className="text-center mt-4">No hay habitaciones que coincidan con los filtros.</p>
+                    )}
+                </Row>
+            )}
         </Container>
-    )
+    );
 }
 
-export default Rooms
+export default Rooms;

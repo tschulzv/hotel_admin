@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import Home from "./pages/Home.page";
 import Rooms from "./pages/Rooms.page";
+import LoginPage from "./pages/Login.page";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import Reservations from "./pages/Reservations.page";
+import ReservationCheckIn from "./pages/ReservationCheckIn.page";
+import ReservationCheckOut from "./pages/ReservationCheckOut.page";
 import Clients from "./pages/Clients.page";
 import RoomForm from "./pages/RoomForm";
 import RoomTypeForm from "./pages/RoomTypeForm";
@@ -13,9 +16,8 @@ import ClientHistory from "./pages/ClientHistory";
 import ReservationForm from "./pages/ReservationForm";
 import ReservationDetails from "./pages/ReservationDetails";
 import Calendar from "./pages/Calendar.page";
-import ReservationCheckIn from "./pages/ReservationCheckIn.page";
-import ReservationCheckOut from "./pages/ReservationCheckOut.page";
-import LoginPage from "./pages/Login.page";
+import Notifications from "./pages/Notifications.page";
+import NotificationDetails from "./pages/NotificationDetails";
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
           <Route path="/checkin" element={<ReservationCheckIn />} />
           <Route path="/checkin" element={<ReservationCheckIn />} />
           <Route path="/checkout" element={<ReservationCheckOut />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/notifications/:id" element={<NotificationDetails />} />
         </Route>
       </Routes>
     </Router>

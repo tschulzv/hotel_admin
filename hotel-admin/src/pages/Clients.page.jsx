@@ -200,7 +200,7 @@ const Clients = () => {
       }
     ];
   const [searchTerm, setSearchTerm] = useState();
-  const [sortKey, setSort] = useState(["nombre"]);
+  const [sortKey, setSort] = useState(["id"]);
   const [filteredData, setFilteredData] = useState(originalData);
   const [filaSeleccionada, setFilaSeleccionada] = useState(null);
   const [show, setShow] = useState(false); // mostrar o no el modal
@@ -269,6 +269,7 @@ const Clients = () => {
   
   // sort options
   const sortOptions = [
+    { value: 'id', label: 'ID' },
     { value: 'nombre', label: 'Nombre' },
     { value: 'documento', label: 'Documento' },
     { value: 'email', label: 'Email' },
@@ -277,9 +278,23 @@ const Clients = () => {
   
   //  ordenar los datos
   let sortedData = [...filteredData].sort((a, b) => {
-    const aVal = a[sortKey]?.toString().toLowerCase();
-    const bVal = b[sortKey]?.toString().toLowerCase();
-    return aVal.localeCompare(bVal);
+    const aVal = a[sortKey];
+    const bVal = b[sortKey];
+  
+    // Si ambos son números válidos
+    if (!isNaN(aVal) && !isNaN(bVal)) {
+      return Number(aVal) - Number(bVal);
+    }
+  
+    // Si ambos son fechas válidas
+    if (!isNaN(Date.parse(aVal)) && !isNaN(Date.parse(bVal))) {
+      return new Date(aVal) - new Date(bVal);
+    }
+  
+    // Comparar como strings por defecto
+    const aStr = aVal?.toString().toLowerCase() || "";
+    const bStr = bVal?.toString().toLowerCase() || "";
+    return aStr.localeCompare(bStr);
   });
   
   return (
