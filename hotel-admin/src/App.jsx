@@ -13,14 +13,11 @@ import ClientHistory from './pages/ClientHistory'
 import ReservationForm from './pages/ReservationForm';
 import ReservationDetails from './pages/ReservationDetails';
 import Calendar from './pages/Calendar.page';
-<<<<<<< HEAD
 import Notifications from './pages/Notifications.page';
 import NotificationDetails from './pages/NotificationDetails';
-=======
 import ReservationCheckIn from './pages/ReservationCheckIn.page';
 import ReservationCheckOut from './pages/ReservationCheckOut.page';
 import LoginPage from './pages/Login.page';
->>>>>>> upstream/main
 
 function App() {
 
