@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Crear una instancia de Axios
 const axiosInstance = axios.create({
-  baseURL: 'https://localhost:7298/api', // Cambia esto a la URL base de tu API
+  baseURL: 'https://hotelapi20250503141148-f9d9acddg2h7f9ab.centralus-01.azurewebsites.net', // Cambia esto a la URL base de tu API
   headers: {
     'Content-Type': 'application/json',
   },
