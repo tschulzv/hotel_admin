@@ -1,19 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 
 const RoomTypeNewPage = () => {
   const navigate = useNavigate();
-
+  const [servicios, setServicios] = useState([]);
   const [roomTypeData, setRoomTypeData] = useState({
     nombre: '',
     descripcion: '',
     precioBase: 0,
     cantidadDisponible: 0,
+    maximaOcupacion: 0,
+    tamanho: 0,
     servicios: [],
     activo: true
   });
+
+  // Cargar servicios disponibles
+  useEffect(() => {
+    const fetchServicios = async () => {
+      try {
+        const response = await axios.get('Servicios');
+        setServicios(response.data);
+      } catch (error) {
+        console.error('Error cargando servicios:', error);
+      }
+    };
+    fetchServicios();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -23,6 +38,16 @@ const RoomTypeNewPage = () => {
     }));
   };
 
+  const handleServicioChange = (servicioId) => {
+    setRoomTypeData(prev => {
+      const nuevosServicios = prev.servicios.includes(servicioId)
+        ? prev.servicios.filter(id => id !== servicioId)
+        : [...prev.servicios, servicioId];
+      
+      return { ...prev, servicios: nuevosServicios };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
@@ -30,9 +55,11 @@ const RoomTypeNewPage = () => {
       Descripcion: roomTypeData.descripcion,
       PrecioBase: parseFloat(roomTypeData.precioBase),
       CantidadDisponible: parseInt(roomTypeData.cantidadDisponible),
-      Servicios: [] // 🟡 Opcional (no implementado en el formulario)
+      MaximaOcupacion: parseInt(roomTypeData.maximaOcupacion),
+      Tamanho: parseInt(roomTypeData.tamanho),
+      Servicios: roomTypeData.servicios.map(id => ({ Id: id }))
     };
-  
+
     try {
       await axios.post('/api/TiposHabitaciones', payload);
       navigate('/rooms');
@@ -65,9 +92,11 @@ const RoomTypeNewPage = () => {
                 <Form.Label>Máxima Ocupación</Form.Label>
                 <Form.Control
                   type="number"
-                  name="maxOcupacion"
-                  value={roomTypeData.maxOcupacion}
+                  name="maximaOcupacion"
+                  value={roomTypeData.maximaOcupacion}
                   onChange={handleChange}
+                  min="1"
+                  max="6"
                   required
                 />
               </Form.Group>
@@ -79,10 +108,13 @@ const RoomTypeNewPage = () => {
               <Form.Group className="mb-3">
                 <Form.Label>Tamaño (m²)</Form.Label>
                 <Form.Control
-                  type="text"
-                  name="tamaño"
-                  value={roomTypeData.tamaño}
+                  type="number"
+                  name="tamanho"
+                  value={roomTypeData.tamanho}
                   onChange={handleChange}
+                  min="10"
+                  max="500"
+                  required
                 />
               </Form.Group>
             </Col>
@@ -94,6 +126,7 @@ const RoomTypeNewPage = () => {
                   name="precioBase"
                   value={roomTypeData.precioBase}
                   onChange={handleChange}
+                  step="0.01"
                   required
                 />
               </Form.Group>
@@ -106,22 +139,40 @@ const RoomTypeNewPage = () => {
                   name="cantidadDisponible"
                   value={roomTypeData.cantidadDisponible}
                   onChange={handleChange}
+                  min="0"
                   required
                 />
               </Form.Group>
             </Col>
           </Row>
+
           <Form.Group className="mb-3">
-            <Form.Label>Observaciones</Form.Label>
+            <Form.Label>Servicios</Form.Label>
+            <Row>
+              {servicios.map(servicio => (
+                <Col md={4} key={servicio.id}>
+                  <Form.Check 
+                    type="checkbox"
+                    id={`servicio-${servicio.id}`}
+                    label={servicio.nombre}
+                    checked={roomTypeData.servicios.includes(servicio.id)}
+                    onChange={() => handleServicioChange(servicio.id)}
+                  />
+                </Col>
+              ))}
+            </Row>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Descripción</Form.Label>
             <Form.Control
               as="textarea"
               rows={3}
-              name="observaciones"
-              value={roomTypeData.observaciones}
+              name="descripcion"
+              value={roomTypeData.descripcion}
               onChange={handleChange}
             />
           </Form.Group>
-          {/* Aquí en el futuro podrías agregar la gestión de camas o imágenes. */}
 
           <div className="d-flex justify-content-end gap-2">
             <Button variant="primary" type="submit">
