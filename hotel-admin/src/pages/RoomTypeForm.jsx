@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import axios from '../config/axiosConfig';
 
 const RoomTypeNewPage = () => {
   const navigate = useNavigate();
 
   const [roomTypeData, setRoomTypeData] = useState({
     nombre: '',
-    maxOcupacion: '',
-    tamaño: '',
-    camas: [],
-    observaciones: '',
-    mostrarEnWeb: false
+    descripcion: '',
+    precioBase: 0,
+    cantidadDisponible: 0,
+    servicios: [],
+    activo: true
   });
 
   const handleChange = (e) => {
@@ -22,11 +23,22 @@ const RoomTypeNewPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí iría tu lógica para guardar, por ejemplo una API call.
-    console.log('Nuevo tipo de habitación:', roomTypeData);
-    navigate('/rooms');  // redirigir de vuelta después de guardar.
+    const payload = {
+      Nombre: roomTypeData.nombre,
+      Descripcion: roomTypeData.descripcion,
+      PrecioBase: parseFloat(roomTypeData.precioBase),
+      CantidadDisponible: parseInt(roomTypeData.cantidadDisponible),
+      Servicios: [] // 🟡 Opcional (no implementado en el formulario)
+    };
+  
+    try {
+      await axios.post('/api/TiposHabitaciones', payload);
+      navigate('/rooms');
+    } catch (error) {
+      console.error('Error creando el tipo de habitación:', error);
+    }
   };
 
   return (
@@ -63,7 +75,7 @@ const RoomTypeNewPage = () => {
           </Row>
 
           <Row>
-            <Col md={6}>
+            <Col md={4}>
               <Form.Group className="mb-3">
                 <Form.Label>Tamaño (m²)</Form.Label>
                 <Form.Control
@@ -74,20 +86,31 @@ const RoomTypeNewPage = () => {
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col md={4}>
               <Form.Group className="mb-3">
-                <Form.Label>Mostrar en Web</Form.Label>
-                <Form.Check
-                  type="checkbox"
-                  name="mostrarEnWeb"
-                  label="Sí, mostrar en la web"
-                  checked={roomTypeData.mostrarEnWeb}
+                <Form.Label>Precio Base</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="precioBase"
+                  value={roomTypeData.precioBase}
                   onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group className="mb-3">
+                <Form.Label>Cantidad Disponible</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="cantidadDisponible"
+                  value={roomTypeData.cantidadDisponible}
+                  onChange={handleChange}
+                  required
                 />
               </Form.Group>
             </Col>
           </Row>
-
           <Form.Group className="mb-3">
             <Form.Label>Observaciones</Form.Label>
             <Form.Control
@@ -98,7 +121,6 @@ const RoomTypeNewPage = () => {
               onChange={handleChange}
             />
           </Form.Group>
-
           {/* Aquí en el futuro podrías agregar la gestión de camas o imágenes. */}
 
           <div className="d-flex justify-content-end gap-2">
