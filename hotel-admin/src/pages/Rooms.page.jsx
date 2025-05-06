@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from '../config/axiosConfig';
 import RoomCard from '../components/RoomCard.jsx';
-import PaginatedTable from '../components/PaginatedTable.jsx'; // Asegúrate de la ruta correcta
-import { Container, Dropdown, Button, Row, Col } from 'react-bootstrap';
+import PaginatedTable from '../components/PaginatedTable.jsx';
+import { Container, Dropdown, Button, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
-
+/*
 const habitaciones = [
     { numero: 101, tipo: "ESTÁNDAR", estado: "EN LIMPIEZA" },
     { numero: 102, tipo: "ESTÁNDAR", estado: "DISPONIBLE" },
@@ -27,9 +28,10 @@ const habitaciones = [
     { numero: 504, tipo: "PRESIDENCIAL", estado: "DISPONIBLE" },
     // ...otras habitaciones
 ];
-
+*/
 const getEstado = (estado) => {
-    switch (estado) {
+    if (!estado) return { color: "secondary", icono: "desconocido" };
+    switch (estado.toUpperCase()) {
         case "DISPONIBLE":
             return { color: "success", icono: "disponible" };
         case "OCUPADO":
@@ -39,20 +41,58 @@ const getEstado = (estado) => {
         case "LATE CHECKOUT":
             return { color: "danger", icono: "late checkout" };
         default:
-            return { color: "secondary", icono: "kuek" };
+            return { color: "secondary", icono: "desconocido" };
     }
 };
 
 function Rooms() {
     const navigate = useNavigate();
+    const [habitaciones, setHabitaciones] = useState([]);
+    const [estados, setEstados] = useState([]);
+    const [tipos, setTipos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [mostrarTabla, setMostrarTabla] = useState(false);
     const [estadoFiltro, setEstadoFiltro] = useState('');
     const [tipoFiltro, setTipoFiltro] = useState('');
 
+    useEffect(() => {
+        const fetchHabitaciones = async () => {
+            try {
+                const response = await axios.get('/Habitacions');
+                setHabitaciones(response.data);
+                setLoading(false);
+            } catch (err) {
+                console.error(err);
+                setError('Error al cargar las habitaciones');
+                setLoading(false);
+            }
+        };
+
+        fetchHabitaciones();
+    }, []);
+
+    useEffect(() => {
+        const fetchFiltros = async () => {
+            try {
+                const [estadosRes, tiposRes] = await Promise.all([
+                    axios.get("EstadoHabitacions"),
+                    axios.get("TiposHabitaciones")
+                ]);
+                setEstados(estadosRes.data);  // Estado de habitaciones
+                setTipos(tiposRes.data);      // Tipos de habitaciones
+            } catch (err) {
+                console.error("Error cargando filtros:", err);
+            }
+        };
+
+        fetchFiltros();
+    }, []); // El array vacío asegura que esto se ejecute solo una vez al cargar el componente.
+
     const habitacionesFiltradas = habitaciones.filter(hab => {
         return (
-            (estadoFiltro === '' || hab.estado === estadoFiltro) &&
-            (tipoFiltro === '' || hab.tipo === tipoFiltro)
+            (estadoFiltro === '' || hab.estadoNombre === estadoFiltro) &&
+            (tipoFiltro === '' || hab.tipoHabitacionNombre === tipoFiltro)
         );
     });
 
@@ -62,29 +102,33 @@ function Rooms() {
 
             <div className="d-flex justify-content-between mb-3">
                 <div className="d-flex gap-2">
-                    <Dropdown onSelect={(selected) => setEstadoFiltro(selected)}>
+                    {/* Filtro de Estado de Habitación */}
+                    <Dropdown onSelect={setEstadoFiltro}>
                         <Dropdown.Toggle variant="outline-secondary">
-                            {estadoFiltro || "Estado"}
+                            {estadoFiltro || "Estado Habitación"}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Item eventKey="">Todos</Dropdown.Item>
-                            <Dropdown.Item eventKey="DISPONIBLE">Disponible</Dropdown.Item>
-                            <Dropdown.Item eventKey="OCUPADO">Ocupado</Dropdown.Item>
-                            <Dropdown.Item eventKey="EN LIMPIEZA">En Limpieza</Dropdown.Item>
-                            <Dropdown.Item eventKey="LATE CHECKOUT">Late Checkout</Dropdown.Item>
+                            {estados.map((estado) => (
+                                <Dropdown.Item key={estado.id} eventKey={estado.nombre}>
+                                    {estado.nombre}
+                                </Dropdown.Item>
+                            ))}
                         </Dropdown.Menu>
                     </Dropdown>
 
-                    <Dropdown onSelect={(selected) => setTipoFiltro(selected)}>
+                    {/* Filtro de Tipo de Habitación */}
+                    <Dropdown onSelect={setTipoFiltro}>
                         <Dropdown.Toggle variant="outline-secondary">
                             {tipoFiltro || "Tipo Habitación"}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Item eventKey="">Todos</Dropdown.Item>
-                            <Dropdown.Item eventKey="ESTÁNDAR">Estándar</Dropdown.Item>
-                            <Dropdown.Item eventKey="DELUXE">Deluxe</Dropdown.Item>
-                            <Dropdown.Item eventKey="EJECUTIVA">Ejecutiva</Dropdown.Item>
-                            <Dropdown.Item eventKey="PRESIDENCIAL">Presidencial</Dropdown.Item>
+                            {tipos.map((tipo) => (
+                                <Dropdown.Item key={tipo.id} eventKey={tipo.nombre}>
+                                    {tipo.nombre}
+                                </Dropdown.Item>
+                            ))}
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>
@@ -101,28 +145,34 @@ function Rooms() {
                 </div>
             </div>
 
-            {mostrarTabla ? (
+            {loading ? (
+                <div className="text-center my-5">
+                    <Spinner animation="border" variant="primary" />
+                </div>
+            ) : error ? (
+                <Alert variant="danger" className="text-center">{error}</Alert>
+            ) : mostrarTabla ? (
                 <PaginatedTable
                     data={habitacionesFiltradas}
                     rowActions={[
                         {
                             icon: 'visibility',
                             label: 'Ver',
-                            onClick: (rowData) => navigate(`/rooms/edit/${rowData.numero}`),
+                            onClick: (rowData) => navigate(`/rooms/edit/${rowData.id}`),
                         },
                     ]}
                 />
             ) : (
                 <Row>
-                    {habitacionesFiltradas.map((hab, idx) => {
-                        const { color, icono } = getEstado(hab.estado);
+                    {habitacionesFiltradas.map((hab) => {
+                        const { color, icono } = getEstado(hab.estadoNombre);
                         return (
-                            <Col xs={6} sm={4} md={4} lg={3} key={idx} className="mb-3">
-                                <Link to={`/rooms/edit/${hab.numero}`} style={{ textDecoration: 'none' }}>
+                            <Col xs={6} sm={4} md={4} lg={3} key={hab.id} className="mb-3">
+                                <Link to={`/rooms/edit/${hab.id}`} style={{ textDecoration: 'none' }}>
                                     <RoomCard
-                                        numero={hab.numero}
-                                        tipo={hab.tipo}
-                                        estado={hab.estado}
+                                        numero={hab.numeroHabitacion}
+                                        tipo={hab.tipoHabitacionNombre}
+                                        estado={hab.estadoNombre}
                                         color={color}
                                         icono={icono}
                                     />
