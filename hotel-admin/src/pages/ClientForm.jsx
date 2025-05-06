@@ -1,64 +1,79 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select'
 import countryList from 'react-select-country-list'
+import axios from '../config/axiosConfig';
 
 const ClientForm = () => {
-  // CLIENTE DE EJEMPLO, BORRAR CUANDO FUNCIONE LA API!!
-  // useEffect y obtener datos del cliente de la db si se le pasa un id
-  let client = {id: 1,
-  nombre: "Ana Martínez",
-  documento: "4567890",
-  tipoDocumento: "CI",
-  ruc: "4567890-1",
-  telefono: "+595 21 123 4567",
-  email: "ana.martinez@example.com",
-  nacionalidad: "Paraguaya"
-}
-  // 
-  const navigate = useNavigate();
-  const countries = useMemo(() => countryList().getData(), []);
-  const tiposDocumento = [
-    { value: 'ci', label: 'C.I.' },
-    { value: 'dni', label: 'DNI' },
-    { value: 'pasaporte', label: 'Pasaporte' },
-    { value: 'licenciaConducir', label: 'Lic. de Conducir' },
-  ];
-  let { id } = useParams();
-  // si existe un id como parametro, es modo edicion
-  let isEditMode = id !== undefined;
 
-  const [clientData, setClientData] = useState({
-    nombre: isEditMode ? client.nombre : '',
-    apellido: isEditMode ? client.apellido : '',
-    email: isEditMode ? client.email : '',
-    telefono: isEditMode ? client.telefono : '',
-    observaciones: isEditMode ? client.observaciones : '',
-    pais: isEditMode ? client.pais : '',
-    documento: isEditMode ? client.documento : '',
-    tipoDocumento: isEditMode ? client.tipoDocumento : '',
-    ruc: isEditMode ? client.ruc : '',
-  })
+  let { id } = useParams();
+   // si existe un id como parametro, es modo edicion
+  let isEditMode = id !== undefined;
+  const navigate = useNavigate();
+  const [client, setClient] = useState({});
+  const [documentTypes, setDocumentTypes] = useState([]);
+  const countries = useMemo(() => countryList().getData(), []);
+  const [clientData, setClientData] = useState({});
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
     setClientData(prev => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    (async () => {
+      try {
+        if (isEditMode) {
+          const response = await axios.get(`/Clientes/${id}`);
+          setClientData(response.data);
+        }
+  
+        const tipos = await axios.get('/TiposDocumentos');
+        setDocumentTypes(tipos.data);
+      } catch (error) {
+        console.error('Error cargando datos:', error);
+      }
+    })();
+  }, [isEditMode, id]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Nuevo cliente:', clientData);
-    if (isEditMode){
-      // hacer put a la api
-    } else {
-      // hacer post a la api
+  
+    try {
+      if (isEditMode) {
+        await axios.put(`/Clientes/${id}`, {
+          nombre: clientData.nombre,
+          apellido: clientData.apellido, 
+          email: clientData.email,
+          telefono: clientData.telefono,
+          numDocumento: clientData.numDocumento,
+          tipoDocumentoId: clientData.tipoDocumentoId,
+          nacionalidad: clientData.nacionalidad,
+          comentarios: clientData.comentarios,
+        });
+      } else {
+        await axios.post('/Clientes', {
+          nombre: clientData.nombre,
+          apellido: clientData.apellido, 
+          email: clientData.email,
+          telefono: clientData.telefono,
+          numDocumento: clientData.numDocumento,
+          tipoDocumentoId: clientData.tipoDocumentoId,
+          nacionalidad: clientData.nacionalidad,
+          comentarios: clientData.comentarios,
+          activo: true
+        });
+      }
+      navigate('/clients');  // redirigir de vuelta después de guardar.
+    } catch (error) {
+      console.error("Error al guardar el cliente:", error);
     }
-    navigate('/clients');  // redirigir de vuelta después de guardar.
   };
+  
 
   return (
     <Container className="py-4">
@@ -101,6 +116,7 @@ const ClientForm = () => {
                   name="email"
                   value={clientData.email}
                   onChange={handleChange}
+                  required
                 />
               </Form.Group>
             </Col>
@@ -114,12 +130,25 @@ const ClientForm = () => {
                   name="telefono"
                   value={clientData.telefono}
                   onChange={handleChange}
+                  required
                 />
               </Form.Group>
             </Col>
             <Col md={6}>
                 <Form.Label>País</Form.Label>
-                <Select options={countries} value={clientData.pais} onChange={handleChange} />
+                <Form.Select
+                name="nacionalidad"
+                value={clientData.nacionalidad || ''}
+                onChange={handleChange}
+                required
+                >
+                <option value="">Seleccione</option>
+                {countries.map((country) => (
+                <option key={country.value} value={country.label}>
+                    {country.label}
+                  </option>
+                ))}
+              </Form.Select>
             </Col>
           </Row>
 
@@ -129,15 +158,28 @@ const ClientForm = () => {
                 <Form.Label>Número de Documento</Form.Label>
                 <Form.Control
                   type="text"
-                  name="documento"
-                  value={clientData.documento}
+                  name="numDocumento"
+                  value={clientData.numDocumento}
                   onChange={handleChange}
+                  required
                 />
               </Form.Group>
             </Col>
             <Col md={2}>
                 <Form.Label>Tipo</Form.Label>
-                <Select options={tiposDocumento} value={clientData.tipoDocumento} onChange={handleChange} />
+                <Form.Select
+                name="tipoDocumentoId"
+                value={clientData.tipoDocumentoId || ''}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccione</option>
+                {documentTypes.map((tipo) => (
+                  <option key={tipo.id} value={tipo.id}>
+                    {tipo.nombre}
+                  </option>
+                ))}
+              </Form.Select>
             </Col>
             <Col md={5}>
               <Form.Group className="mb-3">
@@ -158,8 +200,8 @@ const ClientForm = () => {
             <Form.Control
               as="textarea"
               rows={3}
-              name="observaciones"
-              value={clientData.observaciones}
+              name="comentarios"
+              value={clientData.comentarios}
               onChange={handleChange}
             />
           </Form.Group>
@@ -177,6 +219,5 @@ const ClientForm = () => {
       </Card>
     </Container>
   );
-};
-
+}
 export default ClientForm;

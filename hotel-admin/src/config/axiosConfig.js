@@ -30,11 +30,12 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response, // Si la respuesta es exitosa, devolverla
   (error) => {
+    console.log(error);
     if (error.response && error.response.status === 401) {
       // Si el error es 401 (Unauthorized), redirigir al login
       console.error('Token expirado o no válido');
       // Aquí puedes redirigir a la página de login, por ejemplo:
-      window.location.href = '/login'; // Usar React Router si lo tienes
+      //window.location.href = '/'; // Usar React Router si lo tienes
     }
 
     return Promise.reject(error); // Si es otro tipo de error, rechazarlo

@@ -19,7 +19,7 @@ const LoginPage = () => {
 
     try {
       // Realizar la solicitud a la API de autenticación
-      const response = await axios.post('/Auth/login', { // Cambia la URL de acuerdo con tu ruta de API
+      const response = await axios.post('/Auth/login', { 
         username,
         contrasenha,
       });

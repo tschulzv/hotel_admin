@@ -1,28 +1,35 @@
-import React from 'react' 
+import React, { useState, useEffect } from 'react' 
 import { Container, Row, Col, Button, Card, ListGroup } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from '../config/axiosConfig';
 
 function ClientDetails() {
-  let client = {
-    id: 1,
-    nombre: "Ana",
-    apellido: "Martínez",
-    documento: "4567890",
-    telefono: "+595 21 123 4567",
-    email: "ana.martinez@example.com",
-    nacionalidad: "Paraguaya",
-    observaciones: "Suele hospedarse en habitaciones deluxe"
-  }
 
+  let { id } = useParams();
   const navigate = useNavigate();
+  const [client, setClient] = useState({});
+  const [lastBook, setLastBook] = useState({});
   
   const editClient = () => {
-    navigate("/clients/edit/1")
+    navigate(`/clients/edit/${id}`)
   }
 
   const clientHistory = () => {
-    navigate("/clients/1/history");
+    navigate(`/clients/${id}/history`);
   }
+
+  useEffect(() => {
+      (async () => {
+        try {
+            const response = await axios.get(`/Clientes/${id}`);
+            const last = await axios.get(`/Reservas/cliente/${id}/ultima`);
+            setClient(response.data);
+            setLastBook(last.data);
+          } catch (error) {
+          console.error('Error cargando datos:', error);
+        }
+      })();
+    }, [id]);
 
   return (
     <Container className="py-4">
@@ -41,12 +48,12 @@ function ClientDetails() {
                 <ListGroup variant="flush no-borders">
                   <ListGroup.Item><strong>Nombre:</strong> {client.nombre}</ListGroup.Item>
                   <ListGroup.Item><strong>Apellido:</strong> {client.apellido}</ListGroup.Item>
-                  <ListGroup.Item><strong>Documento:</strong> {client.documento}</ListGroup.Item>
+                  <ListGroup.Item><strong>Documento:</strong> {client.numDocumento}</ListGroup.Item>
                   <ListGroup.Item><strong>Teléfono:</strong> {client.telefono}</ListGroup.Item>
                   <ListGroup.Item><strong>Email:</strong> {client.email}</ListGroup.Item>
                   <ListGroup.Item><strong>Nacionalidad:</strong> {client.nacionalidad}</ListGroup.Item>
                   <ListGroup.Item><strong>Fecha de Registro:</strong> 10/03/2025</ListGroup.Item>
-                  <ListGroup.Item><strong>Observaciones:</strong> {client.observaciones}</ListGroup.Item>
+                  <ListGroup.Item><strong>Observaciones:</strong> {client.comentarios ?? " - "}</ListGroup.Item>
                 </ListGroup>
               </Card.Body>
             </Card>
@@ -57,11 +64,11 @@ function ClientDetails() {
               <Card.Body>
                 <h4 className="mb-3">Última reserva</h4>
                 <ListGroup variant="flush no-borders">
-                  <ListGroup.Item><strong>Código:</strong> AX12345</ListGroup.Item>
-                  <ListGroup.Item><strong>Habitación(es):</strong> 201</ListGroup.Item>
-                  <ListGroup.Item><strong>Check-In:</strong> 12/04/2025</ListGroup.Item>
-                  <ListGroup.Item><strong>Check-Out:</strong> 14/04/2025</ListGroup.Item>
-                  <ListGroup.Item><strong>Estado:</strong> Finalizada</ListGroup.Item>
+                  <ListGroup.Item><strong>Código:</strong>{lastBook.codigo}</ListGroup.Item>
+                  <ListGroup.Item><strong>Habitación(es):</strong></ListGroup.Item>
+                  <ListGroup.Item><strong>Check-In:</strong>{lastBook.fechaIngreso}</ListGroup.Item>
+                  <ListGroup.Item><strong>Check-Out:</strong>{lastBook.fechaSalida}</ListGroup.Item>
+                  <ListGroup.Item><strong>Estado:</strong></ListGroup.Item>
                 </ListGroup>
               </Card.Body>
             </Card>
