@@ -48,20 +48,27 @@ const RoomForm = ({ onSubmit }) => {
 
   // Simula la carga de datos de la habitación en modo edición
   useEffect(() => {
+    const fetchRoomData = async () => {
+      try {
+        const response = await axios.get(`Habitacions/${id}`);
+        const data = response.data;
+  
+        setRoomData({
+          numero: data.numeroHabitacion,
+          tipoHabitacionId: data.tipoHabitacionId,
+          maxOcupacion: data.maxOcupacion || '',
+          estadoHabitacionId: data.estadoHabitacionId,
+          observaciones: data.observaciones || ''
+        });
+      } catch (error) {
+        console.error("Error al cargar la habitación:", error);
+      }
+    };
+  
     if (isEditMode) {
-      // Simula datos de una habitación en modo edición
-      const fetchedRoomData = {
-        numero: '101',
-        tipo: 'Deluxe',
-        maxOcupacion: 4,
-        tamaño: '40m²',
-        camas: ['King'],
-        observaciones: 'Habitación con vista al mar.',
-        mostrarEnWeb: true,
-      };
-      setRoomData(fetchedRoomData);
+      fetchRoomData();
     }
-  }, [isEditMode]);
+  }, [id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
