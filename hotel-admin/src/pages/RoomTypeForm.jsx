@@ -50,6 +50,7 @@ const RoomTypeNewPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const payload = {
       Nombre: roomTypeData.nombre,
       Descripcion: roomTypeData.descripcion,
@@ -57,16 +58,25 @@ const RoomTypeNewPage = () => {
       CantidadDisponible: parseInt(roomTypeData.cantidadDisponible),
       MaximaOcupacion: parseInt(roomTypeData.maximaOcupacion),
       Tamanho: parseInt(roomTypeData.tamanho),
-      Servicios: roomTypeData.servicios.map(id => ({ Id: id }))
+      Servicios: roomTypeData.servicios.map(id => ({
+        Id: id,
+        Nombre: servicios.find(s => s.id === id)?.nombre,  // Agregar el nombre del servicio
+        IconName: servicios.find(s => s.id === id)?.iconName  // Agregar el icono del servicio
+      }))
     };
-
+  
     try {
-      await axios.post('/api/TiposHabitaciones', payload);
+      await axios.post('TiposHabitaciones', payload);
       navigate('/rooms');
     } catch (error) {
-      console.error('Error creando el tipo de habitación:', error);
+      if (error.response) {
+        console.error('Detalles del error 400:', error.response.data);
+      } else {
+        console.error('Error creando el tipo de habitación:', error);
+      }
     }
   };
+  
 
   return (
     <Container className="py-4">
