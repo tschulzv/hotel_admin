@@ -52,7 +52,7 @@ function ClientDetails() {
                   <ListGroup.Item><strong>Teléfono:</strong> {client.telefono}</ListGroup.Item>
                   <ListGroup.Item><strong>Email:</strong> {client.email}</ListGroup.Item>
                   <ListGroup.Item><strong>Nacionalidad:</strong> {client.nacionalidad}</ListGroup.Item>
-                  <ListGroup.Item><strong>Fecha de Registro:</strong> 10/03/2025</ListGroup.Item>
+                  <ListGroup.Item><strong>Fecha de Registro:</strong> {client.creacion}</ListGroup.Item>
                   <ListGroup.Item><strong>Observaciones:</strong> {client.comentarios ?? " - "}</ListGroup.Item>
                 </ListGroup>
               </Card.Body>
