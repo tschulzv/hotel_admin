@@ -68,7 +68,7 @@ const Clients = () => {
             icon: <i className="material-icons">visibility</i>, 
             label: "Ver",
             onClick: (item, i) => {
-              navigate("/clients/1");
+              navigate(`/clients/${item.id}`);
             }, 
         },
         {
