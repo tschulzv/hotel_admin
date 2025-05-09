@@ -1,56 +1,37 @@
-import React from 'react'
-import { Container, Row, Col, Card, ListGroup,Accordion } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Container, Row, Col, Card, ListGroup, Accordion } from 'react-bootstrap'
+import { useParams, useNavigate } from 'react-router-dom'
+import axios from '../config/axiosConfig'
 
 function ReservationDetails() {
-  let reservation = {
-    id: 1,
-    nombre: "María Pérez",
-    codigo: "ID12345",
-    checkIn: "2025-04-10",
-    checkOut: "2025-04-15",
-    llegadaEstimada: "14:00",
-    estado: "Activa",
-    observaciones: "Solicitó servicio de desayuno a la habitación"
-  }
-  let details = [
-    {
-        numHabitacion: "101",
-        cantidadAdultos: 1,
-        cantidadNinhos: 1,
-        pension: "Media pensión", 
-        huespedes: [{
-            nombre: "Juan Perez",
-            documento: 123456
-        }, {
-            nombre: "Juana Perez",
-            documento: 111111
-        }]
-    },
-    {
-        numHabitacion: "102",
-        cantidadAdultos: 2,
-        cantidadNinhos: 1,
-        pension: "Media pensión",
-        huespedes: [{
-            nombre: "Maria Perez",
-            documento: 3333333
-        }, {
-            nombre: "Esteban Gimenez",
-            documento: 444444
-        }, {
-            nombre: "Ana Gimenez",
-            documento: 555555
-        }]
-    }
-  ]
+  const { id } = useParams() // id de la reserva pasada en la URL
+  const [reservation, setReservation] = useState(null)
+  const [details, setDetails] = useState([])
+  const navigate = useNavigate()
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    axios.get(`/Reservas/${id}`)
+      .then(response => {
+        setReservation(response.data)
+        setDetails(response.data.detalles || [])
+      })
+      .catch(error => {
+        console.error("Error al obtener la reserva:", error)
+      })
+  }, [id])
+
+  if (!reservation) {
+    return (
+      <Container className="py-4" style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+        <div>Cargando...</div>
+      </Container>
+    )
+  }
 
   return (
     <Container className="py-4" style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
       {/* Título + Icono volver */}
-      <div className='mb-4 d-flex align-items-center'>
+      <div className="mb-4 d-flex align-items-center">
         <span
           className="material-icons me-2"
           role="button"
@@ -71,48 +52,49 @@ function ReservationDetails() {
             <ListGroup variant="flush no-borders">
               <ListGroup.Item><strong>Titular:</strong> {reservation.nombre}</ListGroup.Item>
               <ListGroup.Item><strong>Código:</strong> {reservation.codigo}</ListGroup.Item>
-              <ListGroup.Item><strong>Check-In:</strong> {reservation.checkIn}</ListGroup.Item>
-              <ListGroup.Item><strong>Check-Out:</strong> {reservation.checkOut}</ListGroup.Item>
+              <ListGroup.Item><strong>Check-In:</strong> {reservation.fechaIngreso}</ListGroup.Item>
+              <ListGroup.Item><strong>Check-Out:</strong> {reservation.fechaSalida}</ListGroup.Item>
               <ListGroup.Item><strong>Hora estimada de llegada:</strong> {reservation.llegadaEstimada}</ListGroup.Item>
               <ListGroup.Item><strong>Estado:</strong> {reservation.estado}</ListGroup.Item>
-              <ListGroup.Item><strong>Observaciones:</strong> {reservation.observaciones}</ListGroup.Item>
+              <ListGroup.Item><strong>Observaciones:</strong> {reservation.comentarios}</ListGroup.Item>
             </ListGroup>
           </Card>
         </Col>
 
-        {/* acordeon de habitaciones */}
+        {/* Acordeón de Habitaciones */}
         <Col md={6}>
-        <h4 className="mb-3">Habitaciones</h4>
-{
-  reservation.estado === 'Pendiente' ? (
-    <h5 className="text-muted">Aún no se asignaron habitaciones</h5>
-  ) : (
-    <Accordion alwaysOpen defaultActiveKey="0">
-      {details.map((detail, i) => (
-        <Accordion.Item eventKey={i.toString()} key={i}>
-          <Accordion.Header>
-            Habitación {detail.numHabitacion}
-          </Accordion.Header>
-          <Accordion.Body>
-            <ListGroup variant="flush no-borders" className="no-item-borders">
-              <ListGroup.Item><strong>Cantidad de Adultos:</strong> {detail.cantidadAdultos}</ListGroup.Item>
-              <ListGroup.Item><strong>Cantidad de Niños:</strong> {detail.cantidadNinhos}</ListGroup.Item>
-              <ListGroup.Item><strong>Tipo de Pensión:</strong> {detail.pension}</ListGroup.Item>
-              {/*<ListGroup.Item>
-                <strong>Huéspedes:</strong>
-                <ul className="mb-0 ps-3">
-                  {detail.huespedes.map((h, idx) => (
-                    <li key={idx}>{h.nombre} – {h.documento}</li>
-                  ))}
-                </ul>
-              </ListGroup.Item>*/}
-            </ListGroup>
-          </Accordion.Body>
-        </Accordion.Item>
-      ))}
-    </Accordion>
-  )
-}
+          <h4 className="mb-3">Habitaciones</h4>
+          {reservation.estado === 'Pendiente' || details.length === 0 ? (
+            <h5 className="text-muted">Aún no se asignaron habitaciones</h5>
+          ) : (
+            <Accordion alwaysOpen defaultActiveKey="0">
+              {details.map((detail, i) => (
+                <Accordion.Item eventKey={i.toString()} key={i}>
+                  <Accordion.Header>
+                    {/* Si la reserva incluye la información de la habitación, se muestra el número y tipo; sino se muestra el id */}
+                    Habitación {detail.habitacion && detail.habitacion.numeroHabitacion 
+                      ? `#${detail.habitacion.numeroHabitacion} - ${detail.habitacion.tipoHabitacionNombre}` 
+                      : detail.habitacionId}
+                  </Accordion.Header>
+                  <Accordion.Body>
+                    <ListGroup variant="flush no-borders" className="no-item-borders">
+                      <ListGroup.Item>
+                        <strong>Cantidad de Adultos:</strong> {detail.cantidadAdultos}
+                      </ListGroup.Item>
+                      <ListGroup.Item>
+                        <strong>Cantidad de Niños:</strong> {detail.cantidadNinhos}
+                      </ListGroup.Item>
+                      <ListGroup.Item>
+                        <strong>Tipo de Pensión:</strong> {detail.pension && detail.pension.nombre 
+                          ? detail.pension.nombre 
+                          : detail.pensionId}
+                      </ListGroup.Item>
+                    </ListGroup>
+                  </Accordion.Body>
+                </Accordion.Item>
+              ))}
+            </Accordion>
+          )}
         </Col>
       </Row>
     </Container>
