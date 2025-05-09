@@ -51,12 +51,16 @@ const Clients = () => {
   // funcion para manejar el cierre del modal
   const handleClose = () => setShow(false);
   
-  const handleEliminar = () => {
-    let updatedData = filteredData.filter(client => client.id !== filaSeleccionada.id);
-    setFilteredData(updatedData);
-    // llamado a API ]!!!!
-    setShow(false);
-  };
+  const handleEliminar = async () => {
+    try {
+      await axios.delete(`/Clientes/${filaSeleccionada.id}`);
+      let updatedData = filteredData.filter(client => client.id !== filaSeleccionada.id);
+      setFilteredData(updatedData);
+      setShow(false);
+    } catch (error) {
+      console.error('Error al intentar eliminar el cliente:', error);
+    }
+  }
   
   // array de acciones para la tabla
   const actions = [
