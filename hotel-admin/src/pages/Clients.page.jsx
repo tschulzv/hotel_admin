@@ -75,12 +75,7 @@ const Clients = () => {
             icon: <i className="material-icons">edit</i>, // o el nombre del ícono
             label: "Editar",
             onClick: (item, i) => {
-              // CAMBIAR CUANDO FUNCIONE LA API!!!!
-              navigate("/clients/edit/1");
-              /*let updatedData = filteredData.map(client => 
-                client.id === updatedItem.id ? updatedItem : client
-              );
-              setFilteredData(updatedData);*/
+              navigate(`/clients/edit/${item.id}`);
             }
         },
         {

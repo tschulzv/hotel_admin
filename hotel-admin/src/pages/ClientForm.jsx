@@ -45,15 +45,18 @@ const ClientForm = () => {
   
     try {
       if (isEditMode) {
-        await axios.put(`/Clientes/${id}`, {
+        await axios.put(`/Clientes/${id}`, {//La solictud put solo funciona pasandole todos los parametros
+          id: Number(id),
           nombre: clientData.nombre,
-          apellido: clientData.apellido, 
+          apellido: clientData.apellido,
           email: clientData.email,
           telefono: clientData.telefono,
           numDocumento: clientData.numDocumento,
+          ruc: clientData.ruc,
           tipoDocumentoId: clientData.tipoDocumentoId,
           nacionalidad: clientData.nacionalidad,
           comentarios: clientData.comentarios,
+          activo: true
         });
       } else {
         await axios.post('/Clientes', {
