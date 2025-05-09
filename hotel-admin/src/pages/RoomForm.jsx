@@ -22,6 +22,8 @@ const RoomForm = ({ onSubmit }) => {
     observaciones: '',
     mostrarEnWeb: false,
   });
+
+
   useEffect(() => {
     const fetchFiltros = async () => {
       try {
@@ -81,11 +83,14 @@ const RoomForm = ({ onSubmit }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
-      NumeroHabitacion: parseInt(roomData.numero),
-      TipoHabitacionId: roomData.tipoHabitacionId,
-      EstadoHabitacionId: roomData.estadoHabitacionId,
-      Observaciones: roomData.observaciones,
-      Activo: roomData.activo,
+      id: parseInt(id),
+      numeroHabitacion: parseInt(roomData.numero),
+      tipoHabitacionId: parseInt(roomData.tipoHabitacionId),
+      tipoHabitacionNombre: '',
+      estadoHabitacionId: parseInt(roomData.estadoHabitacionId),
+      estadoNombre: '',
+      observaciones: roomData.observaciones,
+      activo: roomData.activo ?? true,
     };
     
     try {
@@ -100,7 +105,6 @@ const RoomForm = ({ onSubmit }) => {
     }
 
     onSubmit && onSubmit(roomData);
-    navigate('/rooms'); // Redirige a la lista de habitaciones después de guardar
   };
 
   return (
