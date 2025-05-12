@@ -31,13 +31,19 @@ function PaginatedTable({ data, rowActions, rowsPerPage = 10 }) {
     setCurrentPage(pageNumber);
   };
 
+  // convierte nombres de columnas ej camelCase -> Camel Case
+  const convertCamelCase = (text) => {
+    const withSpaces = text.replace(/([A-Z])/g, ' $1');
+    return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
+  }
+
   return (
     <>
       <Table bordered hover responsive>
         <thead>
         <tr>
             {columns.map((col) => (
-              <th key={col}>{col.charAt(0).toUpperCase() + col.slice(1)}</th>
+              <th key={col}>{convertCamelCase(col)}</th>
             ))}
             <th>Acciones</th>
           </tr>

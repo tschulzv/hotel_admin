@@ -17,8 +17,6 @@ const Reservations = () => {
     const [searchTerm, setSearchTerm] = useState();
     const [sortKey, setSort] = useState(["codigo"]);
 
-
-
     useEffect(() => {
       (async () => {
         try {

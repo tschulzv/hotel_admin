@@ -4,6 +4,7 @@ import PaginatedTable from '../components/PaginatedTable';
 import { useNavigate } from 'react-router-dom';
 import TableFilterBar from '../components/TableFilterBar';
 import axios from '../config/axiosConfig';
+import { format, parseISO, isValid } from 'date-fns';
 
 const Clients = () => {
   const [originalData, setOriginalData] = useState([]);
@@ -20,9 +21,16 @@ const Clients = () => {
     (async () => {
       try {
           const response = await axios.get(`/Clientes`);
-          console.log(response.data);
-          setOriginalData(response.data);
-          setFilteredData(response.data);
+          //console.log(response.data)
+          const limpio = response.data.map(({ activo, tipoDocumentoId, creacion, ...client }) => {
+            const parsedDate = parseISO(creacion);
+            return {
+              ...client,
+              creacion: isValid(parsedDate) ? format(parsedDate, 'dd/MM/yyyy') : ''
+            };
+          });
+          setOriginalData(limpio);
+          setFilteredData(limpio);
           setLoading(false);
       } catch (error) {
         console.error('Error cargando datos:', error);
