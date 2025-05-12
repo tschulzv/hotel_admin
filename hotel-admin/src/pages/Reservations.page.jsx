@@ -1,18 +1,18 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
-import {Container, Modal, Button, Form} from 'react-bootstrap';
+import { Container, Modal, Button, Form } from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 import TableFilterBar from '../components/TableFilterBar';
 import axios from '../config/axiosConfig';
 
 const Reservations = () => {
   const [originalData, setOriginalData] = useState([])
-  
+
 
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const fechaSeleccionada = queryParams.get('fecha'); 
+  const fechaSeleccionada = queryParams.get('fecha');
   const [searchTerm, setSearchTerm] = useState();
   const [sortKey, setSort] = useState(["id"]);
   const [filteredData, setFilteredData] = useState(originalData);
@@ -20,149 +20,210 @@ const Reservations = () => {
   const [show, setShow] = useState(false); // mostrar o no el modal
   const [razon, setRazon] = useState('true');
   const [reservas, setReservas] = useState([])
+  const [selectedDetalleId, setSelectedDetalleId] = useState('');
   useEffect(() => {
     axios.get("Reservas")
       .then(response => {
         setReservas(response.data);
         setFilteredData(response.data);
         console.log(response.data);
-        setOriginalData(response.data); 
+        setOriginalData(response.data);
       })
       .catch(error => console.error("Error obteniendo reservas:", error));
   }, []);
-  
+
   // array de acciones para la tabla
   const actions = [
     {
-        icon: <i className="material-icons">visibility</i>,
-        label: "Ver",
-        onClick: (rowData) => {
-            navigate(`/reservations/${rowData.id}`);
-        },
+      icon: <i className="material-icons">visibility</i>,
+      label: "Ver",
+      onClick: (rowData) => {
+        navigate(`/reservations/${rowData.id}`);
+      },
     },
     {
-        icon: <i className="material-icons">edit</i>,
-        label: "Editar",
-        onClick: (rowData) => {
-            navigate(`/reservations/edit/${rowData.id}`);
-        },
+      icon: <i className="material-icons">edit</i>,
+      label: "Editar",
+      onClick: (rowData) => {
+        navigate(`/reservations/edit/${rowData.id}`);
+      },
     },
     {
-        icon: <i className="material-icons">cancel</i>,
-        label: "Cancelar",
-        onClick: (rowData) => {
-            setFilaSeleccionada(rowData);
-            setRazon('');
-            setShow(true);
-        }
+      icon: <i className="material-icons">cancel</i>,
+      label: "Cancelar",
+      onClick: (rowData) => {
+        // Buscar la reserva original (sin formatear) a partir de su id
+        const rawReserva = originalData.find(r => r.id === rowData.id);
+        setFilaSeleccionada(rawReserva);
+        console.log("Reserva seleccionada (raw):", rawReserva);
+        setRazon('');
+        setShow(true);
+      }
     }
-];
+  ];
 
-       
-        useEffect(() => {
-            // Filtrar los datos originales según la fecha seleccionada y estado de reserva
-            if (fechaSeleccionada) {
-              const reservasFiltradas = originalData.filter((reserva) =>
-                reserva.checkIn <= fechaSeleccionada && 
-                reserva.checkOut >= fechaSeleccionada &&
-                reserva.estado !== 'Cancelada' &&
-                reserva.estado !== 'Finalizada'
-              );
-              setFilteredData(reservasFiltradas);
-            } else {
-              // Si no hay fecha seleccionada, mostramos todos los datos originales
-              setFilteredData(originalData);
-            }
-          }, [fechaSeleccionada]);
+  // Define "detallesArray" solo si "filaSeleccionada" existe; de lo contrario, es un arreglo vacío
+let detallesArray = [];
+if (filaSeleccionada) {
+  if (Array.isArray(filaSeleccionada.detalles)) {
+    detallesArray = filaSeleccionada.detalles.filter(det => det.activo !== false);
+  } else if (typeof filaSeleccionada.detalles === 'string') {
+    // Suponiendo el formato "Habitación: 4" para transformar en un arreglo con un solo elemento
+    detallesArray = [{
+      id: filaSeleccionada.id,
+      habitacion: {
+        numeroHabitacion: filaSeleccionada.detalles.replace("Habitación:", "").trim(),
+        tipoHabitacionNombre: ""
+      },
+      habitacionId: filaSeleccionada.detalles.replace("Habitación:", "").trim(),
+      activo: true
+    }];
+  }
+}
 
-    
-    const onSearch = () => { 
+  useEffect(() => {
+    // Filtrar los datos originales según la fecha seleccionada y estado de reserva
+    if (fechaSeleccionada) {
+      const reservasFiltradas = originalData.filter((reserva) =>
+        reserva.checkIn <= fechaSeleccionada &&
+        reserva.checkOut >= fechaSeleccionada &&
+        reserva.estado !== 'Cancelada' &&
+        reserva.estado !== 'Finalizada'
+      );
+      setFilteredData(reservasFiltradas);
+    } else {
+      // Si no hay fecha seleccionada, mostramos todos los datos originales
+      setFilteredData(originalData);
+
+    }
+  }, [fechaSeleccionada]);
+
+
+  const onSearch = () => {
     // filtramos los datos
-      setFilteredData(originalData.filter((client) =>
+    setFilteredData(originalData.filter((client) =>
       Object.values(client)
         .join(' ')
         .toLowerCase()
         .includes(searchTerm.toLowerCase())))
-    }
-  
-    const onBtnClick = () => {
-      navigate('/reservations/new')
-    }
-  
-    // revierte los datos filtrados en la busqueda a los originales
-    const clearSearch = () => {
-      setFilteredData(originalData);
+  }
+
+  const onBtnClick = () => {
+    navigate('/reservations/new')
+  }
+
+  // revierte los datos filtrados en la busqueda a los originales
+  const clearSearch = () => {
+    setFilteredData(originalData);
+  }
+
+  // funcion para manejar el cierre del modal
+  const handleClose = () => setShow(false);
+
+  const handleEliminar = () => {
+    if (!selectedDetalleId) {
+      alert("Seleccione una habitación a cancelar");
+      return;
     }
 
-     // funcion para manejar el cierre del modal
-  const handleClose = () => setShow(false);
-  
-  const handleEliminar = () => {
-    // Actualizamos los datos localmente
-    let updatedData = filteredData.map(reserv =>
-      reserv.id === filaSeleccionada.id ? { ...reserv, estado: 'Cancelado' } : reserv
-    );
-    setFilteredData(updatedData);
-  
-    // Preparamos el payload para la cancelación
     const payload = {
-      // No enviamos 'id' porque se genera automáticamente.
-      detalleReservaId: filaSeleccionada.id, // Asumimos que este campo es el id de la reserva o detalle a cancelar
-      motivo: razon, // El motivo que el usuario ingresó
+      detalleReservaId: parseInt(selectedDetalleId),
+      motivo: razon,
       activo: true
     };
-  
-    // Enviamos la cancelación a la API
+
     axios.post("/Cancelacions", payload)
       .then(response => {
-        console.log("Cancelación realizada:", response.data);
+        // Convertir filaSeleccionada.detalles a arreglo, en caso de ser string
+        let currentDetalles = [];
+        if (filaSeleccionada) {
+          if (Array.isArray(filaSeleccionada.detalles)) {
+            currentDetalles = filaSeleccionada.detalles;
+          } else if (typeof filaSeleccionada.detalles === 'string') {
+            // Suponiendo el formato "Habitación: 4"
+            currentDetalles = [{
+              id: filaSeleccionada.id,
+              habitacion: {
+                numeroHabitacion: filaSeleccionada.detalles.replace("Habitación:", "").trim(),
+                tipoHabitacionNombre: ""
+              },
+              habitacionId: filaSeleccionada.detalles.replace("Habitación:", "").trim(),
+              activo: true
+            }];
+          }
+        }
+
+        const updatedDetalles = currentDetalles.filter(
+          (detalle) => detalle.id !== parseInt(selectedDetalleId)
+        );
+        
+        const updatedReserva = { ...filaSeleccionada, detalles: updatedDetalles };
+
+        // Actualizar tanto filteredData como originalData
+        const updateFn = (reservasArray) =>
+          reservasArray.map((reserv) =>
+            reserv.id === filaSeleccionada.id ? updatedReserva : reserv
+          );
+        setFilteredData(prev => updateFn(prev));
+        setOriginalData(prev => updateFn(prev));
+
+        // Reiniciar el modal
+        setSelectedDetalleId('');
+        setRazon('');
+        setShow(false);
       })
       .catch(error => {
-        console.error("Error al cancelar reserva:", error);
+        console.error("Error al cancelar la habitación:", error);
       });
-  
-    // Cerramos el modal
-    setShow(false);
   };
 
-     // sort options
+  // sort options
   const sortOptions = [
     { value: 'id', label: 'ID' },
     { value: 'nombre', label: 'Nombre' },
     { value: 'codigo', label: 'Código' },
     { value: 'habitaciones', label: 'Habitación(es)' },
-    { value: 'checkIn', label: 'Check-In'},
-    { value: 'checkOut', label: 'Check-Out'},
+    { value: 'checkIn', label: 'Check-In' },
+    { value: 'checkOut', label: 'Check-Out' },
   ];
-  
-  //  ordenar los datos
+
+  // Ordenar los datos
   let sortedData = [...filteredData].sort((a, b) => {
     const aVal = a[sortKey];
     const bVal = b[sortKey];
-  
-    // Si ambos son números válidos
+
     if (!isNaN(aVal) && !isNaN(bVal)) {
       return Number(aVal) - Number(bVal);
     }
-  
-    // Si ambos son fechas válidas
+
     if (!isNaN(Date.parse(aVal)) && !isNaN(Date.parse(bVal))) {
       return new Date(aVal) - new Date(bVal);
     }
-  
-    // Comparar como strings por defecto
+
     const aStr = aVal?.toString().toLowerCase() || "";
     const bStr = bVal?.toString().toLowerCase() || "";
     return aStr.localeCompare(bStr);
   });
-  
-  const sortedDataFormatted = sortedData.map((reserva) => ({
+
+  // Filtrar reservas: si tienen detalles y todos están inactivos, se omite
+  let sortedDataFinal = sortedData.filter(reserva => {
+    if (reserva.detalles && reserva.detalles.length > 0) {
+      return reserva.detalles.some(det => det.activo !== false);
+    }
+    return true; // si no tiene detalles o está vacío, se muestra la reserva
+  });
+
+  // Formatear los datos, excluyendo detalles inactivos
+  const sortedDataFormatted = sortedDataFinal.map((reserva) => ({
     ...reserva,
-    detalles: reserva.detalles 
-      ? reserva.detalles.map(det => `Habitación: ${det.habitacionId}`).join(", ")
+    detalles: reserva.detalles && reserva.detalles.length > 0
+      ? reserva.detalles
+        .filter(det => det.activo !== false)
+        .map(det => `Habitación: ${det.habitacionId}`)
+        .join(", ")
       : ""
   }));
-  
+
   // formatear la fecha
   const obtenerFormatoFecha = (fechaStr) => {
     const [anio, mes, dia] = fechaStr.split('-').map(Number);
@@ -170,43 +231,66 @@ const Reservations = () => {
 
     const opcionesDia = { weekday: 'long' };
     const opcionesFecha = { year: 'numeric', month: '2-digit', day: '2-digit' };
-  
+
     const diaSemana = fecha.toLocaleDateString('es-ES', opcionesDia);
     const fechaFormateada = fecha.toLocaleDateString('es-ES', opcionesFecha);
-  
+
     return {
       diaSemana: diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1),
       fechaFormateada,
     };
-  };   
+  };
 
 
 
   return (
     <Container className="px-5" fluid>
-         <h1>Reservas</h1>
-         {/*Subtitulo de fecha y dia seleccionados */}
-         {fechaSeleccionada && (
-          <div className="mb-3">
-            <h5 className="text-muted">
-              Día: {obtenerFormatoFecha(fechaSeleccionada).diaSemana}<br />
-              Fecha: {obtenerFormatoFecha(fechaSeleccionada).fechaFormateada}
-            </h5>
-          </div>
-        )}
-         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Reserva" onBtnClick={onBtnClick} />
-        <PaginatedTable data={sortedDataFormatted} rowsPerPage={10} rowActions={actions}/>
+      <h1>Reservas</h1>
+      {/*Subtitulo de fecha y dia seleccionados */}
+      {fechaSeleccionada && (
+        <div className="mb-3">
+          <h5 className="text-muted">
+            Día: {obtenerFormatoFecha(fechaSeleccionada).diaSemana}<br />
+            Fecha: {obtenerFormatoFecha(fechaSeleccionada).fechaFormateada}
+          </h5>
+        </div>
+      )}
+      <TableFilterBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} onSearch={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Reserva" onBtnClick={onBtnClick} />
+      <PaginatedTable data={sortedDataFormatted} rowsPerPage={10} rowActions={actions} />
 
-        <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Confirmar eliminación</Modal.Title>
+          <Modal.Title>Confirmar cancelación</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {filaSeleccionada && (
             <>
-              <p> ¿Estás seguro de que deseas cancelar la reserva?</p>
-              <p><strong>Cliente:</strong> {filaSeleccionada.nombre} <strong>Habitación(es):</strong> {filaSeleccionada.habitaciones}</p>
-              <Form.Group controlId="razonEliminacion">
+              <p>¿Estás seguro de que deseas cancelar una habitación de la reserva?</p>
+              <p>
+                <strong>Cliente:</strong> {filaSeleccionada.nombre}
+              </p>
+              <Form.Group controlId="detalleCancelacion" className="mb-3">
+                <Form.Label>Seleccione la Habitación a cancelar</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={selectedDetalleId}
+                  onChange={(e) => setSelectedDetalleId(e.target.value)}
+                  required
+                >
+                  <option value="">Seleccione...</option>
+                  {detallesArray.map(det => {
+                    const habInfo = det.habitacion && det.habitacion.numeroHabitacion
+                      ? `#${det.habitacion.numeroHabitacion} - ${det.habitacion.tipoHabitacionNombre}`.trim()
+                      : det.habitacionId;
+                    return (
+                      <option key={det.id} value={det.id}>
+                        Habitación {habInfo}
+                      </option>
+                    );
+                  })}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="razonEliminacion" className="mb-3">
                 <Form.Label>Razón de la cancelación</Form.Label>
                 <Form.Control
                   as="textarea"
@@ -231,5 +315,7 @@ const Reservations = () => {
     </Container>
   )
 }
+
+
 
 export default Reservations;
