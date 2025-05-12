@@ -4,6 +4,8 @@ import {Container, Modal, Button, Form} from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 import TableFilterBar from '../components/TableFilterBar';
 import axios from '../config/axiosConfig';
+import Badge from 'react-bootstrap/Badge';
+import { format, parseISO, isValid } from 'date-fns';
 
 const Reservations = () => {
   const [originalData, setOriginalData] = useState([])
@@ -20,13 +22,41 @@ const Reservations = () => {
   const [show, setShow] = useState(false); // mostrar o no el modal
   const [razon, setRazon] = useState('true');
   const [reservas, setReservas] = useState([])
+
+  const getStatusBadge = (statusId)=>{
+    switch (statusId) {
+      case 1:
+        return <Badge bg="warning">Pendiente</Badge>
+      case 2:
+        return <Badge bg="success">Confirmada</Badge>
+      case 3:
+        return <Badge bg="danger">Cancelada</Badge>
+      case 4:
+        return <Badge bg="primary">Check-In</Badge>
+      case 5:
+        return <Badge bg="secondary">Check-Out</Badge>
+    }
+  }
+
   useEffect(() => {
     axios.get("Reservas")
       .then(response => {
-        setReservas(response.data);
-        setFilteredData(response.data);
-        console.log(response.data);
-        setOriginalData(response.data); 
+        console.log(response.data)
+        const limpio = response.data.map(({fechaIngreso, fechaSalida, estadoId, comentarios, ...reserva}) => {
+        const parsedIngreso = parseISO(fechaIngreso);
+        const parsedSalida = parseISO(fechaSalida);
+        return {
+            ...reserva,
+            fechaIngreso: isValid(parsedIngreso) ? format(parsedIngreso, 'dd/MM/yyyy') : '',
+            fechaSalida: isValid(parsedSalida) ? format(parsedSalida, 'dd/MM/yyyy') : '',
+            comentarios,
+            estadoId: getStatusBadge(estadoId)
+          };
+        });
+        setReservas(limpio);
+        setFilteredData(limpio);
+        console.log(limpio);
+        setOriginalData(limpio); 
       })
       .catch(error => console.error("Error obteniendo reservas:", error));
   }, []);
@@ -58,7 +88,6 @@ const Reservations = () => {
     }
 ];
 
-       
         useEffect(() => {
             // Filtrar los datos originales según la fecha seleccionada y estado de reserva
             if (fechaSeleccionada) {
