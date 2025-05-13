@@ -202,7 +202,7 @@ function Rooms() {
                                 return grupos;
                             }, {})
                         )
-                            .sort(([a], [b]) => b - a) // Ordenar pisos de mayor a menor
+                            .sort(([a], [b]) => a - b) // Ordenar pisos de mayor a menor
                             .map(([piso, habitaciones]) => (
                                 <div key={piso} className="mb-4">
                                     <h5 className="mb-3">
