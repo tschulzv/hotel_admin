@@ -82,8 +82,8 @@ const RoomForm = ({ onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      id: parseInt(id),
+    // Datos a enviar para hacer el POST
+    const commonPayload = {
       numeroHabitacion: parseInt(roomData.numero),
       tipoHabitacionId: parseInt(roomData.tipoHabitacionId),
       tipoHabitacionNombre: '',
@@ -95,9 +95,16 @@ const RoomForm = ({ onSubmit }) => {
     
     try {
       if (isEditMode) {
+        // incluyo el id para el hacer el PUT
+        const payload = {
+          id: parseInt(id),
+          ...commonPayload
+        };
+        // En modo edicion, solo actualiza los campos que han cambiado
         await axios.put(`Habitacions/${id}`, payload);
-      } else {
-        await axios.post("Habitacions", payload);
+      }
+      else {
+        await axios.post("Habitacions", commonPayload);
       }
       navigate('/rooms');
     } catch (error) {
@@ -105,6 +112,7 @@ const RoomForm = ({ onSubmit }) => {
     }
 
     onSubmit && onSubmit(roomData);
+    navigate('/rooms');
   };
 
   return (

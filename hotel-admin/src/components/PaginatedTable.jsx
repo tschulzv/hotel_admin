@@ -15,7 +15,9 @@ ROWS PER PAGE: recibe la cantidad de filas que se quiere mostrar por página, po
 
 */
 
+
 function PaginatedTable({ headers, data, rowActions, rowsPerPage = 10 }) {
+
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
@@ -36,7 +38,6 @@ function PaginatedTable({ headers, data, rowActions, rowsPerPage = 10 }) {
   : data.length > 0
     ? Object.keys(data[0]).map(key => ({ key, label: convertCamelCase(key) }))
     : [];
-
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
