@@ -163,27 +163,50 @@ function Rooms() {
                     ]}
                 />
             ) : (
-                <Row>
-                    {habitacionesFiltradas.map((hab) => {
-                        const { color, icono } = getEstado(hab.estadoNombre);
-                        return (
-                            <Col xs={6} sm={4} md={4} lg={3} key={hab.id} className="mb-3">
-                                <Link to={`/rooms/edit/${hab.id}`} style={{ textDecoration: 'none' }}>
-                                    <RoomCard
-                                        numero={hab.numeroHabitacion}
-                                        tipo={hab.tipoHabitacionNombre}
-                                        estado={hab.estadoNombre}
-                                        color={color}
-                                        icono={icono}
-                                    />
-                                </Link>
-                            </Col>
-                        );
-                    })}
-                    {habitacionesFiltradas.length === 0 && (
+                <>
+                    {habitacionesFiltradas.length === 0 ? (
                         <p className="text-center mt-4">No hay habitaciones que coincidan con los filtros.</p>
+                    ) : (
+                        Object.entries(
+                            habitacionesFiltradas.reduce((grupos, hab) => {
+                                const numero = parseInt(hab.numeroHabitacion, 10);
+                                const piso = Math.floor(numero / 100);
+                                if (!grupos[piso]) grupos[piso] = [];
+                                grupos[piso].push(hab);
+                                return grupos;
+                            }, {})
+                        )
+                            .sort(([a], [b]) => b - a) // Ordenar pisos de mayor a menor
+                            .map(([piso, habitaciones]) => (
+                                <div key={piso} className="mb-4">
+                                    <h5 className="mb-3">
+                                        Piso {piso} <span className="text-muted">({habitaciones.length} habitaciones)</span>
+                                    </h5>
+                                    <Row>
+                                        {[...habitaciones]
+                                            .sort((a, b) => parseInt(a.numeroHabitacion) - parseInt(b.numeroHabitacion)) // Ordenar habitaciones dentro del piso de mayor a menor
+                                            .map(hab => {
+                                                const { color, icono } = getEstado(hab.estadoNombre);
+                                                return (
+                                                    <Col xs={6} sm={4} md={4} lg={3} key={hab.id} className="mb-3">
+                                                        <Link to={`/rooms/edit/${hab.id}`} style={{ textDecoration: 'none' }}>
+                                                            <RoomCard
+                                                                numero={hab.numeroHabitacion}
+                                                                tipo={hab.tipoHabitacionNombre}
+                                                                estado={hab.estadoNombre}
+                                                                color={color}
+                                                                icono={icono}
+                                                            />
+                                                        </Link>
+                                                    </Col>
+                                                );
+                                            })}
+                                    </Row>
+                                </div>
+                            ))
                     )}
-                </Row>
+                </>
+
             )}
         </Container>
     );
