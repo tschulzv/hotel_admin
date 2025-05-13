@@ -11,16 +11,14 @@ const ReservationForm = () => {
   let isEditMode = id !== undefined;
 
   const [reservationData, setReservationData] = useState({
-    nombre: isEditMode ? reservation.nombre : '',
-    codigo: isEditMode ? reservation.codigo : '',
-    checkIn: isEditMode ? reservation.checkIn : '',
-    checkOut: isEditMode ? reservation.checkOut : '',
-    estado: isEditMode ? reservation.estado : '',
-    observaciones: isEditMode ? reservation.observaciones : '',
-    detalles: isEditMode ? reservation.detalles : []  // se guardarán los detalles
+    nombre: '',
+    codigo: '',
+    checkIn: '',
+    checkOut: '',
+    observaciones: '',
+    detalles: []
   });
 
-  // Estado para controlar el modal de detalle y sus campos
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [newDetalle, setNewDetalle] = useState({
     habitacionId: '',
@@ -32,7 +30,6 @@ const ReservationForm = () => {
   const [habitacionesDisponibles, setHabitacionesDisponibles] = useState([]);
   const [pensiones, setPensiones] = useState([]);
 
-  // Cargar habitaciones cuyo estadoNombre sea "DISPONIBLE"
   useEffect(() => {
     axios.get("/Habitacions")
       .then(response => {
@@ -42,7 +39,6 @@ const ReservationForm = () => {
       .catch(error => console.error("Error obteniendo habitaciones:", error));
   }, []);
 
-  // Cargar pensiones desde la API
   useEffect(() => {
     axios.get("/Pensiones")
       .then(response => {
@@ -50,6 +46,20 @@ const ReservationForm = () => {
       })
       .catch(error => console.error("Error obteniendo pensiones:", error));
   }, []);
+
+  useEffect(() => {
+    if (isEditMode) {
+      axios.get(`/Reservas/${id}`)
+        .then(response => {
+          const resData = response.data;
+          setReservationData({
+            ...resData,
+            observaciones: resData.comentarios || ''
+          });
+        })
+        .catch(error => console.error("Error al obtener la reserva:", error));
+    }
+  }, [id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -84,8 +94,7 @@ const ReservationForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Transformar reservationData al formato esperado por la API
-    // Ajusta los valores según corresponda (por ejemplo, clienteId se debe obtener o asignar, lo mismo para estadoId y llegadaEstimada)
+
     const payload = {
       clienteId: 1, // O asigna el id de cliente correcto
       codigo: reservationData.codigo,
