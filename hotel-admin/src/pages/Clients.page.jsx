@@ -14,6 +14,9 @@ const Clients = () => {
   const [sortKey, setSort] = useState(["id"]);
   const [filaSeleccionada, setFilaSeleccionada] = useState(null);
   const [show, setShow] = useState(false); // mostrar o no el modal
+  const headers = [{ key: "id", label: "ID" }, { key: "nombre", label: "Nombre" }, { key: "email", label: "Email" }, { key: "telefono", label: "Teléfono" }, 
+    { key: "numDocumento", label: "Documento" }, { key: "tipoDocumento", label: "Tipo" }, { key: "nacionalidad", label: "País" }]
+  
 
   const navigate = useNavigate();
 
@@ -21,12 +24,16 @@ const Clients = () => {
     (async () => {
       try {
           const response = await axios.get(`/Clientes`);
-          //console.log(response.data)
-          const limpio = response.data.map(({ activo, tipoDocumentoId, creacion, ...client }) => {
-            const parsedDate = parseISO(creacion);
+          console.log(response.data)
+          const limpio = response.data.map(({ id, nombre, apellido, email, telefono, numDocumento, tipoDocumento, nacionalidad }) => {
             return {
-              ...client,
-              creacion: isValid(parsedDate) ? format(parsedDate, 'dd/MM/yyyy') : ''
+              id: id,
+              nombre: nombre, 
+              email: email,
+              telefono: telefono,
+              numDocumento: numDocumento, 
+              tipoDocumento: tipoDocumento,
+              nacionalidad: nacionalidad
             };
           });
           setOriginalData(limpio);
@@ -132,7 +139,7 @@ const Clients = () => {
          <h1>Clientes</h1>
          <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Cliente" onBtnClick={onBtnClick} />
          {
-           loading ? <h3>Cargando...</h3> : <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
+           loading ? <h3>Cargando...</h3> : <PaginatedTable headers={headers} data={sortedData} rowsPerPage={10} rowActions={actions}/>
          }
          
          {/* MODAL PARA ELIMINACION*/}

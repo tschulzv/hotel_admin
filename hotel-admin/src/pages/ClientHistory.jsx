@@ -4,7 +4,7 @@ import {Container, Modal, Button, Form} from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 import TableFilterBar from '../components/TableFilterBar';
 import axios from '../config/axiosConfig';
-import { format } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 const Reservations = () => {
     const navigate = useNavigate();
@@ -17,23 +17,50 @@ const Reservations = () => {
     const [searchTerm, setSearchTerm] = useState();
     const [sortKey, setSort] = useState(["codigo"]);
 
+    const getStatusBadge = (statusId)=>{
+    switch (statusId) {
+      case 1:
+        return <Badge bg="warning">Pendiente</Badge>
+      case 2:
+        return <Badge bg="success">Confirmada</Badge>
+      case 3:
+        return <Badge bg="danger">Cancelada</Badge>
+      case 4:
+        return <Badge bg="primary">Check-In</Badge>
+      case 5:
+        return <Badge bg="secondary">Check-Out</Badge>
+    }
+  }
+  const headers = [{ key: "id", label: "ID" }, { key: "codigo", label: "Código" }, { key: "numsHabitaciones", label: "Habitación(es)" }, 
+    { key: "fechaIngreso", label: "Ingreso" }, { key: "fechaSalida", label: "Salida" }, { key: "llegada", label: "Llegada" }, { key: "estadoId", label: "Estado" },]
+
+
     useEffect(() => {
-      (async () => {
-        try {
-            const response = await axios.get(`/Reservas/cliente/${id}`);
-            // no queremos mostrar los detalles en la tabla
-            const limpio = response.data.map(({ detalles, ...reserva }) => ({
-              ...reserva,
-              fechaIngreso: format(new Date(reserva.fechaIngreso), 'dd/MM/yyyy'),
-              fechaSalida: format(new Date(reserva.fechaSalida), 'dd/MM/yyyy'),
-            }));
-            setOriginalData(limpio);
-            setFilteredData(limpio);
-            setLoading(false);
-        } catch (error) {
-          console.error('Error cargando datos:', error);
-        }
-      })();
+      axios.get(`/Reservas/cliente/${id}`)
+      .then(response => {
+        console.log(response.data)
+        const limpio = response.data.map(({id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada}) => {
+        const parsedIngreso = parseISO(fechaIngreso);
+        const parsedSalida = parseISO(fechaSalida);
+        console.log(detalles);
+        const numsHabitaciones = detalles ? detalles.map(d => d.numHabitacion).join(', ') : "N/A";
+        console.log(numsHabitaciones);
+        return {
+            id, 
+            codigo, 
+            numsHabitaciones: numsHabitaciones,
+            fechaIngreso: isValid(parsedIngreso) ? format(parsedIngreso, 'dd/MM/yyyy') : '',
+            fechaSalida: isValid(parsedSalida) ? format(parsedSalida, 'dd/MM/yyyy') : '',
+            llegada: llegadaEstimada?.slice(0, 5) || '',
+            estadoId: getStatusBadge(estadoId)
+          };
+        });
+        setReservas(limpio);
+        setFilteredData(limpio);
+        console.log(limpio);
+        setOriginalData(limpio); 
+      })
+      .catch(error => console.error("Error obteniendo reservas:", error));
     }, []);
 
     // array de acciones para la tabla

@@ -37,19 +37,27 @@ const Reservations = () => {
         return <Badge bg="secondary">Check-Out</Badge>
     }
   }
+  const headers = [{ key: "id", label: "ID" }, { key: "codigo", label: "Código" }, { key: "nombreCliente", label: "Cliente" }, { key: "numsHabitaciones", label: "Habitación(es)" }, 
+    { key: "fechaIngreso", label: "Ingreso" }, { key: "fechaSalida", label: "Salida" }, { key: "llegada", label: "Llegada" }, { key: "estadoId", label: "Estado" },]
 
   useEffect(() => {
     axios.get("Reservas")
       .then(response => {
         console.log(response.data)
-        const limpio = response.data.map(({fechaIngreso, fechaSalida, estadoId, comentarios, ...reserva}) => {
+        const limpio = response.data.map(({id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada, nombreCliente}) => {
         const parsedIngreso = parseISO(fechaIngreso);
         const parsedSalida = parseISO(fechaSalida);
+        console.log(detalles);
+        const numsHabitaciones = detalles ? detalles.map(d => d.numHabitacion).join(', ') : "N/A";
+        console.log(numsHabitaciones);
         return {
-            ...reserva,
+            id, 
+            codigo, 
+            nombreCliente: nombreCliente,
+            numsHabitaciones: numsHabitaciones,
             fechaIngreso: isValid(parsedIngreso) ? format(parsedIngreso, 'dd/MM/yyyy') : '',
             fechaSalida: isValid(parsedSalida) ? format(parsedSalida, 'dd/MM/yyyy') : '',
-            comentarios,
+            llegada: llegadaEstimada?.slice(0, 5) || '',
             estadoId: getStatusBadge(estadoId)
           };
         });
@@ -224,7 +232,7 @@ const Reservations = () => {
           </div>
         )}
          <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Reserva" onBtnClick={onBtnClick} />
-        <PaginatedTable data={sortedDataFormatted} rowsPerPage={10} rowActions={actions}/>
+        <PaginatedTable headers={headers} data={sortedDataFormatted} rowsPerPage={10} rowActions={actions}/>
 
         <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
