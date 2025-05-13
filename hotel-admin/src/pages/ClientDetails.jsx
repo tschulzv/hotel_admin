@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react' 
 import { Container, Row, Col, Button, Card, ListGroup } from 'react-bootstrap'
 import { useNavigate, useParams } from 'react-router-dom';
+import { format, parseISO, isValid } from 'date-fns';
+
 import axios from '../config/axiosConfig';
 
 function ClientDetails() {
@@ -8,7 +10,7 @@ function ClientDetails() {
   let { id } = useParams();
   const navigate = useNavigate();
   const [client, setClient] = useState({});
-  const [lastBook, setLastBook] = useState({});
+  const [lastBook, setLastBook] = useState();
   
   const editClient = () => {
     navigate(`/clients/edit/${id}`)
@@ -22,12 +24,22 @@ function ClientDetails() {
       (async () => {
         try {
             const response = await axios.get(`/Clientes/${id}`);
-            const last = await axios.get(`/Reservas/cliente/${id}/ultima`);
-            setClient(response.data);
-            setLastBook(last.data);
+            const parsedCreacion = parseISO(response.data.creacion);
+            //console.log(response.data)
+            setClient({creacion: parsedCreacion, ...response.data});
+  
           } catch (error) {
-          console.error('Error cargando datos:', error);
-        }
+          console.error('Error cargando cliente:', error);
+          }
+          try {
+            const last = await axios.get(`/Reservas/cliente/${id}/ultima`);
+            console.log(response.data)
+            if(last){
+              setLastBook(last)
+            }
+          } catch (error) {
+          console.error('Error cargando reserva:', error);
+          }
       })();
     }, [id]);
 
@@ -70,17 +82,22 @@ function ClientDetails() {
             <Card className="border-0 shadow-sm rounded-3 mb-5 p-2">
               <Card.Body>
                 <h4 className="mb-3">Última reserva</h4>
-                <ListGroup variant="flush no-borders">
-                  <ListGroup.Item><strong>Código:</strong> {lastBook.codigo}</ListGroup.Item>
-                  <ListGroup.Item><strong>Habitación(es):</strong></ListGroup.Item>
-                  <ListGroup.Item><strong>Check-In:</strong> {formatDate(lastBook.fechaIngreso)}</ListGroup.Item>
-                  <ListGroup.Item><strong>Check-Out:</strong> {formatDate(lastBook.fechaSalida)}</ListGroup.Item>
-                  <ListGroup.Item><strong>Estado:</strong> </ListGroup.Item>
-                </ListGroup>
+
+                { lastBook ? 
+                  <> 
+                  <ListGroup variant="flush no-borders">
+                    <ListGroup.Item><strong>Código:</strong>{lastBook.codigo}</ListGroup.Item>
+                    <ListGroup.Item><strong>Habitación(es):</strong></ListGroup.Item>
+                    <ListGroup.Item><strong>Check-In:</strong>{lastBook.fechaIngreso}</ListGroup.Item>
+                    <ListGroup.Item><strong>Check-Out:</strong>{lastBook.fechaSalida}</ListGroup.Item>
+                    <ListGroup.Item><strong>Estado:</strong></ListGroup.Item>
+                  </ListGroup>
+                  </> : <p>El cliente aún no hizo reservas.</p>
+                }
               </Card.Body>
             </Card>
             <div className="d-flex  align-items-center justify-content-center gap-2">
-              <Button variant="primary" onClick={clientHistory}>Ver Historial</Button>
+              <Button variant="primary" disabled={!lastBook} onClick={clientHistory}>Ver Historial</Button>
               <Button variant="secondary" onClick={editClient}>Editar Cliente</Button>
             </div>
           </Col>

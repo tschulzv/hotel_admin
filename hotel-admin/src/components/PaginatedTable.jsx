@@ -15,7 +15,9 @@ ROWS PER PAGE: recibe la cantidad de filas que se quiere mostrar por página, po
 
 */
 
-function PaginatedTable({ data, rowActions, rowsPerPage = 10, columnsToShow}) { // AGREGUÉ UN PARÁMETRO PARA LAS COLUMNAS A MOSTRAR
+
+function PaginatedTable({ headers, data, rowActions, rowsPerPage = 10 }) {
+
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
@@ -24,8 +26,18 @@ function PaginatedTable({ data, rowActions, rowsPerPage = 10, columnsToShow}) { 
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = data.slice(indexOfFirstRow, indexOfLastRow);
 
-    // obtener columnas automáticamente desde la primera fila
-  const columns = columnsToShow || (data.length > 0 ? Object.keys(data[0]) : []); // AQUI PERMITE USAR columnsToShow SI ESTÁ DEFINIDO, SINO TOMA LAS COLUMNAS DE LA PRIMERA FILA
+   // convierte nombres de columnas ej camelCase -> Camel Case
+  const convertCamelCase = (text) => {
+    const withSpaces = text.replace(/([A-Z])/g, ' $1');
+    return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
+  }
+
+  // obtener columnas automáticamente desde la primera fila, si no se le pasan headers
+  const columns = headers && headers.length > 0
+  ? headers.map(h => typeof h === 'string' ? { key: h, label: convertCamelCase(h) } : h)
+  : data.length > 0
+    ? Object.keys(data[0]).map(key => ({ key, label: convertCamelCase(key) }))
+    : [];
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -36,40 +48,36 @@ function PaginatedTable({ data, rowActions, rowsPerPage = 10, columnsToShow}) { 
       <Table bordered hover responsive>
         <thead>
         <tr>
-            {columns.map((col) => (
-              <th key={col}>{col.charAt(0).toUpperCase() + col.slice(1)}</th>
-            ))}
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-        {currentRows.map((item, idx) => (
-            <tr key={indexOfFirstRow + idx}>
-              {columns.map((col) => (
-                <td key={col}>{item[col]}</td>
-              ))}
-              {rowActions.length > 0 && (
-                <td className="d-flex gap-2 justify-content-center">
-                  {rowActions.map((action, i) => (
-                    <span
-                      key={i}
-                      role="button"
-                      title={action.label}
-                      onClick={() => action.onClick(item, i)}
-                      style={{ cursor: 'pointer', color: '#808080' }}
-                    >
-                      {typeof action.icon === 'string' ? (
-                        <span className="material-icons">{action.icon}</span>
-                      ) : (
-                        action.icon
-                      )}
-                    </span>
-                  ))}
-                </td>
-              )}
-            </tr>
+          {columns.map((col) => (
+            <th key={col.key}>{col.label}</th>
           ))}
-        </tbody>
+          {rowActions?.length > 0 && <th>Acciones</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {currentRows.map((item, idx) => (
+          <tr key={indexOfFirstRow + idx}>
+            {columns.map((col) => (
+              <td key={col.key}>{item[col.key]}</td>
+            ))}
+            {rowActions?.length > 0 && (
+              <td>
+                {rowActions.map((action, i) => (
+                  <span
+                    key={i}
+                    className="material-icons"
+                    style={{ cursor: 'pointer', marginRight: '10px' }}
+                    onClick={() => action.onClick(item)}
+                    title={action.label}
+                  >
+                    {action.icon}
+                  </span>
+                ))}
+              </td>
+            )}
+          </tr>
+        ))}
+      </tbody>
       </Table>
 
       <Pagination className="justify-content-center">
