@@ -1,19 +1,10 @@
 import React, { useState } from "react";
-import { Container, Button, Row, Col, Table, Modal } from "react-bootstrap";
+import { Container, Button, Row, Col, Card, Table, Modal, Form } from "react-bootstrap";
 import { SlMinus, SlCheck, SlClose } from "react-icons/sl";
+import axios from '../config/axiosConfig';
 
 const ReservationCheckIn = () => {
-  // reserva de ejemplo, borrar cuando funcione la API
-  const reservation = {
-    id: 1,
-    nombre: "Alejandra Núñez",
-    codigo: "ID33456",
-    habitaciones: "209",
-    checkIn: "2025-04-10",
-    checkOut: "	2025-04-14",
-    estado: "Activa",
-    observaciones: "Solicitó servicio de desayuno a la habitación",
-  };
+
   const [reservationData, setReservationData] = useState({
     nombre: "",
     codigo: "",
@@ -25,33 +16,24 @@ const ReservationCheckIn = () => {
   });
   const [error, setError] = useState("");
   const [verified, setVerified] = useState(null);
-  const [show, setShow] = useState(false); // mostrar o no el modal
+  const [show, setShow] = useState(false); // para el modal
   const [modalTxt, setModalTxt] = useState("");
   const [modalTitle, setModalTitle] = useState("Error");
-
-    // funcion para manejar el cierre del modal
+  const [reservation, setReservation] = useState({});
   const handleClose = () => setShow(false);
-  
 
-  // Lo que pasa si se apreta el boton "Verificar Reserva"
-  const handleVerification = (e) => {
+  // Verificar la reserva ingresada
+  const handleVerification = async (e) => {
     e.preventDefault();
-    if (reservationData.codigo === reservation.codigo) {
-      setReservationData({
-        nombre: reservation.nombre,
-        codigo: reservation.codigo,
-        habitaciones: reservation.habitaciones,
-        checkIn: reservation.checkIn,
-        checkOut: reservation.checkOut,
-        estado: reservation.estado,
-        observaciones: reservation.observaciones,
-      });
-      setVerified(true);
-      setError("");
-    } else {
+    const reserv = await axios.get('/Reservas/' + reservationData.codigo) || { data: null };
+    if (!reserv.data) {
       setError("Reserva No Encontrada.");
       setVerified(false);
+      return;
     }
+    setReservationData(reserv.data);
+    setVerified(true);
+    setError("");
   };
 
   const [guestDoc, setGuestDoc] = useState("");
@@ -72,11 +54,11 @@ const ReservationCheckIn = () => {
   };
 
   const handleCheckIn = () => {
-    // logica de llamar a la api 
-    // cambiar esto a q muestre un mensaje al lado del boton
+    // Lógica para llamar a la API
+    setModalTitle("Éxito");
     setModalTxt("Check-In realizado con éxito");
     setShow(true);
-  }
+  };
 
   const renderGuestRows = () =>
     guestList.map((guest, index) => (
@@ -85,7 +67,7 @@ const ReservationCheckIn = () => {
         <td>{guest.name}</td>
         <td>
           <Button
-            variant="danger"
+            variant="outline-danger"
             size="sm"
             onClick={() =>
               setGuestList(guestList.filter((_, i) => i !== index))
@@ -98,91 +80,128 @@ const ReservationCheckIn = () => {
     ));
 
   return (
-    <Container>
-      <h1>Check In</h1>
-      <h4>Código de Reserva</h4>
-      <Col>
-        <Row className="justify-content-left mb-3">
-          <Col xs="auto">
-            <input
-              type="text"
-              name="CodigoReserva"
-              placeholder="ID12345"
-              value={reservationData.codigo}
-              onChange={(e) =>
-                setReservationData({
-                  ...reservationData,
-                  codigo: e.target.value,
-                })
-              }
-              style={{ width: "200px" }} // ancho específico
-            />
-          </Col>
-        </Row>
-        <Row className="justify-content-left mb-3">
-          <Col xs="auto">
-            <Button onClick={handleVerification}>Verificar Reserva</Button>
-          </Col>
-        </Row>
-        {verified && (
-          <div>
-            <Row>
-              <p style={{ color: "green" }}>
-                <SlCheck />
-                Reserva Verificada
-              </p>
-            </Row>
-            <Row className="justify-content-left mb-3">
-              <Col md={8}>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>Tipo de Habitacion</th>
-                      <th>N° de Habitación</th>
-                      <th>Capacidad</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Junior Suite</td>
-                      <td>209</td>
-                      <td>2</td>
-                    </tr>
-                  </tbody>
-                </Table>
+    <Container className="mt-4">
+      <Card className="shadow-sm">
+        <Card.Header>
+          <h2 className="mb-0">Check In</h2>
+        </Card.Header>
+        <Card.Body>
+          <Form onSubmit={handleVerification}>
+            <Form.Group as={Row} className="mb-3" controlId="formCodigoReserva">
+              <Form.Label column sm={3}>
+                Código de Reserva
+              </Form.Label>
+              <Col sm={6}>
+                <Form.Control
+                  type="text"
+                  placeholder="ID12345"
+                  value={reservationData.codigo}
+                  onChange={(e) =>
+                    setReservationData({
+                      ...reservationData,
+                      codigo: e.target.value,
+                    })
+                  }
+                />
               </Col>
-            </Row>
-            <Row>
-              <h4>Agregar Huésped</h4>
-              <div>
-                <Row className="align-items-end">
-                  <Col>
-                    <label>N° de Documento</label>
-                    <input
-                      type="text"
-                      placeholder="Documento"
-                      className="form-control"
-                      value={guestDoc}
-                      onChange={(e) => setGuestDoc(e.target.value)}
-                    />
+              <Col sm={3}>
+                <Button variant="primary" type="submit">
+                  Verificar Reserva
+                </Button>
+              </Col>
+            </Form.Group>
+          </Form>
+          {error && (
+            <p style={{ color: "red", marginBottom: "1rem" }}>
+              <SlClose /> {error}
+            </p>
+          )}
+          {verified && (
+            <Card className="mb-4">
+              <Card.Body>
+                <Row>
+                  <Col md={6}>
+                    <p><strong>Cliente:</strong> {reservationData.nombreCliente}</p>
+                    <p><strong>N° de Habitación:</strong> {reservationData.habitaciones}</p>
                   </Col>
-                  <Col>
-                    <label>Nombre del Huésped</label>
-                    <input
-                      type="text"
-                      placeholder="Nombre del Huésped"
-                      className="form-control"
-                      value={guestName}
-                      onChange={(e) => setGuestName(e.target.value)}
-                    />
-                  </Col>
-                  <Col xs="auto" className="d-flex align-items-end">
-                    <Button onClick={handleAddGuest}>Agregar Huésped</Button>
+                  <Col md={6}>
+                    <p><strong>Check In:</strong> {reservationData.checkIn}</p>
+                    <p><strong>Check Out:</strong> {reservationData.checkOut}</p>
                   </Col>
                 </Row>
-                <Row className="mt-4">
-                  <Col>
-                    <Table striped bordered hover>
+                {reservationData.observaciones && (
+                  <Row>
+                    <Col>
+                      <p><strong>Observaciones:</strong> {reservationData.observaciones}</p>
+                    </Col>
+                  </Row>
+                )}
+              </Card.Body>
+            </Card>
+          )}
+          {verified && (
+            <>
+              <Card className="mb-4">
+                <Card.Header as="h5" className="bg-dark text-white">
+                  Detalle de Habitación
+                </Card.Header>
+                <Card.Body>
+                  <Table striped hover responsive>
+                    <thead>
+                      <tr>
+                        <th>Tipo de Habitación</th>
+                        <th>N° de Habitación</th>
+                        <th>Capacidad</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Junior Suite</td>
+                        <td>209</td>
+                        <td>2</td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+              <Card className="mb-4">
+                <Card.Header as="h5" className="bg-dark text-white">
+                  Agregar Huésped
+                </Card.Header>
+                <Card.Body>
+                  <Form>
+                    <Row className="align-items-end">
+                      <Col md={4}>
+                        <Form.Group controlId="guestDoc">
+                          <Form.Label>N° de Documento</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Documento"
+                            value={guestDoc}
+                            onChange={(e) => setGuestDoc(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={4}>
+                        <Form.Group controlId="guestName">
+                          <Form.Label>Nombre del Huésped</Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Nombre del Huésped"
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={4}>
+                        <Button variant="secondary" onClick={handleAddGuest}>
+                          Agregar Huésped
+                        </Button>
+                      </Col>
+                    </Row>
+                  </Form>
+                  {guestList.length > 0 && (
+                    <Table striped bordered hover className="mt-3">
                       <thead>
                         <tr>
                           <th>N° de Documento</th>
@@ -192,45 +211,35 @@ const ReservationCheckIn = () => {
                       </thead>
                       <tbody>{renderGuestRows()}</tbody>
                     </Table>
-                  </Col>
-                </Row>
-                <Row className="justify-content-start mt-3">
-                  <Col xs="auto">
-                    <Button
-                      onClick={handleCheckIn}
-                    >
-                      Check-In
-                    </Button>
-                  </Col>
-                </Row>
-              </div>
-            </Row>
-          </div>
-        )}
-        {verified === false && (
-          <Row>
-            <p style={{ color: "red" }}>
-              <SlClose />
-              Reserva No Encontrada
-            </p>
-          </Row>
-        )}
-      </Col>
+                  )}
+                </Card.Body>
+              </Card>
+              <Row className="justify-content-end">
+                <Col xs="auto">
+                  <Button variant="primary" onClick={handleCheckIn}>
+                    <SlCheck /> Realizar Check-In
+                  </Button>
+                </Col>
+              </Row>
+            </>
+          )}
+        </Card.Body>
+      </Card>
       <Modal show={show} onHide={handleClose} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>{modalTitle}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>{modalTxt}</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
-              Aceptar
-            </Button>
-          </Modal.Footer>
-        </Modal>
-
+        <Modal.Header closeButton>
+          <Modal.Title>{modalTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>{modalTxt}</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
+
 export default ReservationCheckIn;
