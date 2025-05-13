@@ -43,13 +43,6 @@ function ClientDetails() {
       })();
     }, [id]);
 
-    // FUNCION PARA FORMATEAR FECHAS
-    const formatDate = (dateString) => {
-      const date = new Date(dateString);
-      if (isNaN(date)) return dateString; // Si la fecha no es válida, devuelve la cadena original
-      return date.toLocaleDateString('es-Es');
-    }
-
   return (
     <Container className="py-4">
         <div className="d-flex align-items-center mb-4">
@@ -71,7 +64,7 @@ function ClientDetails() {
                   <ListGroup.Item><strong>Teléfono:</strong> {client.telefono}</ListGroup.Item>
                   <ListGroup.Item><strong>Email:</strong> {client.email}</ListGroup.Item>
                   <ListGroup.Item><strong>Nacionalidad:</strong> {client.nacionalidad}</ListGroup.Item>
-                  <ListGroup.Item><strong>Fecha de Registro:</strong> {formatDate(client.creacion)}</ListGroup.Item>
+                  <ListGroup.Item><strong>Fecha de Registro:</strong> {client.creacion}</ListGroup.Item>
                   <ListGroup.Item><strong>Observaciones:</strong> {client.comentarios ?? " - "}</ListGroup.Item>
                 </ListGroup>
               </Card.Body>
@@ -82,7 +75,6 @@ function ClientDetails() {
             <Card className="border-0 shadow-sm rounded-3 mb-5 p-2">
               <Card.Body>
                 <h4 className="mb-3">Última reserva</h4>
-
                 { lastBook ? 
                   <> 
                   <ListGroup variant="flush no-borders">
