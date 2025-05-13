@@ -15,7 +15,7 @@ ROWS PER PAGE: recibe la cantidad de filas que se quiere mostrar por página, po
 
 */
 
-function PaginatedTable({ data, rowActions, rowsPerPage = 10 }) {
+function PaginatedTable({ data, rowActions, rowsPerPage = 10, columnsToShow}) { // AGREGUÉ UN PARÁMETRO PARA LAS COLUMNAS A MOSTRAR
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
@@ -25,7 +25,7 @@ function PaginatedTable({ data, rowActions, rowsPerPage = 10 }) {
   const currentRows = data.slice(indexOfFirstRow, indexOfLastRow);
 
     // obtener columnas automáticamente desde la primera fila
-  const columns = data.length > 0 ? Object.keys(data[0]) : [];
+  const columns = columnsToShow || (data.length > 0 ? Object.keys(data[0]) : []); // AQUI PERMITE USAR columnsToShow SI ESTÁ DEFINIDO, SINO TOMA LAS COLUMNAS DE LA PRIMERA FILA
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);

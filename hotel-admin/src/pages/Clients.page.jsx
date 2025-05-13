@@ -62,6 +62,8 @@ const Clients = () => {
     }
   }
   
+  const columnasAmostrar = ["nombre", "apellido", "email", "telefono", "nacionalidad"] // COLUMNAS A MOSTRAR AL RENDERIZAR LA TABLA]
+
   // array de acciones para la tabla
   const actions = [
         {
@@ -124,7 +126,13 @@ const Clients = () => {
          <h1>Clientes</h1>
          <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Cliente" onBtnClick={onBtnClick} />
          {
-           loading ? <h3>Cargando...</h3> : <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
+           loading ? <h3>Cargando...</h3> : 
+           <PaginatedTable 
+            data={sortedData} 
+            rowsPerPage={10} 
+            rowActions={actions}
+            columnsToShow={columnasAmostrar} // COLUMNAS A MOSTRAR AL RENDERIZAR LA TABLA
+          />
          }
          
          {/* MODAL PARA ELIMINACION*/}

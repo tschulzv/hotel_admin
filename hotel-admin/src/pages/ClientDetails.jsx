@@ -64,7 +64,7 @@ function ClientDetails() {
               <Card.Body>
                 <h4 className="mb-3">Última reserva</h4>
                 <ListGroup variant="flush no-borders">
-                  <ListGroup.Item><strong>Código:</strong>{lastBook.codigo}</ListGroup.Item>
+                  <ListGroup.Item><strong>Código:</strong> {lastBook.codigo}</ListGroup.Item>
                   <ListGroup.Item><strong>Habitación(es):</strong></ListGroup.Item>
                   <ListGroup.Item><strong>Check-In:</strong>{lastBook.fechaIngreso}</ListGroup.Item>
                   <ListGroup.Item><strong>Check-Out:</strong>{lastBook.fechaSalida}</ListGroup.Item>
