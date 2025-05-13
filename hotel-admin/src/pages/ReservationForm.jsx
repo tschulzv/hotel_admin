@@ -29,23 +29,36 @@ const ReservationForm = () => {
 
   const [habitacionesDisponibles, setHabitacionesDisponibles] = useState([]);
   const [pensiones, setPensiones] = useState([]);
+  const [tiposDocumentos, setTiposDocumentos] = useState([]);
+  const [cliente, setCliente] = useState({});
+  const [afterSearchText, setAfterSearchText] = useState("");
 
   useEffect(() => {
-    axios.get("/Habitacions")
-      .then(response => {
-        const disponibles = response.data.filter(h => h.estadoNombre === "DISPONIBLE");
-        setHabitacionesDisponibles(disponibles);
-      })
-      .catch(error => console.error("Error obteniendo habitaciones:", error));
-  }, []);
+    axios.get('/TiposDocumentos')
+    .then(response => {
+      setTiposDocumentos(response.data);
+      console.log(response.data)
+    })
+    .catch( error => {
+      console.error('Error cargando datos:', error);
+    });
+     
+    axios.get('/Pensiones')
+    .then(response => {
+      setPensiones(response.data);
+    }).catch(error => {
+      console.error('Error cargando datos:', error);
+    })
 
-  useEffect(() => {
-    axios.get("/Pensiones")
-      .then(response => {
-        setPensiones(response.data);
-      })
-      .catch(error => console.error("Error obteniendo pensiones:", error));
-  }, []);
+    axios.get('/Habitacions')
+    .then(response => {
+      const disponibles = response.data.filter(h => h.estadoNombre === "DISPONIBLE");
+      setHabitacionesDisponibles(disponibles);
+    }).catch(error => {
+      console.error('Error cargando datos:', error);
+    })
+
+    }, [])
 
   useEffect(() => {
     if (isEditMode) {
@@ -77,6 +90,18 @@ const ReservationForm = () => {
     }));
   };
 
+  const onSearch = async () => {
+    const cliente = await axios.get("/clientes");
+    if (cliente !== undefined) {
+      setAfterSearchText("No se encontró el cliente. ¿Crear nuevo cliente?")
+    } else {
+      setCliente(cliente);
+      setAfterSearchText(`Cliente: ${cliente.nombre}  ${cliente.apellido}`)
+    }
+
+    // endpoint para buscar el cliente 
+  }
+
   const addDetalle = () => {
     setReservationData(prev => ({
       ...prev,
@@ -93,7 +118,6 @@ const ReservationForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
 
     const payload = {
       clienteId: 1, // O asigna el id de cliente correcto
@@ -131,10 +155,11 @@ const ReservationForm = () => {
       <Card className="p-4 shadow-sm">
         <h4 className="mb-4">{isEditMode ? "Editar reserva" : "Nueva reserva"}</h4>
         <Form onSubmit={handleSubmit}>
+          <h5>Buscar cliente</h5>
           <Row>
-            <Col md={6}>
+            <Col md={7}>
               <Form.Group className="mb-3">
-                <Form.Label>Cliente</Form.Label>
+                <Form.Label>N° Documento</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombre"
@@ -144,6 +169,34 @@ const ReservationForm = () => {
                 />
               </Form.Group>
             </Col>
+            <Col md={4}>
+              <Form.Group className="mb-3">
+                <Form.Label>Tipo de Documento</Form.Label>
+                <Form.Select
+                name="tipoDocumentoId"
+                value={reservationData.tipoDocumentoId || ''}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccione</option>
+                {tiposDocumentos.map((tipo) => (
+                <option key={tipo.id} value={tipo.id}>
+                {tipo.nombre}
+                </option>
+                ))}
+              </Form.Select>            
+              </Form.Group>
+            </Col>
+            <Col md={1} className="d-flex align-items-end mb-3">
+                <Button variant="primary" onClick={onSearch}>
+                  <i className="material-icons align-middle">search</i>
+                </Button>
+            </Col>
+          </Row>
+          <Row>
+            <p>{afterSearchText}</p>
+          </Row>
+          <Row>               
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>Código</Form.Label>
