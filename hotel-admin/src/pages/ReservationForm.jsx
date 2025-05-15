@@ -26,8 +26,8 @@ const ReservationForm = () => {
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [newDetalle, setNewDetalle] = useState({
     habitacionId: '',
-    cantidadAdultos: '',
-    cantidadNinhos: '',
+    cantidadAdultos: 0,
+    cantidadNinhos: 0,
     pensionId: ''
   });
 
@@ -339,8 +339,9 @@ const ReservationForm = () => {
               <Form.Control
                 type="number"
                 name="cantidadAdultos"
-                value={newDetalle.cantidadAdultos}
+                value={newDetalle.cantidadAdultos ?? 0}
                 onChange={handleDetalleChange}
+                min="0"
                 required
               />
             </Form.Group>
@@ -349,8 +350,9 @@ const ReservationForm = () => {
               <Form.Control
                 type="number"
                 name="cantidadNinhos"
-                value={newDetalle.cantidadNinhos}
+                value={newDetalle.cantidadNinhos ?? 0}
                 onChange={handleDetalleChange}
+                min="0"
                 required
               />
             </Form.Group>
