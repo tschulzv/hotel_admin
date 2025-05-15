@@ -1,8 +1,10 @@
 
-import React, { useState } from 'react';
-import { Container, Row, Col, Dropdown, DropdownButton, Pagination } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Dropdown, DropdownButton, Pagination, Spinner } from 'react-bootstrap';
 import { BsCircleFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
+import axios from '../config/axiosConfig';
+
 
 const todasLasNotificaciones = [
   {
@@ -85,17 +87,31 @@ const todasLasNotificaciones = [
 ];
 
 
-const estadosDisponibles = ["Todos", "Confirmado", "Pendiente"]; // Estados de las notificaciones
-const elementosPorPagina = 5; // Número de elementos por página
 
 const Notifications = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState("Todos");
   const [paginaActual, setPaginaActual] = useState(1);
+  const estadosDisponibles = ["Todos", { key: "Leído", value: 1 }, {key: "No leído", value: 0 }]; // Estados de las notificaciones
+  const elementosPorPagina = 5; 
+
+  useEffect(() => {
+    (async () => {
+      try {
+          const response = await axios.get(`/Solicitudes`);
+          setNotificaciones(response.data);
+          setLoading(false);
+      } catch (error) {
+          console.error('Error cargando datos:', error);
+      }
+  })();
+  }, []);
 
   // Filtrar las notificaciones según el estado seleccionado
-  const notificacionesFiltradas = todasLasNotificaciones.filter(n =>
-    filtroEstado === "Todos" ? true : n.solicitud.estado === filtroEstado
+  const notificacionesFiltradas = notificaciones.filter(n =>
+    filtroEstado === "Todos" ? true : n.esLeida === filtroEstado.value
   );
 
   // Paginación
@@ -111,7 +127,7 @@ const Notifications = () => {
   const renderEstadoIcono = (estado) => (
     <BsCircleFill
       style={{ fontSize: "0.75rem", marginRight: 6 }}
-      color={estado === "Confirmado" ? "#28a745" : "#ff0000"}
+      color="#28a745" 
     />
   );
 
@@ -135,15 +151,20 @@ const Notifications = () => {
           }}
         >
           {estadosDisponibles.map((estado) => (
-            <Dropdown.Item key={estado} eventKey={estado}>
-              {estado}
+            <Dropdown.Item key={estado.key} eventKey={estado}>
+              {estado.key}
             </Dropdown.Item>
           ))}
         </DropdownButton>
       </div>
 
-
-        {/* Tabla de notificaciones */}
+      {/* Tabla de notificaciones */}
+      {
+        loading ? <div className="text-center my-5">
+          <Spinner animation="border" variant="primary" />
+          </div> : 
+      <>
+      
       <div>
         {notificacionesPaginadas.map((n) => (
           <Row
@@ -151,12 +172,17 @@ const Notifications = () => {
             className="border rounded p-3 mb-2 align-items-center"
             style={{ fontSize: "0.9rem" }}
           >
-            <Col xs={4}>
-              <strong>Solicitud de {n.solicitud.tipo}</strong>
+            <Col xs={8}>
+              <strong>Solicitud de {n.tipo}</strong> {n.nomb}
             </Col>
 
-            <Col xs={8} className="text-end">
-                {renderEstadoIcono(n.solicitud.estado)}
+            <Col xs={4} className="text-end">
+              {
+                !n.esLeida && <BsCircleFill
+                  style={{ fontSize: "0.75rem", marginRight: 6 }}
+                  color="#28a745" 
+                />
+              }
               <button
                 className="btn btn-sm btn-outline-primary"
                 onClick={() => handleVerNotificacion(n)}
@@ -181,6 +207,8 @@ const Notifications = () => {
           ))}
         </Pagination>
       </div>
+      </>
+    }
     </Container>
   );
 };
