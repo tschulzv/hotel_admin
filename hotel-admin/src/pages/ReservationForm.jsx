@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Container, Form, Button, Row, Col, Card, Modal } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import countryList from 'react-select-country-list';
 import axios from '../config/axiosConfig';
 
@@ -15,7 +15,11 @@ const ReservationForm = () => {
     codigo: '',
     checkIn: '',
     checkOut: '',
+    llegadaEstimada : '',
     observaciones: '',
+    tipoDocumentoId: 0,
+    tipoDocumento: '',
+    numDocumento: '',
     detalles: []
   });
 
@@ -31,6 +35,7 @@ const ReservationForm = () => {
   const [pensiones, setPensiones] = useState([]);
   const [tiposDocumentos, setTiposDocumentos] = useState([]);
   const [cliente, setCliente] = useState({});
+  const [clienteNoEncontrado, setClienteNoEncontrado] = useState(false);
   const [afterSearchText, setAfterSearchText] = useState("");
 
   useEffect(() => {
@@ -91,16 +96,24 @@ const ReservationForm = () => {
   };
 
   const onSearch = async () => {
-    const cliente = await axios.get("/clientes");
-    if (cliente !== undefined) {
-      setAfterSearchText("No se encontró el cliente. ¿Crear nuevo cliente?")
-    } else {
-      setCliente(cliente);
-      setAfterSearchText(`Cliente: ${cliente.nombre}  ${cliente.apellido}`)
+    try {
+      const response = await axios.get(`/Clientes/document/${reservationData.tipoDocumentoId}/${reservationData.numDocumento}`);
+      setCliente(response.data);
+      setAfterSearchText(`Cliente: ${response.data.nombre} ${response.data.apellido}`);
+      setClienteNoEncontrado(false);
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        setAfterSearchText("No se encontró el cliente.");
+        setCliente(null);
+        setClienteNoEncontrado(true);
+      } else {
+        setAfterSearchText("Ocurrió un error al buscar el cliente.");
+        setClienteNoEncontrado(false);
+        console.error(error);
+      }
     }
+  };
 
-    // endpoint para buscar el cliente 
-  }
 
   const addDetalle = () => {
     setReservationData(prev => ({
@@ -120,11 +133,11 @@ const ReservationForm = () => {
     e.preventDefault();
 
     const payload = {
-      clienteId: 1, // O asigna el id de cliente correcto
-      codigo: reservationData.codigo,
+      clienteId: cliente.id, 
+      //codigo: reservationData.codigo,
       fechaIngreso: reservationData.checkIn,   // formulario: checkIn
       fechaSalida: reservationData.checkOut,     // formulario: checkOut
-      llegadaEstimada: "12:00:00",                 // podrías obtener este dato del formulario si lo requieres
+      llegadaEstimada: reservationData.llegadaEstimada,                 // podrías obtener este dato del formulario si lo requieres
       comentarios: reservationData.observaciones,  // observaciones → comentarios
       estadoId: 1,                               // Asigna un valor por defecto o proveniente de otro campo
       detalles: reservationData.detalles.map(det => ({
@@ -155,21 +168,21 @@ const ReservationForm = () => {
       <Card className="p-4 shadow-sm">
         <h4 className="mb-4">{isEditMode ? "Editar reserva" : "Nueva reserva"}</h4>
         <Form onSubmit={handleSubmit}>
-          <h5>Buscar cliente</h5>
-          <Row>
-            <Col md={7}>
+          <Row className='d-flex align-items-end'>
+            <p class="fs-5">Buscar Cliente</p>
+            <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>N° Documento</Form.Label>
                 <Form.Control
                   type="text"
-                  name="nombre"
-                  value={reservationData.nombre}
+                  name="numDocumento"
+                  value={reservationData.numDocumento}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
             </Col>
-            <Col md={4}>
+            <Col md={5}>
               <Form.Group className="mb-3">
                 <Form.Label>Tipo de Documento</Form.Label>
                 <Form.Select
@@ -194,25 +207,19 @@ const ReservationForm = () => {
             </Col>
           </Row>
           <Row>
-            <p>{afterSearchText}</p>
-          </Row>
-          <Row>               
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Código</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="codigo"
-                  value={reservationData.codigo}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
+            <Col md={8}>
+              <p>{afterSearchText}</p>
+            </Col>
+            <Col md={4}>
+              {clienteNoEncontrado && (
+              <p>
+                <Link to="/clientes/nuevo">¿Crear nuevo cliente?</Link>
+              </p>)}
             </Col>
           </Row>
 
           <Row>
-            <Col md={6}>
+            <Col md={4}>
               <Form.Group className="mb-3">
                 <Form.Label>Check-In</Form.Label>
                 <Form.Control
@@ -224,13 +231,25 @@ const ReservationForm = () => {
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col md={4}>
               <Form.Group className="mb-3">
                 <Form.Label>Check-Out</Form.Label>
                 <Form.Control
                   type="date"
                   name="checkOut"
                   value={reservationData.checkOut}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group className="mb-3">
+                <Form.Label>Llegada Estimada</Form.Label>
+                <Form.Control
+                  type="time"
+                  name="llegadaEstimada"
+                  value={reservationData.llegadaEstimada}
                   onChange={handleChange}
                   required
                 />

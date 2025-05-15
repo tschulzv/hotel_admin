@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {Container, Button, Modal} from 'react-bootstrap';
+import {Container, Button, Modal, Spinner} from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 import { useNavigate } from 'react-router-dom';
 import TableFilterBar from '../components/TableFilterBar';
@@ -139,7 +139,10 @@ const Clients = () => {
          <h1>Clientes</h1>
          <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Cliente" onBtnClick={onBtnClick} />
          {
-           loading ? <h3>Cargando...</h3> : <PaginatedTable headers={headers} data={sortedData} rowsPerPage={10} rowActions={actions}/>
+           loading ? <div className="text-center my-5">
+                      <Spinner animation="border" variant="primary" />
+                    </div>
+           : <PaginatedTable headers={headers} data={sortedData} rowsPerPage={10} rowActions={actions}/>
          }
          
          {/* MODAL PARA ELIMINACION*/}

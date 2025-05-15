@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Container, Modal, Button, Form } from 'react-bootstrap';
+import { Container, Modal, Button, Form, Spinner } from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
 import TableFilterBar from '../components/TableFilterBar';
 import axios from '../config/axiosConfig';
@@ -9,12 +9,11 @@ import { format, parseISO, isValid } from 'date-fns';
 
 const Reservations = () => {
   const [originalData, setOriginalData] = useState([])
-
-
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const fechaSeleccionada = queryParams.get('fecha');
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState();
   const [sortKey, setSort] = useState(["id"]);
   const [filteredData, setFilteredData] = useState(originalData);
@@ -63,8 +62,8 @@ const Reservations = () => {
         });
         setReservas(limpio);
         setFilteredData(limpio);
-        //console.log(limpio);
         setOriginalData(limpio);
+        setLoading(false);
       })
       .catch(error => console.error("Error obteniendo reservas:", error));
   }, []);
@@ -230,8 +229,14 @@ const Reservations = () => {
         </div>
       )}
       <TableFilterBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} onSearch={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Reserva" onBtnClick={onBtnClick} />
-      <PaginatedTable headers={headers} data={sortedDataFormatted} rowsPerPage={10} rowActions={actions} />
+      
+      {
+        loading ? <div className="text-center my-5">
+                    <Spinner animation="border" variant="primary" />
+                  </div> : <PaginatedTable headers={headers} data={sortedDataFormatted} rowsPerPage={10} rowActions={actions} />
+      }
 
+      {/*modal de eliminacion*/ }
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Confirmar eliminación</Modal.Title>
