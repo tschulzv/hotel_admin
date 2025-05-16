@@ -173,7 +173,7 @@ const Notifications = () => {
             style={{ fontSize: "0.9rem" }}
           >
             <Col xs={8}>
-              <strong>Solicitud de {n.tipo}</strong> {n.nomb}
+              <strong>Solicitud de {n.tipo}</strong>
             </Col>
 
             <Col xs={4} className="text-end">
