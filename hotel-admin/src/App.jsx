@@ -18,6 +18,7 @@ import ReservationDetails from "./pages/ReservationDetails";
 import Calendar from "./pages/Calendar.page";
 import Notifications from "./pages/Notifications.page";
 import NotificationDetails from "./pages/NotificationDetails";
+import RoomTypes from "./pages/RoomsType.page";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/rooms" element={<Rooms />} />
+          <Route path="/roomstype" element={<RoomTypes />} />
           <Route path="/reservations" element={<Reservations />} />
           <Route path="/reservations/:id" element={<ReservationDetails />} />
           <Route path="/reservations/new" element={<ReservationForm />} />
@@ -39,6 +41,7 @@ function App() {
           <Route path="/rooms/new" element={<RoomForm />} />
           <Route path="/rooms/edit/:id" element={<RoomForm />} />
           <Route path="/roomstype/new" element={<RoomTypeForm />} />
+          <Route path="/roomstype/edit/:id" element={<RoomTypeForm />} />
           <Route path="/calendar" element={<Calendar />} />{" "}
           <Route path="/checkin" element={<ReservationCheckIn />} />
           <Route path="/checkin" element={<ReservationCheckIn />} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
+import { Container, Form, Button, Row, Col, Card, Carousel } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 
@@ -17,7 +17,9 @@ const RoomTypeNewPage = () => {
     activo: true
   });
 
-  // Cargar servicios disponibles
+  const [imagenes, setImagenes] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+
   useEffect(() => {
     const fetchServicios = async () => {
       try {
@@ -43,30 +45,44 @@ const RoomTypeNewPage = () => {
       const nuevosServicios = prev.servicios.includes(servicioId)
         ? prev.servicios.filter(id => id !== servicioId)
         : [...prev.servicios, servicioId];
-      
+
       return { ...prev, servicios: nuevosServicios };
     });
   };
 
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImagenes(files);
+
+    const urls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const payload = {
-      Nombre: roomTypeData.nombre,
-      Descripcion: roomTypeData.descripcion,
-      PrecioBase: parseFloat(roomTypeData.precioBase),
-      CantidadDisponible: parseInt(roomTypeData.cantidadDisponible),
-      MaximaOcupacion: parseInt(roomTypeData.maximaOcupacion),
-      Tamanho: parseInt(roomTypeData.tamanho),
-      Servicios: roomTypeData.servicios.map(id => ({
-        Id: id,
-        Nombre: servicios.find(s => s.id === id)?.nombre,  // Agregar el nombre del servicio
-        IconName: servicios.find(s => s.id === id)?.iconName  // Agregar el icono del servicio
-      }))
-    };
-  
+
+    const formData = new FormData();
+    formData.append('Nombre', roomTypeData.nombre);
+    formData.append('Descripcion', roomTypeData.descripcion);
+    formData.append('PrecioBase', parseFloat(roomTypeData.precioBase));
+    formData.append('CantidadDisponible', parseInt(roomTypeData.cantidadDisponible));
+    formData.append('MaximaOcupacion', parseInt(roomTypeData.maximaOcupacion));
+    formData.append('Tamanho', parseInt(roomTypeData.tamanho));
+
+    // Solo enviamos los IDs de los servicios
+    roomTypeData.servicios.forEach(id => {
+      formData.append('Servicios', id);
+    });
+
+    // El backend espera 'Imagenes'
+    imagenes.forEach((imagen) => {
+      formData.append('Imagenes', imagen);
+    });
+
     try {
-      await axios.post('TiposHabitaciones', payload);
+      await axios.post('TiposHabitaciones/ConImagenes', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       navigate('/rooms');
     } catch (error) {
       if (error.response) {
@@ -76,7 +92,7 @@ const RoomTypeNewPage = () => {
       }
     }
   };
-  
+
 
   return (
     <Container className="py-4">
@@ -161,7 +177,7 @@ const RoomTypeNewPage = () => {
             <Row>
               {servicios.map(servicio => (
                 <Col md={4} key={servicio.id}>
-                  <Form.Check 
+                  <Form.Check
                     type="checkbox"
                     id={`servicio-${servicio.id}`}
                     label={servicio.nombre}
@@ -183,6 +199,31 @@ const RoomTypeNewPage = () => {
               onChange={handleChange}
             />
           </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Imágenes</Form.Label>
+            <Form.Control
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </Form.Group>
+
+          {previewUrls.length > 0 && (
+            <Carousel className="mb-3">
+              {previewUrls.map((url, idx) => (
+                <Carousel.Item key={idx}>
+                  <img
+                    className="d-block w-100"
+                    src={url}
+                    alt={`Imagen ${idx + 1}`}
+                    style={{ maxHeight: '300px', objectFit: 'cover' }}
+                  />
+                </Carousel.Item>
+              ))}
+            </Carousel>
+          )}
 
           <div className="d-flex justify-content-end gap-2">
             <Button variant="primary" type="submit">

@@ -120,8 +120,8 @@ function Rooms() {
             setHabitaciones(nuevasHabitaciones);
             setShowModalEliminar(false);
         } catch (error) {
-            console.error("Error al eliminar la habitación:", error);
-            setErrorEliminar('Error al eliminar la habitación.');
+            setErrorEliminar(error.response?.data);
+            setShowModalEliminar(true);
         } finally {
             setEliminando(false);
         }
