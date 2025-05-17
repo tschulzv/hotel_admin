@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Form, Button, Row, Col, Card, Carousel } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Container, Form, Button, Row, Col, Card, Carousel, Image } from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 
 const RoomTypeNewPage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [servicios, setServicios] = useState([]);
   const [roomTypeData, setRoomTypeData] = useState({
@@ -29,8 +30,32 @@ const RoomTypeNewPage = () => {
         console.error('Error cargando servicios:', error);
       }
     };
+
+    const fetchRoomType = async () => {
+      if (id) {
+        try {
+          const response = await axios.get(`TiposHabitaciones/${id}`);
+          const roomType = response.data;
+          setRoomTypeData({
+            nombre: roomType.nombre,
+            descripcion: roomType.descripcion,
+            precioBase: roomType.precioBase,
+            cantidadDisponible: roomType.cantidadDisponible,
+            maximaOcupacion: roomType.maximaOcupacion,
+            tamanho: roomType.tamanho,
+            servicios: roomType.servicios.map(s => s.id),
+            activo: roomType.activo
+          });
+          setPreviewUrls(roomType.imagenes.map(img => ({ url: img.url, id: img.id })));
+        } catch (error) {
+          console.error('Error cargando el tipo de habitación:', error);
+        }
+      }
+    };
+
     fetchServicios();
-  }, []);
+    fetchRoomType();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -55,13 +80,29 @@ const RoomTypeNewPage = () => {
     setImagenes(files);
 
     const urls = files.map(file => URL.createObjectURL(file));
-    setPreviewUrls(urls);
+    setPreviewUrls(prev => [...prev, ...urls.map(url => ({ url, id: null }))]);
+  };
+
+  const handleRemoveImage = (imageId) => {
+    if (imageId) {
+      // Eliminar imagen existente del backend
+      console.log(imageId);
+      axios.delete(`ImagenHabitacions/${imageId}`)
+        .then(() => {
+          setPreviewUrls(prev => prev.filter(img => img.id !== imageId));
+        })
+        .catch(error => console.error('Error eliminando imagen:', error));
+    } else {
+      // Eliminar imagen recién cargada
+      setPreviewUrls(prev => prev.filter(img => img.id !== imageId));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
+    formData.append("Id", id || '');
     formData.append('Nombre', roomTypeData.nombre);
     formData.append('Descripcion', roomTypeData.descripcion);
     formData.append('PrecioBase', parseFloat(roomTypeData.precioBase));
@@ -69,35 +110,38 @@ const RoomTypeNewPage = () => {
     formData.append('MaximaOcupacion', parseInt(roomTypeData.maximaOcupacion));
     formData.append('Tamanho', parseInt(roomTypeData.tamanho));
 
-    // Solo enviamos los IDs de los servicios
     roomTypeData.servicios.forEach(id => {
       formData.append('Servicios', id);
     });
 
-    // El backend espera 'Imagenes'
     imagenes.forEach((imagen) => {
       formData.append('Imagenes', imagen);
     });
 
     try {
-      await axios.post('TiposHabitaciones/ConImagenes', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      navigate('/rooms');
+      if (id) {
+        await axios.put(`TiposHabitaciones/${id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        await axios.post('TiposHabitaciones/ConImagenes', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      navigate('/roomstype');
     } catch (error) {
       if (error.response) {
         console.error('Detalles del error 400:', error.response.data);
       } else {
-        console.error('Error creando el tipo de habitación:', error);
+        console.error('Error creando o actualizando el tipo de habitación:', error);
       }
     }
   };
 
-
   return (
     <Container className="py-4">
       <Card className="p-4 shadow-sm">
-        <h4 className="mb-4">Crear Nuevo Tipo de Habitación</h4>
+        <h4 className="mb-4">{id ? 'Editar Tipo de Habitación' : 'Crear Nuevo Tipo de Habitación'}</h4>
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
@@ -211,18 +255,26 @@ const RoomTypeNewPage = () => {
           </Form.Group>
 
           {previewUrls.length > 0 && (
-            <Carousel className="mb-3">
-              {previewUrls.map((url, idx) => (
-                <Carousel.Item key={idx}>
-                  <img
-                    className="d-block w-100"
-                    src={url}
+            <Row className="mb-3">
+              {previewUrls.map((img, idx) => (
+                <Col md={3} key={idx} className="position-relative">
+                  <Image
+                    src={img.url}
                     alt={`Imagen ${idx + 1}`}
-                    style={{ maxHeight: '300px', objectFit: 'cover' }}
+                    thumbnail
+                    style={{ maxHeight: '150px', objectFit: 'cover' }}
                   />
-                </Carousel.Item>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="position-absolute top-0 end-0"
+                    onClick={() => handleRemoveImage(img.id)}
+                  >
+                    &times;
+                  </Button>
+                </Col>
               ))}
-            </Carousel>
+            </Row>
           )}
 
           <div className="d-flex justify-content-end gap-2">
