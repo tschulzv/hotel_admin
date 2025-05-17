@@ -32,7 +32,7 @@ const RoomTypeNewPage = () => {
     };
 
     const fetchRoomType = async () => {
-      if (id) {
+      if (id && id.trim() !== '') {
         try {
           const response = await axios.get(`TiposHabitaciones/${id}`);
           const roomType = response.data;
@@ -102,7 +102,9 @@ const RoomTypeNewPage = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("Id", id || '');
+    if (id && id.trim() !== '') { 
+      formData.append("Id", id || '')
+    };
     formData.append('Nombre', roomTypeData.nombre);
     formData.append('Descripcion', roomTypeData.descripcion);
     formData.append('PrecioBase', parseFloat(roomTypeData.precioBase));
@@ -119,7 +121,10 @@ const RoomTypeNewPage = () => {
     });
 
     try {
-      if (id) {
+      for (let pair of formData.entries()) {
+      console.log(pair[0] + ':', pair[1]);
+    }
+      if (id && id.trim() !== '') {
         await axios.put(`TiposHabitaciones/${id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
