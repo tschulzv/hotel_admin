@@ -11,9 +11,20 @@ function ReservationDetails() {
 
   useEffect(() => {
     axios.get(`/Reservas/${id}`)
-      .then(response => {
-        setReservation(response.data)
-        setDetails(response.data.detalles || [])
+      .then(async response => {
+        const reserva = response.data;
+
+        try {
+          const estadoResponse = await axios.get(`/EstadoReservas/${reserva.estadoId}`);
+          const estado = estadoResponse.data;
+
+          reserva.estadoNombre = estado.nombre;
+        } catch (error) {
+          console.error("Error al obtener el estado de la reserva:", error);
+        }
+
+        setReservation(reserva);
+        setDetails(reserva.detalles || []);
       })
       .catch(error => {
         console.error("Error al obtener la reserva:", error)
@@ -27,6 +38,14 @@ function ReservationDetails() {
       </Container>
     )
   }
+
+  // formatear la fecha
+  const obtenerFormatoFecha = (fechaStr) => {
+    const fecha = new Date(fechaStr)
+    const opciones = { year: 'numeric', month: '2-digit', day: '2-digit' }
+    const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones)
+    return fechaFormateada 
+  };
 
   return (
     <Container className="py-4" style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
@@ -50,12 +69,12 @@ function ReservationDetails() {
           <h4 className="mb-3">Detalles</h4>
           <Card className="p-4 shadow-sm border-0 rounded-4">
             <ListGroup variant="flush no-borders">
-              <ListGroup.Item><strong>Titular:</strong> {reservation.nombre}</ListGroup.Item>
+              <ListGroup.Item><strong>Titular:</strong> {reservation.nombreCliente}</ListGroup.Item>
               <ListGroup.Item><strong>Código:</strong> {reservation.codigo}</ListGroup.Item>
-              <ListGroup.Item><strong>Check-In:</strong> {reservation.fechaIngreso}</ListGroup.Item>
-              <ListGroup.Item><strong>Check-Out:</strong> {reservation.fechaSalida}</ListGroup.Item>
+              <ListGroup.Item><strong>Check-In:</strong> {obtenerFormatoFecha(reservation.fechaIngreso)}</ListGroup.Item>
+              <ListGroup.Item><strong>Check-Out:</strong> {obtenerFormatoFecha(reservation.fechaSalida)}</ListGroup.Item>
               <ListGroup.Item><strong>Hora estimada de llegada:</strong> {reservation.llegadaEstimada}</ListGroup.Item>
-              <ListGroup.Item><strong>Estado:</strong> {reservation.estado}</ListGroup.Item>
+              <ListGroup.Item><strong>Estado:</strong> {reservation.estadoNombre}</ListGroup.Item>
               <ListGroup.Item><strong>Observaciones:</strong> {reservation.comentarios}</ListGroup.Item>
             </ListGroup>
           </Card>
