@@ -12,7 +12,7 @@ const ReservaDetails = ({solicitud}) => {
   const [loading, setLoading] = useState(true);
   const [cliente, setCliente] = useState({});
   const [reserva, setReserva] = useState();
-  const [disponibles, setDisponibles] = useState();
+  const [disponibles, setDisponibles] = useState([]);
   const [parsedCheckin, setParsedCheckin] = useState('');
   const [parsedCheckout, setParsedCheckout] = useState('');
   const [habitacionesSeleccionadas, setHabitacionesSeleccionadas] = useState({});
@@ -54,7 +54,9 @@ const ReservaDetails = ({solicitud}) => {
             console.log(response.data, "dispo", solicitud?.reservaId)
             setDisponibles(response.data);
         } catch (error) {
-            console.error('Error cargando datos:', error);
+            if (error.response && error.response.status === 404) {
+                console.error('Error cargando datos:', error);
+            }
         }
         setLoading(false);
         })();
@@ -67,6 +69,15 @@ const ReservaDetails = ({solicitud}) => {
     }));
     };
 
+    const handleAsignar = async () => {
+        await axios.post('/Reservas/asignarHabitaciones', {
+        reservaId: solicitud.reservaId,
+        asignaciones: Object.entries(habitacionesSeleccionadas).map(([index, habitacionId]) => ({
+            detalleReservaId: reserva.detalles[index].id,
+            habitacionId: habitacionId
+        }))
+    });
+    }
 
     return (
         reserva &&
@@ -87,7 +98,6 @@ const ReservaDetails = ({solicitud}) => {
         </Col>
         <Col md={6}>
         
-        {/* Se muestran los detalles de la solicitud (cambiar esta parte despues)*/}
         <div className="mb-3 p-3 border rounded">
             <h5>Solicitud</h5>
             <p><strong>Check-In:</strong> {parsedCheckin}</p>
@@ -146,8 +156,8 @@ const ReservaDetails = ({solicitud}) => {
 
       {/* Botones para confirmar o rechazar la solicitud */}
       <div className="mt-4 d-flex justify-content-center gap-2">
-        <Button variant="primary">Confirmar</Button> {/* Agregarle su funcion despues */}
-        <Button variant="secondary">Rechazar</Button> {/* Agregarle su funcion despues */}
+        <Button variant="primary" onClick={handleAsignar}>Confirmar</Button>
+        <Button variant="secondary">Rechazar</Button> {/*agregar funcion*/}
       </div>
       </>
 )}
