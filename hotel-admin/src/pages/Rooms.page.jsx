@@ -42,13 +42,6 @@ function Rooms() {
     // array de acciones para la tabla
     const actions = [
         {
-            icon: <i className="material-icons">visibility</i>,
-            label: "Ver",
-            onClick: (rowData) => {
-                navigate(`/reservations/${rowData.id}`);
-            },
-        },
-        {
             icon: <i className="material-icons">edit</i>,
             label: "Editar",
             onClick: (rowData) => {
@@ -120,8 +113,8 @@ function Rooms() {
             setHabitaciones(nuevasHabitaciones);
             setShowModalEliminar(false);
         } catch (error) {
-            console.error("Error al eliminar la habitación:", error);
-            setErrorEliminar('Error al eliminar la habitación.');
+            setErrorEliminar(error.response?.data);
+            setShowModalEliminar(true);
         } finally {
             setEliminando(false);
         }
@@ -170,8 +163,8 @@ function Rooms() {
                     <Button variant="primary" onClick={() => navigate('/rooms/new')}>
                         Nueva Habitación
                     </Button>
-                    <Button variant="primary" onClick={() => navigate('/roomstype/new')}>
-                        Nuevo Tipo Habitación
+                    <Button variant="secondary" onClick={() => navigate('/roomstype')}>
+                        Ver Tipos de Habitación
                     </Button>
                 </div>
             </div>

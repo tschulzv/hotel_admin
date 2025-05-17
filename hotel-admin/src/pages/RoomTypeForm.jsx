@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Form, Button, Row, Col, Card } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Container, Form, Button, Row, Col, Card, Carousel, Image } from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 
 const RoomTypeNewPage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [servicios, setServicios] = useState([]);
   const [roomTypeData, setRoomTypeData] = useState({
@@ -17,7 +18,9 @@ const RoomTypeNewPage = () => {
     activo: true
   });
 
-  // Cargar servicios disponibles
+  const [imagenes, setImagenes] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+
   useEffect(() => {
     const fetchServicios = async () => {
       try {
@@ -27,8 +30,32 @@ const RoomTypeNewPage = () => {
         console.error('Error cargando servicios:', error);
       }
     };
+
+    const fetchRoomType = async () => {
+      if (id) {
+        try {
+          const response = await axios.get(`TiposHabitaciones/${id}`);
+          const roomType = response.data;
+          setRoomTypeData({
+            nombre: roomType.nombre,
+            descripcion: roomType.descripcion,
+            precioBase: roomType.precioBase,
+            cantidadDisponible: roomType.cantidadDisponible,
+            maximaOcupacion: roomType.maximaOcupacion,
+            tamanho: roomType.tamanho,
+            servicios: roomType.servicios.map(s => s.id),
+            activo: roomType.activo
+          });
+          setPreviewUrls(roomType.imagenes.map(img => ({ url: img.url, id: img.id })));
+        } catch (error) {
+          console.error('Error cargando el tipo de habitación:', error);
+        }
+      }
+    };
+
     fetchServicios();
-  }, []);
+    fetchRoomType();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -43,45 +70,78 @@ const RoomTypeNewPage = () => {
       const nuevosServicios = prev.servicios.includes(servicioId)
         ? prev.servicios.filter(id => id !== servicioId)
         : [...prev.servicios, servicioId];
-      
+
       return { ...prev, servicios: nuevosServicios };
     });
   };
 
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImagenes(files);
+
+    const urls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(prev => [...prev, ...urls.map(url => ({ url, id: null }))]);
+  };
+
+  const handleRemoveImage = (imageId) => {
+    if (imageId) {
+      // Eliminar imagen existente del backend
+      console.log(imageId);
+      axios.delete(`ImagenHabitacions/${imageId}`)
+        .then(() => {
+          setPreviewUrls(prev => prev.filter(img => img.id !== imageId));
+        })
+        .catch(error => console.error('Error eliminando imagen:', error));
+    } else {
+      // Eliminar imagen recién cargada
+      setPreviewUrls(prev => prev.filter(img => img.id !== imageId));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const payload = {
-      Nombre: roomTypeData.nombre,
-      Descripcion: roomTypeData.descripcion,
-      PrecioBase: parseFloat(roomTypeData.precioBase),
-      CantidadDisponible: parseInt(roomTypeData.cantidadDisponible),
-      MaximaOcupacion: parseInt(roomTypeData.maximaOcupacion),
-      Tamanho: parseInt(roomTypeData.tamanho),
-      Servicios: roomTypeData.servicios.map(id => ({
-        Id: id,
-        Nombre: servicios.find(s => s.id === id)?.nombre,  // Agregar el nombre del servicio
-        IconName: servicios.find(s => s.id === id)?.iconName  // Agregar el icono del servicio
-      }))
-    };
-  
+
+    const formData = new FormData();
+    formData.append("Id", id || '');
+    formData.append('Nombre', roomTypeData.nombre);
+    formData.append('Descripcion', roomTypeData.descripcion);
+    formData.append('PrecioBase', parseFloat(roomTypeData.precioBase));
+    formData.append('CantidadDisponible', parseInt(roomTypeData.cantidadDisponible));
+    formData.append('MaximaOcupacion', parseInt(roomTypeData.maximaOcupacion));
+    formData.append('Tamanho', parseInt(roomTypeData.tamanho));
+
+    roomTypeData.servicios.forEach(id => {
+      formData.append('Servicios', id);
+    });
+
+    imagenes.forEach((imagen) => {
+      formData.append('Imagenes', imagen);
+    });
+
     try {
-      await axios.post('TiposHabitaciones', payload);
-      navigate('/rooms');
+      if (id) {
+        await axios.put(`TiposHabitaciones/${id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        await axios.post('TiposHabitaciones/ConImagenes', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      navigate('/roomstype');
     } catch (error) {
       if (error.response) {
         console.error('Detalles del error 400:', error.response.data);
       } else {
-        console.error('Error creando el tipo de habitación:', error);
+        console.error('Error creando o actualizando el tipo de habitación:', error);
       }
     }
   };
-  
 
   return (
     <Container className="py-4">
       <Card className="p-4 shadow-sm">
-        <h4 className="mb-4">Crear Nuevo Tipo de Habitación</h4>
+        <h4 className="mb-4">{id ? 'Editar Tipo de Habitación' : 'Crear Nuevo Tipo de Habitación'}</h4>
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
@@ -161,7 +221,7 @@ const RoomTypeNewPage = () => {
             <Row>
               {servicios.map(servicio => (
                 <Col md={4} key={servicio.id}>
-                  <Form.Check 
+                  <Form.Check
                     type="checkbox"
                     id={`servicio-${servicio.id}`}
                     label={servicio.nombre}
@@ -183,6 +243,39 @@ const RoomTypeNewPage = () => {
               onChange={handleChange}
             />
           </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Imágenes</Form.Label>
+            <Form.Control
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </Form.Group>
+
+          {previewUrls.length > 0 && (
+            <Row className="mb-3">
+              {previewUrls.map((img, idx) => (
+                <Col md={3} key={idx} className="position-relative">
+                  <Image
+                    src={img.url}
+                    alt={`Imagen ${idx + 1}`}
+                    thumbnail
+                    style={{ maxHeight: '150px', objectFit: 'cover' }}
+                  />
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="position-absolute top-0 end-0"
+                    onClick={() => handleRemoveImage(img.id)}
+                  >
+                    &times;
+                  </Button>
+                </Col>
+              ))}
+            </Row>
+          )}
 
           <div className="d-flex justify-content-end gap-2">
             <Button variant="primary" type="submit">
