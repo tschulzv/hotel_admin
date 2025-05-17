@@ -102,9 +102,9 @@ const RoomTypeNewPage = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    if (id && id.trim() !== '') { 
-      formData.append("Id", id || '')
-    };
+    if (id) {
+      formData.append("Id", id); // Solo incluir el Id si es una actualización
+    }
     formData.append('Nombre', roomTypeData.nombre);
     formData.append('Descripcion', roomTypeData.descripcion);
     formData.append('PrecioBase', parseFloat(roomTypeData.precioBase));
@@ -119,7 +119,6 @@ const RoomTypeNewPage = () => {
     imagenes.forEach((imagen) => {
       formData.append('Imagenes', imagen);
     });
-
     try {
       for (let pair of formData.entries()) {
       console.log(pair[0] + ':', pair[1]);
