@@ -137,6 +137,25 @@ const Notifications = () => {
     });
   };
 
+  const truncarTexto = (texto, maxLongitud) => {
+    return texto.length > maxLongitud ? texto.slice(0, maxLongitud - 3) + "..." : texto;
+  };
+
+  const getResumen = (n) => {
+    let resumen = "";
+
+    if (n.tipo === "Cancelación") {
+      resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} desea cancelar su reserva`;
+    } else if (n.tipo === "Reserva") {
+      resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} solicita reserva de ${n.reserva.detalles[0].tipoHabitacion}`;
+    } else if (n.tipo === "Consulta") {
+      resumen = `${n.consulta.nombre} desea saber "${n.consulta.mensaje}"`;
+    }
+
+    return truncarTexto(resumen, 100); 
+  };
+
+
   return (
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -173,7 +192,10 @@ const Notifications = () => {
             style={{ fontSize: "0.9rem" }}
           >
             <Col xs={8}>
-              <strong>Solicitud de {n.tipo}</strong>
+            <p>
+              <strong>{n.tipo === "Consulta" ? "Consulta: " : `Solicitud de ${n.tipo}: `}</strong>
+              {getResumen(n)}
+            </p>
             </Col>
 
             <Col xs={4} className="text-end">
