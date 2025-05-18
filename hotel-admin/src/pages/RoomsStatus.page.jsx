@@ -46,7 +46,7 @@ function RoomStatus() {
         {
             icon: 'edit',
             label: 'Editar',
-            onClick: (rowData) => navigate(`/roomstype/edit/${rowData.id}`),
+            onClick: (rowData) => navigate(`/roomsstatus/edit/${rowData.id}`),
         },
         {
             icon: 'delete',
@@ -63,7 +63,7 @@ function RoomStatus() {
                 </Button>
                 <h4>Estados de Habitación</h4>
                 <div className="d-flex gap-2">
-                    <Button onClick={() => navigate('/roomstype/new')}>Nuevo estado</Button>
+                    <Button onClick={() => navigate('/roomsstatus/new')}>Nuevo estado</Button>
                 </div>
             </div>
 
