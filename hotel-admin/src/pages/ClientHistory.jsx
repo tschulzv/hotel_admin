@@ -5,6 +5,8 @@ import PaginatedTable from '../components/PaginatedTable';
 import TableFilterBar from '../components/TableFilterBar';
 import axios from '../config/axiosConfig';
 import { format, parseISO, isValid } from 'date-fns';
+import Badge from 'react-bootstrap/Badge';
+import Spinner from 'react-bootstrap/Spinner';
 
 const Reservations = () => {
     const navigate = useNavigate();
@@ -12,12 +14,10 @@ const Reservations = () => {
     const [filteredData, setFilteredData] = useState([]);
     const {id} = useParams();
     const [loading, setLoading] = useState(true);
-    const [filaSeleccionada, setFilaSeleccionada] = useState(null);
-    const [show, setShow] = useState(false); // mostrar o no el modal
     const [searchTerm, setSearchTerm] = useState();
     const [sortKey, setSort] = useState(["codigo"]);
 
-    const getStatusBadge = (statusId)=>{
+    const getStatusBadge = (statusId)=>{// devuelve un badge dependiendo del id del estado
     switch (statusId) {
       case 1:
         return <Badge bg="warning">Pendiente</Badge>
@@ -55,21 +55,24 @@ const Reservations = () => {
             estadoId: getStatusBadge(estadoId)
           };
         });
-        setReservas(limpio);
+        setOriginalData(limpio);
         setFilteredData(limpio);
-        console.log(limpio);
-        setOriginalData(limpio); 
+        setLoading(false);
+         
       })
       .catch(error => console.error("Error obteniendo reservas:", error));
     }, []);
 
+    
     // array de acciones para la tabla
     const actions = [
         {
             icon: <i className="material-icons">visibility</i>, // o el nombre del ícono
             label: "Ver",
-            onClick: (rowData) => alert("ver datos"), // acción a ejecutar
-        },
+            onClick: (rowData) => {
+              navigate(`/reservations/${rowData.id}`);
+            }
+            },
     ]
   
     const onSearch = () => { 
@@ -81,9 +84,6 @@ const Reservations = () => {
         .includes(searchTerm.toLowerCase())))
     }
   
-    const onBtnClick = () => {
-      navigate('/reservations/new')
-    }
   
     // revierte los datos filtrados en la busqueda a los originales
     const clearSearch = () => {
@@ -108,11 +108,20 @@ const Reservations = () => {
 
   return (
     <Container className="px-5" fluid>
-         <h1>Historial del Cliente</h1>
+        <div className="d-flex align-items-center mb-4">
+          <span className="material-icons me-2" role="button" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }} title="Volver">
+            arrow_back
+          </span>
+          <h2 className="mb-0" style={{ color: '#2c3e50' }}>Historial del Cliente</h2>
+        </div>
          <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={false} />
-         { loading ? <h4>Cargando</h4> :
-          <PaginatedTable data={sortedData} rowsPerPage={10} rowActions={actions}/>
-         }
+         
+        {
+        loading ? <div className="text-center my-5">
+                    <Spinner animation="border" variant="primary" />
+                  </div> : <PaginatedTable headers={headers} data={sortedData} rowsPerPage={10} rowActions={actions}/>
+        }
+
     </Container>
   )
 }
