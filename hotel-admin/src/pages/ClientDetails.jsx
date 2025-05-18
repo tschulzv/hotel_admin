@@ -33,15 +33,32 @@ function ClientDetails() {
           }
           try {
             const last = await axios.get(`/Reservas/cliente/${id}/ultima`);
-            console.log(response.data)
+            // trae el estado de la reserva
+            try {
+              const estadoResponse = await axios.get(`/EstadoReservas/${last.data.estadoId}`);
+              const estado = estadoResponse.data;
+              last.data.estadoNombre = estado.nombre;
+            } catch (error) { 
+              console.error("Error al obtener el estado de la reserva:", error);
+            }
+            
+            console.log(last.data)
             if(last){
-              setLastBook(last)
+              setLastBook(last.data)
             }
           } catch (error) {
           console.error('Error cargando reserva:', error);
           }
       })();
     }, [id]);
+
+    // formatear la fecha
+  const obtenerFormatoFecha = (fechaStr) => {
+    const fecha = new Date(fechaStr)
+    const opciones = { year: 'numeric', month: '2-digit', day: '2-digit' }
+    const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones)
+    return fechaFormateada 
+  };
 
   return (
     <Container className="py-4">
@@ -64,7 +81,7 @@ function ClientDetails() {
                   <ListGroup.Item><strong>Teléfono:</strong> {client.telefono}</ListGroup.Item>
                   <ListGroup.Item><strong>Email:</strong> {client.email}</ListGroup.Item>
                   <ListGroup.Item><strong>Nacionalidad:</strong> {client.nacionalidad}</ListGroup.Item>
-                  <ListGroup.Item><strong>Fecha de Registro:</strong> {client.creacion}</ListGroup.Item>
+                  <ListGroup.Item><strong>Fecha de Registro:</strong> {obtenerFormatoFecha(client.creacion)}</ListGroup.Item>
                   <ListGroup.Item><strong>Observaciones:</strong> {client.comentarios ?? " - "}</ListGroup.Item>
                 </ListGroup>
               </Card.Body>
@@ -78,11 +95,11 @@ function ClientDetails() {
                 { lastBook ? 
                   <> 
                   <ListGroup variant="flush no-borders">
-                    <ListGroup.Item><strong>Código:</strong>{lastBook.codigo}</ListGroup.Item>
+                    <ListGroup.Item><strong>Código:</strong> {lastBook.codigo}</ListGroup.Item>
                     <ListGroup.Item><strong>Habitación(es):</strong></ListGroup.Item>
-                    <ListGroup.Item><strong>Check-In:</strong>{lastBook.fechaIngreso}</ListGroup.Item>
-                    <ListGroup.Item><strong>Check-Out:</strong>{lastBook.fechaSalida}</ListGroup.Item>
-                    <ListGroup.Item><strong>Estado:</strong></ListGroup.Item>
+                    <ListGroup.Item><strong>Check-In:</strong> {obtenerFormatoFecha(lastBook.fechaIngreso)}</ListGroup.Item>
+                    <ListGroup.Item><strong>Check-Out:</strong> {obtenerFormatoFecha(lastBook.fechaSalida)}</ListGroup.Item>
+                    <ListGroup.Item><strong>Estado:</strong> {lastBook.estadoNombre}</ListGroup.Item>
                   </ListGroup>
                   </> : <p>El cliente aún no hizo reservas.</p>
                 }
