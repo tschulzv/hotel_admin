@@ -3,6 +3,7 @@ import { Container, Form, Button, Row, Col, Card, Modal } from 'react-bootstrap'
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import countryList from 'react-select-country-list';
 import axios from '../config/axiosConfig';
+import { toast } from 'react-toastify';
 
 const ReservationForm = () => {
   const navigate = useNavigate();
@@ -157,9 +158,15 @@ const ReservationForm = () => {
       } else {
         await axios.post("/Reservas", payload);
       }
+      toast.success(`Reserva ${isEditMode ? "editada" : "creada"} con éxito`, {
+        onClose: () => {
+        navigate('/reservations'); // Navega después que el toast desaparece
+        },
+        autoClose: 3000, 
+      });
       navigate('/reservations');  // redirigir después de guardar
     } catch (error) {
-      console.error("Error enviando reserva:", error);
+      toast.error("Error al guardar los cambios");
     }
   };
 

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Container, Row, Col, Spinner } from 'react-bootstrap';
 import axios from '../config/axiosConfig';
 import { format, parseISO, isValid } from 'date-fns';
+import { toast } from 'react-toastify';
 
 const habitacionesDisponibles = [201, 202, 318, 345];
 
@@ -16,7 +17,7 @@ const ReservaDetails = ({solicitud}) => {
   const [parsedCheckin, setParsedCheckin] = useState('');
   const [parsedCheckout, setParsedCheckout] = useState('');
   const [habitacionesSeleccionadas, setHabitacionesSeleccionadas] = useState({});
-
+  const [disabled, setDisabled] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -35,6 +36,10 @@ const ReservaDetails = ({solicitud}) => {
         try {
             const response = await axios.get(`/Reservas/${solicitud?.reservaId}`);
             setReserva(response.data);
+            // si la reserva no tiene estado 'Pendiente' desactivar botones etc
+            if(response.data.estadoId != 1){
+                setDisabled(true)
+            }
         } catch (error) {
             console.error('Error cargando datos:', error);
         }
@@ -69,14 +74,52 @@ const ReservaDetails = ({solicitud}) => {
     }));
     };
 
-    const handleAsignar = async () => {
-        await axios.post('/Reservas/asignarHabitaciones', {
-        reservaId: solicitud.reservaId,
-        asignaciones: Object.entries(habitacionesSeleccionadas).map(([index, habitacionId]) => ({
-            detalleReservaId: reserva.detalles[index].id,
-            habitacionId: habitacionId
-        }))
-    });
+    const handleConfirmar = async () => {
+        try {
+            const detallesOriginales = solicitud.reserva.detalles;
+
+            // Verificamos que cada habitación esté asignada
+            const faltanHabitaciones = detallesOriginales.some((_, idx) => {
+                const habitacionId = habitacionesSeleccionadas[idx];
+                return habitacionId == null || habitacionId === "";
+            });
+
+            if (faltanHabitaciones) {
+                toast.error("Debe asignar una habitación a cada detalle de reserva antes de confirmar.");
+                return;
+            }
+
+            // Clonamos la reserva original
+            const reservaActualizada = { ...solicitud.reserva };
+
+            // Actualizamos los habitacionId de los detalles
+            reservaActualizada.detalles = detallesOriginales.map((detalle, idx) => ({
+                ...detalle,
+                habitacionId: habitacionesSeleccionadas[idx]
+            }));
+
+            await axios.put(`/Reservas/${solicitud.reservaId}/confirm`, reservaActualizada);
+            toast.success("Reserva confirmada correctamente.", {
+                onClose: () => { navigate('/notifications'); // Navega después que el toast desaparece
+            },
+            autoClose: 3000 });
+        } catch (error) {
+            console.error("Error al confirmar la reserva:", error.response?.data || error.message);
+            toast.error("Ocurrió un error al confirmar la reserva.");
+        }
+    };
+
+    const handleReject = async () => {
+        try {
+            await axios.put(`/Reservas/${solicitud.reservaId}/reject`);
+            toast.success("Reserva rechazada correctamente.", {
+                onClose: () => { navigate('/notifications'); // Navega después que el toast desaparece
+            },
+            autoClose: 3000 });
+        } catch(error){
+            console.error("Error al confirmar la reserva:", error.response?.data || error.message);
+            toast.error("Ocurrió un error al rechazar la reserva.");
+        }
     }
 
     return (
@@ -120,7 +163,7 @@ const ReservaDetails = ({solicitud}) => {
       </Row>
 
 
-      {reserva?.detalles?.map((detalle, idx) => (
+      {!disabled && reserva?.detalles?.map((detalle, idx) => (
         <div key={idx} className="mb-3">
             <h6>Habitación {detalle.tipoHabitacion}</h6>
             {disponibles.length > 0 ? disponibles.filter((h) => h.tipoHabitacionId === detalle.tipoHabitacionId)
@@ -156,8 +199,8 @@ const ReservaDetails = ({solicitud}) => {
 
       {/* Botones para confirmar o rechazar la solicitud */}
       <div className="mt-4 d-flex justify-content-center gap-2">
-        <Button variant="primary" onClick={handleAsignar}>Confirmar</Button>
-        <Button variant="secondary">Rechazar</Button> {/*agregar funcion*/}
+        <Button disabled={disabled} variant="primary" onClick={handleConfirmar}>Confirmar</Button>
+        <Button disabled={disabled} variant="secondary">Rechazar</Button> {/*agregar funcion*/}
       </div>
       </>
 )}

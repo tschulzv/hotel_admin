@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select'
 import countryList from 'react-select-country-list'
 import axios from '../config/axiosConfig';
+import { toast } from 'react-toastify';
 
 const ClientForm = () => {
 
@@ -71,9 +72,15 @@ const ClientForm = () => {
           activo: true
         });
       }
-      navigate('/clients');  // redirigir de vuelta después de guardar.
+      toast.success(`Cliente ${isEditMode ? "editado" : "creado"} con éxito`, {
+      onClose: () => {
+        navigate('/clients'); // Navega después que el toast desaparece
+      },
+      autoClose: 3000, 
+    });
+      
     } catch (error) {
-      console.error("Error al guardar el cliente:", error);
+      toast.error(`Error al guardar los cambios.`)
     }
   };
   
