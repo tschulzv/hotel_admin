@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from '../config/axiosConfig';
-import { Container, Spinner, Alert, Button } from 'react-bootstrap';
+import { Container, Spinner, Alert, Button, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import PaginatedTable from '../components/PaginatedTable.jsx'; // Importar el componente de tabla paginada
 
@@ -8,6 +8,8 @@ function RoomStatus() {
     const [estados, setEstados] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [filaSeleccionada, setFilaSeleccionada] = useState(null);
+    const [show, setShow] = useState(false); // mostrar o no el modal
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,12 +30,16 @@ function RoomStatus() {
         fetchEstados();
     }, []);
 
+    
+    // funcion para manejar el cierre del modal
+    const handleClose = () => setShow(false);
+
     const handleEliminarEstado = async (id) => {
         try {
             await axios.delete(`/EstadoHabitacions/${id}`);
             setEstados((prevEstados) => prevEstados.filter((estado) => estado.id !== id));
         } catch (error) {
-            console.error('Error eliminando estado de habitación:', error);
+            console.error('Error al intentar eliminar el estado de habitación:', error);
         }
     };
 
@@ -51,9 +57,14 @@ function RoomStatus() {
         {
             icon: 'delete',
             label: 'Eliminar',
-            onClick: (rowData) => handleEliminarEstado(rowData.id),
+            onClick: (item) => {
+              setFilaSeleccionada(item);
+              setShow(true);
+            }
         },
     ];
+
+    
 
     return (
         <Container className="mt-4">
@@ -78,6 +89,31 @@ function RoomStatus() {
             ) : (
                 <PaginatedTable headers={headers} data={estados} rowActions={rowActions}/>
             )}
+
+            {/* MODAL PARA ELIMINACION*/}
+         <Modal show={show} onHide={handleClose} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirmar eliminación</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {filaSeleccionada && (
+              <>
+                <p>
+                  ¿Estás seguro que deseas eliminar el estado <strong>{filaSeleccionada.nombre}</strong>?
+                </p>
+              </>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Cancelar
+            </Button>
+            <Button variant="danger" onClick={handleEliminarEstado}>
+              Eliminar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
             
         </Container>
     );
