@@ -1,23 +1,26 @@
-import { useState, useEffect } from 'react';
+// src/pages/Rooms.page.jsx
+
+import React, { useState, useEffect } from 'react';
 import axios from '../config/axiosConfig';
 import RoomCard from '../components/RoomCard.jsx';
 import PaginatedTable from '../components/PaginatedTable.jsx';
-import { Container, Dropdown, Button, Row, Col, Spinner, Alert, Modal } from 'react-bootstrap';
+import {
+    Container, Dropdown, Button, Row, Col,
+    Spinner, Alert, Modal
+} from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaBars, FaThLarge, FaTrash } from 'react-icons/fa';
 
-const getEstado = (estado) => {
-    if (!estado) return { color: "secondary", icono: "desconocido" };
+const getEstado = estado => {
+    if (!estado) return { color: 'secondary', icono: 'desconocido' };
     switch (estado.toUpperCase()) {
-        case "DISPONIBLE":
-            return { color: "success", icono: "disponible" };
-        case "OCUPADO":
-            return { color: "danger", icono: "ocupado" };
-        case "EN LIMPIEZA":
-            return { color: "primary", icono: "en limpieza" };
-        case "LATE CHECKOUT":
-            return { color: "danger", icono: "late checkout" };
-        default:
-            return { color: "secondary", icono: "desconocido" };
+        case 'DISPONIBLE': return { color: 'success', icono: 'disponible' };
+        case 'OCUPADO': return { color: 'danger', icono: 'ocupado' };
+        case 'EN LIMPIEZA': return { color: 'primary', icono: 'en limpieza' };
+        case 'LATE CHECKOUT': return { color: 'warning', icono: 'late checkout' };
+        default: return { color: 'secondary', icono: 'desconocido' };
     }
 };
 
@@ -28,186 +31,161 @@ function Rooms() {
     const [tipos, setTipos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [mostrarTabla, setMostrarTabla] = useState(false);
+    const [isListView, setIsListView] = useState(false);
     const [estadoFiltro, setEstadoFiltro] = useState('');
     const [tipoFiltro, setTipoFiltro] = useState('');
     const [showModalEliminar, setShowModalEliminar] = useState(false);
     const [habitacionAEliminar, setHabitacionAEliminar] = useState(null);
     const [eliminando, setEliminando] = useState(false);
-    const [errorEliminar, setErrorEliminar] = useState('');
-
-    const headers = [{ key: "id", label: "ID" }, { key: "numeroHabitacion", label: "Numero" }, { key: "tipoHabitacionNombre", label: "Tipo" }, { key: "estadoNombre", label: "Estado" },
-    { key: "observaciones", label: "Observaciones" },]
-
-    // array de acciones para la tabla
-    const actions = [
-        {
-            icon: <i className="material-icons">edit</i>,
-            label: "Editar",
-            onClick: (rowData) => {
-                navigate(`/rooms/edit/${rowData.id}`);
-            },
-        },
-        {
-            icon: <i className="material-icons">delete</i>,
-            label: "Eliminar",
-            onClick: (rowData) => {
-                setHabitacionAEliminar(rowData);
-                setShowModalEliminar(true);
-            },
-        }
-    ];
 
     useEffect(() => {
-        const fetchHabitaciones = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get('/Habitacions');
-                setHabitaciones(response.data);
-                setLoading(false);
+                const [habRes, estRes, tipoRes] = await Promise.all([
+                    axios.get('/Habitacions'),
+                    axios.get('/EstadoHabitacions'),
+                    axios.get('/TiposHabitaciones')
+                ]);
+                setHabitaciones(habRes.data);
+                setEstados(estRes.data);
+                setTipos(tipoRes.data);
             } catch (err) {
                 console.error(err);
-                setError('Error al cargar las habitaciones');
+                setError('Error cargando datos.');
+                toast.error('No se pudieron cargar los datos.');
+            } finally {
                 setLoading(false);
             }
         };
-
-        fetchHabitaciones();
+        fetchData();
     }, []);
 
-    useEffect(() => {
-        const fetchFiltros = async () => {
-            try {
-                const [estadosRes, tiposRes] = await Promise.all([
-                    axios.get("EstadoHabitacions"),
-                    axios.get("TiposHabitaciones")
-                ]);
-                setEstados(estadosRes.data);
-                setTipos(tiposRes.data);
-            } catch (err) {
-                console.error("Error cargando filtros:", err);
-            }
-        };
+    const habitacionesFiltradas = habitaciones.filter(hab =>
+        (estadoFiltro === '' || hab.estadoNombre === estadoFiltro) &&
+        (tipoFiltro === '' || hab.tipoHabitacionNombre === tipoFiltro)
+    );
 
-        fetchFiltros();
-    }, []);
+    const abrirEliminar = hab => {
+        setHabitacionAEliminar(hab);
+        setShowModalEliminar(true);
+    };
 
-    const habitacionesFiltradas = habitaciones.filter(hab => {
-        return (
-            (estadoFiltro === '' || hab.estadoNombre === estadoFiltro) &&
-            (tipoFiltro === '' || hab.tipoHabitacionNombre === tipoFiltro)
-        );
-    });
-
-    const handleCerrarModalEliminar = () => setShowModalEliminar(false);
-
-    const handleEliminarHabitacion = async () => {
+    const handleEliminar = async () => {
         if (!habitacionAEliminar) return;
-
         setEliminando(true);
-        setErrorEliminar('');
-
         try {
             await axios.delete(`/Habitacions/${habitacionAEliminar.id}`);
-            // Actualizar la lista de habitaciones después de la eliminación exitosa
-            const nuevasHabitaciones = habitaciones.filter(hab => hab.id !== habitacionAEliminar.id);
-            setHabitaciones(nuevasHabitaciones);
+            setHabitaciones(prev => prev.filter(h => h.id !== habitacionAEliminar.id));
+            toast.success('Habitación eliminada correctamente');
             setShowModalEliminar(false);
-        } catch (error) {
-            setErrorEliminar(error.response?.data);
-            setShowModalEliminar(true);
+            setHabitacionAEliminar(null);
+        } catch (err) {
+            console.error(err);
+            const msg = err.response?.data || 'Error al eliminar habitación';
+            toast.error(msg);
         } finally {
             setEliminando(false);
         }
     };
 
+    if (loading) return (
+        <Container fluid className="text-center my-5">
+            <Spinner animation="border" />
+        </Container>
+    );
+
     return (
         <Container fluid>
+            <ToastContainer />
             <h4 className="text-center my-4">VISTA GENERAL DE HABITACIONES</h4>
 
             <div className="d-flex justify-content-between mb-3">
                 <div className="d-flex gap-2">
-                    {/* Filtro de Estado de Habitación */}
                     <Dropdown onSelect={setEstadoFiltro}>
                         <Dropdown.Toggle variant="outline-secondary">
-                            {estadoFiltro || "Estado Habitación"}
+                            {estadoFiltro || 'Estado'}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Item eventKey="">Todos</Dropdown.Item>
-                            {estados.map((estado) => (
-                                <Dropdown.Item key={estado.id} eventKey={estado.nombre}>
-                                    {estado.nombre}
+                            {estados.map(e => (
+                                <Dropdown.Item key={e.id} eventKey={e.nombre}>
+                                    {e.nombre}
                                 </Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
-
-                    {/* Filtro de Tipo de Habitación */}
                     <Dropdown onSelect={setTipoFiltro}>
                         <Dropdown.Toggle variant="outline-secondary">
-                            {tipoFiltro || "Tipo Habitación"}
+                            {tipoFiltro || 'Tipo'}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Item eventKey="">Todos</Dropdown.Item>
-                            {tipos.map((tipo) => (
-                                <Dropdown.Item key={tipo.id} eventKey={tipo.nombre}>
-                                    {tipo.nombre}
+                            {tipos.map(t => (
+                                <Dropdown.Item key={t.id} eventKey={t.nombre}>
+                                    {t.nombre}
                                 </Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>
                 <div className="d-flex gap-2">
-                    <Button variant="outline-primary" onClick={() => setMostrarTabla(!mostrarTabla)}>
-                        {mostrarTabla ? 'Mostrar Tarjetas' : 'Mostrar Tabla'}
+                    <Button variant="outline-primary" onClick={() => setIsListView(v => !v)}>
+                        {isListView ? <FaThLarge /> : <FaBars />}
                     </Button>
                     <Button variant="primary" onClick={() => navigate('/rooms/new')}>
                         Nueva Habitación
                     </Button>
                     <Button variant="secondary" onClick={() => navigate('/roomstype')}>
-                        Ver Tipos de Habitación
+                        Tipos Habitación
+                    </Button>
+                    <Button variant="secondary" onClick={() => navigate('/roomsstatus')}>
+                        Ver Estados de Habitación
                     </Button>
                 </div>
             </div>
 
-            {loading ? (
-                <div className="text-center my-5">
-                    <Spinner animation="border" variant="primary" />
-                </div>
-            ) : error ? (
-                <Alert variant="danger" className="text-center">{error}</Alert>
-            ) : mostrarTabla ? (
+            {error && <Alert variant="danger" className="text-center">{error}</Alert>}
+
+            {isListView ? (
                 <PaginatedTable
-                    headers={headers}
+                    headers={[
+                        { key: 'id', label: 'ID' },
+                        { key: 'numeroHabitacion', label: 'Número' },
+                        { key: 'tipoHabitacionNombre', label: 'Tipo' },
+                        { key: 'estadoNombre', label: 'Estado' },
+                        { key: 'observaciones', label: 'Observaciones' }
+                    ]}
                     data={habitacionesFiltradas}
-                    rowActions={actions}
+                    rowActions={[
+                        { icon: <i className="material-icons">edit</i>, label: 'Editar', onClick: row => navigate(`/rooms/edit/${row.id}`) },
+                        { icon: <i className="material-icons">delete</i>, label: 'Eliminar', onClick: row => abrirEliminar(row) }
+                    ]}
                 />
             ) : (
-                <>
-                    {habitacionesFiltradas.length === 0 ? (
-                        <p className="text-center mt-4">No hay habitaciones que coincidan con los filtros.</p>
-                    ) : (
-                        Object.entries(
-                            habitacionesFiltradas.reduce((grupos, hab) => {
-                                const numero = parseInt(hab.numeroHabitacion, 10);
-                                const piso = Math.floor(numero / 100);
-                                if (!grupos[piso]) grupos[piso] = [];
-                                grupos[piso].push(hab);
-                                return grupos;
-                            }, {})
-                        )
-                            .sort(([a], [b]) => a - b) // Ordenar pisos de mayor a menor
-                            .map(([piso, habitaciones]) => (
-                                <div key={piso} className="mb-4">
-                                    <h5 className="mb-3">
-                                        Piso {piso} <span className="text-muted">({habitaciones.length} habitaciones)</span>
-                                    </h5>
-                                    <Row>
-                                        {[...habitaciones]
-                                            .sort((a, b) => parseInt(a.numeroHabitacion) - parseInt(b.numeroHabitacion)) // Ordenar habitaciones dentro del piso
-                                            .map(hab => {
-                                                const { color, icono } = getEstado(hab.estadoNombre);
-                                                return (
-                                                    <Col xs={6} sm={4} md={4} lg={3} key={hab.id} className="mb-3">
+                habitacionesFiltradas.length === 0 ? (
+                    <p className="text-center mt-4">No hay habitaciones con esos filtros.</p>
+                ) : (
+                    Object.entries(
+                        habitacionesFiltradas.reduce((grupos, hab) => {
+                            const piso = Math.floor(parseInt(hab.numeroHabitacion, 10) / 100);
+                            grupos[piso] = grupos[piso] || [];
+                            grupos[piso].push(hab);
+                            return grupos;
+                        }, {})
+                    )
+                        .sort(([a], [b]) => a - b)
+                        .map(([piso, habs]) => (
+                            <div key={piso} className="mb-4">
+                                <h5 className="mb-3">
+                                    Piso {piso} <span className="text-muted">({habs.length} habitaciones)</span>
+                                </h5>
+                                <Row>
+                                    {habs.sort((a, b) => parseInt(a.numeroHabitacion) - parseInt(b.numeroHabitacion))
+                                        .map(hab => {
+                                            const { color, icono } = getEstado(hab.estadoNombre);
+                                            return (
+                                                <Col xs={6} sm={4} md={4} lg={3} key={hab.id} className="mb-3">
+                                                    <div style={{ position: 'relative' }}>
                                                         <Link to={`/rooms/edit/${hab.id}`} style={{ textDecoration: 'none' }}>
                                                             <RoomCard
                                                                 numero={hab.numeroHabitacion}
@@ -217,32 +195,43 @@ function Rooms() {
                                                                 icono={icono}
                                                             />
                                                         </Link>
-                                                    </Col>
-                                                );
-                                            })}
-                                    </Row>
-                                </div>
-                            ))
-                    )}
-                </>
+                                                        <Button
+                                                            variant="danger"
+                                                            size="sm"
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: '8px',
+                                                                right: '8px',
+                                                                borderRadius: '50%',
+                                                                padding: '4px 6px'
+                                                            }}
+                                                            onClick={() => abrirEliminar(hab)}
+                                                        >
+                                                            <FaTrash />
+                                                        </Button>
+                                                    </div>
+                                                </Col>
+                                            );
+                                        })}
+                                </Row>
+                            </div>
+                        ))
+                )
             )}
 
-            {/* Modal de Confirmación de Eliminación */}
-            <Modal show={showModalEliminar} onHide={handleCerrarModalEliminar}>
+            <Modal show={showModalEliminar} onHide={() => { setShowModalEliminar(false); setHabitacionAEliminar(null); }} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {habitacionAEliminar && (
-                        <p>¿Estás seguro de que deseas eliminar la habitación número <strong>{habitacionAEliminar.numeroHabitacion}</strong>?</p>
-                    )}
-                    {errorEliminar && <Alert variant="danger">{errorEliminar}</Alert>}
+                    <p>¿Está seguro de que desea eliminar la habitación <strong>{habitacionAEliminar?.numeroHabitacion}</strong>?</p>
+                    <p className="text-danger">Esta acción no se puede deshacer</p>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCerrarModalEliminar}>
+                    <Button variant="secondary" onClick={() => { setShowModalEliminar(false); setHabitacionAEliminar(null); }}>
                         Cancelar
                     </Button>
-                    <Button variant="danger" onClick={handleEliminarHabitacion} disabled={eliminando}>
+                    <Button variant="danger" onClick={handleEliminar} disabled={eliminando}>
                         {eliminando ? <Spinner animation="border" size="sm" /> : 'Eliminar'}
                     </Button>
                 </Modal.Footer>

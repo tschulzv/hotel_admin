@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 
 const habitacionesDisponibles = [201, 202, 318, 345];
 //hola
-
+// hiaodiqh
 const ReservaDetails = ({solicitud}) => {
   const { id } = useParams();
   const navigate = useNavigate();

@@ -19,8 +19,11 @@ import Calendar from "./pages/Calendar.page";
 import Notifications from "./pages/Notifications.page";
 import NotificationDetails from "./pages/NotificationDetails";
 import RoomTypes from "./pages/RoomsType.page";
+import RoomsStatus from "./pages/RoomsStatus.page";
+import RoomStatusForm from "./pages/RoomStatusForm";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 
 function App() {
 
@@ -62,6 +65,9 @@ function App() {
           <Route path="/checkout" element={<ReservationCheckOut />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/notifications/:id" element={<NotificationDetails />} />
+          <Route path="/roomsstatus" element={<RoomsStatus />} />
+          <Route path="/roomsstatus/new" element={<RoomStatusForm />} />
+          <Route path="/roomsstatus/edit/:id" element={<RoomStatusForm />} />
         </Route>
       </Routes>
     </Router>
