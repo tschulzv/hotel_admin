@@ -144,6 +144,7 @@ const Notifications = () => {
   const getResumen = (n) => {
     let resumen = "";
 
+    // hola prueba
     if (n.tipo === "Cancelación") {
       resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} desea cancelar su reserva`;
     } else if (n.tipo === "Reserva") {
