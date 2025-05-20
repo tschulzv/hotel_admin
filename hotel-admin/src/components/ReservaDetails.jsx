@@ -6,6 +6,7 @@ import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
 
 const habitacionesDisponibles = [201, 202, 318, 345];
+//hola
 
 const ReservaDetails = ({solicitud}) => {
   const { id } = useParams();

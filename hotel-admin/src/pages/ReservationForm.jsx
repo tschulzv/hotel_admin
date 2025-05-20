@@ -27,6 +27,7 @@ const ReservationForm = () => {
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [newDetalle, setNewDetalle] = useState({
     habitacionId: '',
+    tipoHabitacionId: "",
     cantidadAdultos: 0,
     cantidadNinhos: 0,
     pensionId: ''

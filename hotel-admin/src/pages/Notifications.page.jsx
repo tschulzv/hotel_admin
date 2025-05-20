@@ -147,6 +147,7 @@ const Notifications = () => {
     if (n.tipo === "Cancelación") {
       resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} desea cancelar su reserva`;
     } else if (n.tipo === "Reserva") {
+      console.log(n.reserva.detalles)
       resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} solicita reserva de ${n.reserva.detalles[0].tipoHabitacion}`;
     } else if (n.tipo === "Consulta") {
       resumen = `${n.consulta.nombre} desea saber "${n.consulta.mensaje}"`;
