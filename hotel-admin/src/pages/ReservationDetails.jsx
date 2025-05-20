@@ -8,12 +8,12 @@ function ReservationDetails() {
   const [reservation, setReservation] = useState(null)
   const [details, setDetails] = useState([])
   const navigate = useNavigate()
-
+//hola prueba 1
   useEffect(() => {
     axios.get(`/Reservas/${id}`)
       .then(async response => {
         const reserva = response.data;
-
+        console.log(reserva); 
         try {
           const estadoResponse = await axios.get(`/EstadoReservas/${reserva.estadoId}`);
           const estado = estadoResponse.data;
@@ -22,7 +22,7 @@ function ReservationDetails() {
         } catch (error) {
           console.error("Error al obtener el estado de la reserva:", error);
         }
-
+        
         setReservation(reserva);
         setDetails(reserva.detalles || []);
       })
