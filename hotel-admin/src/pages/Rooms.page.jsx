@@ -138,6 +138,9 @@ function Rooms() {
                     <Button variant="secondary" onClick={() => navigate('/roomstype')}>
                         Tipos Habitación
                     </Button>
+                    <Button variant="secondary" onClick={() => navigate('/roomsstatus')}>
+                        Ver Estados de Habitación
+                    </Button>
                 </div>
             </div>
 
