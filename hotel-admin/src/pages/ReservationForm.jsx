@@ -26,7 +26,7 @@ const ReservationForm = () => {
 
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [newDetalle, setNewDetalle] = useState({
-    habitacionId: '',
+    habitacionId: "",
     tipoHabitacionId: "",
     cantidadAdultos: 0,
     cantidadNinhos: 0,
@@ -118,6 +118,14 @@ const ReservationForm = () => {
 
 
   const addDetalle = () => {
+     const { habitacionId, cantidadAdultos, cantidadNinhos, pensionId } = newDetalle;
+
+      if (!habitacionId || !pensionId || cantidadAdultos === '' || cantidadNinhos === '') {
+        toast.error("Por favor, complete todos los campos del detalle.");
+        return;
+      }
+
+
     setReservationData(prev => ({
       ...prev,
       detalles: [...prev.detalles, { ...newDetalle, activo: true }]
@@ -136,12 +144,11 @@ const ReservationForm = () => {
 
     const payload = {
       clienteId: cliente.id, 
-      //codigo: reservationData.codigo,
       fechaIngreso: reservationData.checkIn,   // formulario: checkIn
       fechaSalida: reservationData.checkOut,     // formulario: checkOut
-      llegadaEstimada: reservationData.llegadaEstimada,                 // podrías obtener este dato del formulario si lo requieres
+      llegadaEstimada: reservationData.llegadaEstimada,  
       comentarios: reservationData.observaciones,  // observaciones → comentarios
-      estadoId: 1,                               // Asigna un valor por defecto o proveniente de otro campo
+      estadoId: isEditMode ? reservationData.estadoId : 2, // confirmada por defecto, pues fue hecha por recepcion                              
       detalles: reservationData.detalles.map(det => ({
         habitacionId: parseInt(det.habitacionId),
         cantidadAdultos: parseInt(det.cantidadAdultos),
@@ -151,7 +158,7 @@ const ReservationForm = () => {
       }))
     };
 
-    console.log('Nueva reserva a enviar:', payload);
+    //console.log('Nueva reserva a enviar:', payload);
 
     try {
       if (isEditMode) {
@@ -170,6 +177,14 @@ const ReservationForm = () => {
       toast.error("Error al guardar los cambios");
     }
   };
+
+  const handleEliminarDetalle = (index) => {
+    setReservationData(prev => ({
+      ...prev,
+      detalles: prev.detalles.filter((_, i) => i !== index)
+    }));
+  };
+
 
   return (
     <Container className="py-4">
@@ -278,7 +293,7 @@ const ReservationForm = () => {
 
           {/* Botón para abrir el modal y agregar detalle */}
           <div className="mb-3">
-            <Button variant="primary" onClick={() => setShowDetalleModal(true)}>
+            <Button variant="outline-primary" onClick={() => setShowDetalleModal(true)}>
               Agregar Habitaciones
             </Button>
           </div>
@@ -296,11 +311,21 @@ const ReservationForm = () => {
                     p => Number(p.id) === Number(detalle.pensionId)
                   );
                   return (
-                    <li key={index}>
+                    <li key={index} className="d-flex justify-content-between align-items-center">
+                    <span>
                       Habitación: {habitacion ? `#${habitacion.numeroHabitacion} - ${habitacion.tipoHabitacionNombre}` : detalle.habitacionId}, 
                       Adultos: {detalle.cantidadAdultos}, Niños: {detalle.cantidadNinhos}, 
                       Pensión: {pension ? pension.nombre : detalle.pensionId}
-                    </li>
+                    </span>
+                    <span
+                        className="material-icons"
+                        style={{ cursor: 'pointer', marginRight: '10px', color:"red" }}
+                        onClick={() => handleEliminarDetalle(index)}
+                        title="Eliminar detalle"
+                      >
+                      <i className="material-icons">cancel</i>
+                    </span>
+                  </li>
                   );
                 })}
               </ul>
