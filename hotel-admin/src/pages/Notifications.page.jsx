@@ -5,7 +5,7 @@ import { BsCircleFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 
-
+// prueba commit
 const Notifications = () => {
   const estadosDisponibles = [{ key: "Todos", value: "todos" }, { key: "Leído", value: 1 }, {key: "No leído", value: 0 }]; // Estados de las notificaciones
   const navigate = useNavigate();
