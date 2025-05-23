@@ -5,96 +5,14 @@ import { BsCircleFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 
-
-const todasLasNotificaciones = [
-  {
-    id: 1,
-    nombre: "Juan",
-    apellido: "Pérez",
-    documento: "1234567",
-    tipoDocumento: "Cédula",
-    Nacionalidad: "Paraguaya",
-    email: "juanperez@gmail.com",
-    telefono: "+595 981 234 567",
-    solicitud: {
-      fecha: "2025-04-02",
-      tipo: "Reserva",
-      estado: "Confirmado",
-      comentarios: "Reserva para una conferencia de negocios",
-      detalles: {
-        checkIn: "2025-04-14",
-        checkOut: "2025-04-16",
-        habitaciones: {
-          tipo: "Suite Presidencial",
-          adultos: 1,
-          ninos: 0,
-        }
-      }
-    }
-  },
-  {
-    id: 2,
-    nombre: "María",
-    apellido: "Gómez",
-    documento: "2345678",
-    tipoDocumento: "Cédula",
-    Nacionalidad: "Paraguaya",
-    email: "mariagomez@gmail.com",
-    telefono: "+595 982 345 678",
-    solicitud: {
-      fecha: "2025-04-03",
-      tipo: "Reserva",
-      estado: "Pendiente",
-      comentarios: "Celebramos nuestra luna de miel",
-      detalles: {
-        checkIn: "2025-04-20",
-        checkOut: "2025-04-22",
-        habitaciones: {
-          tipo: "Deluxe",
-          adultos: 2,
-          ninos: 0,
-        },
-      },
-    },
-  },
-
-  {
-    id: 3,
-    nombre: "Carlos",
-    apellido: "Benítez",
-    documento: "5538074",
-    tipoDocumento: "Cédula",
-    Nacionalidad: "Paraguaya",
-    email: "carlosbenitez@gmail.com",
-    telefono: "+595 982 158 225",
-    solicitud: {
-      fecha: "2025-04-04",
-      tipo: "Cancelación",
-      estado: "Pendiente",
-      comentarios: "Cancelación por motivos personales",
-      detalles: {
-        checkIn: "2025-04-20",
-        checkOut: "2025-04-22",
-        habitaciones: {
-          tipo: "Ejecutiva",
-          adultos: 1,
-          ninos: 0,
-        },
-      },
-    },
-  },
-
-];
-
-
-
+// prueba commit
 const Notifications = () => {
+  const estadosDisponibles = [{ key: "Todos", value: "todos" }, { key: "Leído", value: 1 }, {key: "No leído", value: 0 }]; // Estados de las notificaciones
   const navigate = useNavigate();
   const [notificaciones, setNotificaciones] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtroEstado, setFiltroEstado] = useState("Todos");
+  const [filtroEstado, setFiltroEstado] = useState(estadosDisponibles[0]);
   const [paginaActual, setPaginaActual] = useState(1);
-  const estadosDisponibles = ["Todos", { key: "Leído", value: 1 }, {key: "No leído", value: 0 }]; // Estados de las notificaciones
   const elementosPorPagina = 5; 
 
   useEffect(() => {
@@ -102,6 +20,7 @@ const Notifications = () => {
       try {
           const response = await axios.get(`/Solicitudes`);
           setNotificaciones(response.data);
+          //console.log(response.data)
           setLoading(false);
       } catch (error) {
           console.error('Error cargando datos:', error);
@@ -111,7 +30,7 @@ const Notifications = () => {
 
   // Filtrar las notificaciones según el estado seleccionado
   const notificacionesFiltradas = notificaciones.filter(n =>
-    filtroEstado === "Todos" ? true : n.esLeida === filtroEstado.value
+    filtroEstado.value === "todos" ? true : n.esLeida == filtroEstado.value
   );
 
   // Paginación
@@ -147,7 +66,6 @@ const Notifications = () => {
     if (n.tipo === "Cancelación") {
       resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} desea cancelar su reserva`;
     } else if (n.tipo === "Reserva") {
-      console.log(n.reserva.detalles)
       resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} solicita reserva de ${n.reserva.detalles[0].tipoHabitacion}`;
     } else if (n.tipo === "Consulta") {
       resumen = `${n.consulta.nombre} desea saber "${n.consulta.mensaje}"`;
@@ -164,15 +82,17 @@ const Notifications = () => {
         {/* Desplegable de los estados */}
         <DropdownButton
           variant="outline-secondary"
-          title={`Estado: ${filtroEstado}`}
-          onSelect={(e) => {
-            setFiltroEstado(e);
-            setPaginaActual(1);
-          }}
+          title={`Estado: ${filtroEstado.key || filtroEstado}`}
         >
-          {estadosDisponibles.map((estado) => (
-            <Dropdown.Item key={estado.key} eventKey={estado}>
-              {estado.key}
+          {estadosDisponibles.map((estado, index) => (
+            <Dropdown.Item
+              key={index}
+              onClick={() => {
+                setFiltroEstado(estado);
+                setPaginaActual(1);
+              }}
+            >
+              {estado.key || estado}
             </Dropdown.Item>
           ))}
         </DropdownButton>
