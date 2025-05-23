@@ -330,7 +330,7 @@ const ReservationForm = () => {
 
           {/* Botón para abrir el modal y agregar detalle */}
           <div className="mb-3">
-            <Button variant="primary" onClick={() => setShowDetalleModal(true)}>
+            <Button variant="outline-primary" onClick={() => setShowDetalleModal(true)}>
               Agregar Habitaciones
             </Button>
           </div>
