@@ -16,7 +16,7 @@ const ReservationForm = () => {
     codigo: '',
     checkIn: '',
     checkOut: '',
-    llegadaEstimada: '',
+    llegadaEstimada : '',
     observaciones: '',
     tipoDocumentoId: 0,
     tipoDocumento: '',
@@ -26,7 +26,6 @@ const ReservationForm = () => {
 
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [newDetalle, setNewDetalle] = useState({
-    tipoHabitacionId: "",
     habitacionId: '',
     tipoHabitacionId: "",
     cantidadAdultos: 0,
@@ -43,30 +42,30 @@ const ReservationForm = () => {
 
   useEffect(() => {
     axios.get('/TiposDocumentos')
-      .then(response => {
-        setTiposDocumentos(response.data);
-        console.log(response.data)
-      })
-      .catch(error => {
-        console.error('Error cargando datos:', error);
-      });
-
+    .then(response => {
+      setTiposDocumentos(response.data);
+      console.log(response.data)
+    })
+    .catch( error => {
+      console.error('Error cargando datos:', error);
+    });
+     
     axios.get('/Pensiones')
-      .then(response => {
-        setPensiones(response.data);
-      }).catch(error => {
-        console.error('Error cargando datos:', error);
-      })
+    .then(response => {
+      setPensiones(response.data);
+    }).catch(error => {
+      console.error('Error cargando datos:', error);
+    })
 
     axios.get('/Habitacions')
-      .then(response => {
-        const disponibles = response.data.filter(h => h.estadoNombre === "DISPONIBLE");
-        setHabitacionesDisponibles(disponibles);
-      }).catch(error => {
-        console.error('Error cargando datos:', error);
-      })
+    .then(response => {
+      const disponibles = response.data.filter(h => h.estadoNombre === "DISPONIBLE");
+      setHabitacionesDisponibles(disponibles);
+    }).catch(error => {
+      console.error('Error cargando datos:', error);
+    })
 
-  }, [])
+    }, [])
 
   useEffect(() => {
     if (isEditMode) {
@@ -99,9 +98,6 @@ const ReservationForm = () => {
   };
 
   const onSearch = async () => {
-    if (!reservationData.tipoDocumentoId || !reservationData.numDocumento) {
-      return toast.error('Debe seleccionar un tipo y completar el número de documento.');
-    }
     try {
       const response = await axios.get(`/Clientes/document/${reservationData.tipoDocumentoId}/${reservationData.numDocumento}`);
       setCliente(response.data);
@@ -122,32 +118,12 @@ const ReservationForm = () => {
 
 
   const addDetalle = () => {
-    const { habitacionId, cantidadAdultos, pensionId, cantidadNinhos } = newDetalle;
-
-    if (!habitacionId || !cantidadAdultos || !pensionId) {
-      return toast.error('Por favor, complete Habitación, Cantidad de Adultos y Pensión.');
-    }
-    if (parseInt(cantidadAdultos) <= 0 && parseInt(cantidadNinhos || '0') <= 0) {
-      return toast.error('Debe haber al menos un huésped (adulto o niño).');
-    }
-    if (reservationData.detalles.some(d => d.habitacionId === habitacionId)) {
-      return toast.warn('Esta habitación ya ha sido agregada.');
-    }
-
-    const habitacionSeleccionada = habitacionesDisponibles.find(h => h.id.toString() === habitacionId);
-
     setReservationData(prev => ({
       ...prev,
-      detalles: [...prev.detalles, {
-        ...newDetalle,
-        tipoHabitacionId: habitacionSeleccionada.tipoHabitacionId.toString(),
-        cantidadNinhos: cantidadNinhos || '0',
-        activo: true
-      }]
+      detalles: [...prev.detalles, { ...newDetalle, activo: true }]
     }));
     setNewDetalle({
       habitacionId: '',
-      tipoHabitacionId: '',
       cantidadAdultos: '',
       cantidadNinhos: '',
       pensionId: ''
@@ -155,32 +131,11 @@ const ReservationForm = () => {
     setShowDetalleModal(false);
   };
 
-  const handleDeleteDetalle = (indexToRemove) => {
-    setReservationData(prev => ({
-      ...prev,
-      detalles: prev.detalles.filter((_, index) => index !== indexToRemove)
-    }));
-    toast.info("Detalle de habitación eliminado.");
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!cliente || !cliente.id) {
-      return toast.error("Por favor, busque y seleccione un cliente válido.");
-    }
-    if (!reservationData.checkIn || !reservationData.checkOut) {
-      return toast.error("Las fechas de Check-In y Check-Out son obligatorias.");
-    }
-    if (new Date(reservationData.checkIn) >= new Date(reservationData.checkOut)) {
-      return toast.error("La fecha de Check-Out debe ser posterior a la de Check-In.");
-    }
-    if (reservationData.detalles.length === 0) {
-      return toast.error("Debe agregar al menos un detalle de habitación.");
-    }
-
     const payload = {
-      clienteId: cliente.id,
+      clienteId: cliente.id, 
       //codigo: reservationData.codigo,
       fechaIngreso: reservationData.checkIn,   // formulario: checkIn
       fechaSalida: reservationData.checkOut,     // formulario: checkOut
@@ -188,7 +143,6 @@ const ReservationForm = () => {
       comentarios: reservationData.observaciones,  // observaciones → comentarios
       estadoId: 1,                               // Asigna un valor por defecto o proveniente de otro campo
       detalles: reservationData.detalles.map(det => ({
-        tipoHabitacionId: parseInt(det.tipoHabitacionId),
         habitacionId: parseInt(det.habitacionId),
         cantidadAdultos: parseInt(det.cantidadAdultos),
         cantidadNinhos: parseInt(det.cantidadNinhos),
@@ -207,19 +161,15 @@ const ReservationForm = () => {
       }
       toast.success(`Reserva ${isEditMode ? "editada" : "creada"} con éxito`, {
         onClose: () => {
-          navigate('/reservations'); // Navega después que el toast desaparece
+        navigate('/reservations'); // Navega después que el toast desaparece
         },
-        autoClose: 3000,
+        autoClose: 3000, 
       });
       navigate('/reservations');  // redirigir después de guardar
     } catch (error) {
       toast.error("Error al guardar los cambios");
     }
   };
-
-  const habitacionesParaSeleccionarEnModal = habitacionesDisponibles.filter(
-    h => !reservationData.detalles.some(d => d.habitacionId === h.id.toString())
-  );
 
   return (
     <Container className="py-4">
@@ -244,24 +194,24 @@ const ReservationForm = () => {
               <Form.Group className="mb-3">
                 <Form.Label>Tipo de Documento</Form.Label>
                 <Form.Select
-                  name="tipoDocumentoId"
-                  value={reservationData.tipoDocumentoId || ''}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccione</option>
-                  {tiposDocumentos.map((tipo) => (
-                    <option key={tipo.id} value={tipo.id}>
-                      {tipo.nombre}
-                    </option>
-                  ))}
-                </Form.Select>
+                name="tipoDocumentoId"
+                value={reservationData.tipoDocumentoId || ''}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccione</option>
+                {tiposDocumentos.map((tipo) => (
+                <option key={tipo.id} value={tipo.id}>
+                {tipo.nombre}
+                </option>
+                ))}
+              </Form.Select>            
               </Form.Group>
             </Col>
             <Col md={1} className="d-flex align-items-end mb-3">
-              <Button variant="primary" onClick={onSearch}>
-                <i className="material-icons align-middle">search</i>
-              </Button>
+                <Button variant="primary" onClick={onSearch}>
+                  <i className="material-icons align-middle">search</i>
+                </Button>
             </Col>
           </Row>
           <Row>
@@ -270,9 +220,9 @@ const ReservationForm = () => {
             </Col>
             <Col md={4}>
               {clienteNoEncontrado && (
-                <p>
-                  <Link to="/clientes/nuevo">¿Crear nuevo cliente?</Link>
-                </p>)}
+              <p>
+                <Link to="/clientes/nuevo">¿Crear nuevo cliente?</Link>
+              </p>)}
             </Col>
           </Row>
 
@@ -286,7 +236,6 @@ const ReservationForm = () => {
                   value={reservationData.checkIn}
                   onChange={handleChange}
                   required
-                  min={!isEditMode ? new Date().toISOString().split('T')[0] : undefined}
                 />
               </Form.Group>
             </Col>
@@ -299,7 +248,6 @@ const ReservationForm = () => {
                   value={reservationData.checkOut}
                   onChange={handleChange}
                   required
-                  min={reservationData.checkIn || (!isEditMode ? new Date().toISOString().split('T')[0] : undefined)}
                 />
               </Form.Group>
             </Col>
@@ -330,34 +278,28 @@ const ReservationForm = () => {
 
           {/* Botón para abrir el modal y agregar detalle */}
           <div className="mb-3">
-            <Button variant="outline-primary" onClick={() => setShowDetalleModal(true)}>
+            <Button variant="primary" onClick={() => setShowDetalleModal(true)}>
               Agregar Habitaciones
             </Button>
           </div>
 
           {/* Mostrar resumen de Habitaciones agregadas */}
           {reservationData.detalles.length > 0 && (
-            <div className="mb-3 p-3 border rounded">
-              <h6>Habitaciones Agregadas:</h6>
-              <ul className="list-unstyled">
+            <div className="mb-3">
+              <h6>Habitaciones:</h6>
+              <ul>
                 {reservationData.detalles.map((detalle, index) => {
                   const habitacion = habitacionesDisponibles.find(
-                    h => h.id.toString() === detalle.habitacionId
+                    h => Number(h.id) === Number(detalle.habitacionId)
                   );
                   const pension = pensiones.find(
-                    p => p.id.toString() === detalle.pensionId
+                    p => Number(p.id) === Number(detalle.pensionId)
                   );
                   return (
-                    <li key={index} className="d-flex justify-content-between align-items-center p-2 mb-2 border-bottom">
-                      <div>
-                        <strong>Habitación:</strong> {habitacion ? `#${habitacion.numeroHabitacion} - ${habitacion.tipoHabitacionNombre}` : `ID ${detalle.habitacionId}`}<br />
-                        <strong>Huéspedes:</strong> {detalle.cantidadAdultos} Adulto(s)
-                        {detalle.cantidadNinhos && parseInt(detalle.cantidadNinhos) > 0 ? `, ${detalle.cantidadNinhos} Niño(s)` : ''}<br />
-                        <strong>Pensión:</strong> {pension ? pension.nombre : `ID ${detalle.pensionId}`}
-                      </div>
-                      <Button variant="outline-danger" size="sm" onClick={() => handleDeleteDetalle(index)}>
-                        Eliminar
-                      </Button>
+                    <li key={index}>
+                      Habitación: {habitacion ? `#${habitacion.numeroHabitacion} - ${habitacion.tipoHabitacionNombre}` : detalle.habitacionId}, 
+                      Adultos: {detalle.cantidadAdultos}, Niños: {detalle.cantidadNinhos}, 
+                      Pensión: {pension ? pension.nombre : detalle.pensionId}
                     </li>
                   );
                 })}
@@ -393,7 +335,7 @@ const ReservationForm = () => {
                 required
               >
                 <option value="">Seleccione una Habitación</option>
-                {habitacionesParaSeleccionarEnModal.map(habitacion => (
+                {habitacionesDisponibles.map(habitacion => (
                   <option key={habitacion.id} value={habitacion.id}>
                     #{habitacion.numeroHabitacion} - {habitacion.tipoHabitacionNombre}
                   </option>
