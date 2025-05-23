@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Container, Dropdown, Row, Col } from 'react-bootstrap';
+import React, { useState, useEffect} from 'react';
+import { Container, Dropdown } from 'react-bootstrap';
 import DayCard from '../components/DayCard.jsx';
 import '../Calendar.css';
 import { useNavigate } from 'react-router-dom';
+import axios from '../config/axiosConfig';
 
 const meses = [
   { nombre: "Enero", dias: 31 },
@@ -24,9 +25,35 @@ const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viern
 const anhos = ["2023", "2024", "2025"];
 
 const Calendar = () => {
-  const [mesSeleccionado, setMesSeleccionado] = useState(meses[3].nombre); // Abril por defecto
+  const [mesSeleccionado, setMesSeleccionado] = useState(meses[4].nombre); // Mayo por defecto
   const [anhoSeleccionado, setAnhoSeleccionado] = useState(anhos[2]); // 2025 por defecto
+  const [reservas, setReservas] = useState([]);
+  const [habitaciones, sethabitaciones] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try{
+        const [responseReservas, responseHabitaciones] = await Promise.all([
+          axios.get('/Reservas'),
+          axios.get('/Habitacions'),
+        ]);
+
+                setReservas(responseReservas.data);
+        sethabitaciones(responseHabitaciones.data.filter(h => h.activo));
+      } catch (err){
+        console.error('Error al cargar datos: ', err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+  if (reservas.length > 0 && habitaciones.length > 0) {
+    console.log("Reservas y habitaciones listas para el cálculo:", reservas, habitaciones);
+  }
+}, [reservas, habitaciones]);
+
 
   const getDiasDelMes = (mesNombre, anho) => {
     const mesIndex = meses.findIndex(m => m.nombre === mesNombre);
@@ -38,8 +65,8 @@ const Calendar = () => {
       if (esBisiesto) dias = 29;
     }
 
-    const fecha = new Date(`${anho}-${mesIndex + 1}-01`);
-    const primerDiaSemana = fecha.getDay(); // 0 = domingo
+    const fechaInicio = new Date(anho, mesIndex, 1);
+    const primerDiaSemana = fechaInicio.getDay(); // 0 = domingo
 
     const totalCeldas = Math.ceil((dias + primerDiaSemana) / 7) * 7;
 
@@ -51,7 +78,26 @@ const Calendar = () => {
       if (i < primerDiaSemana || dia > dias) {
         celdas.push(null); // celda vacía
       } else {
-        const porcentaje = Math.floor(Math.random() * 101); // simula la ocupacion del 0 al 100%
+        const fechaActual = new Date(anho, mesIndex, dia);
+        const ocupadas = reservas.reduce((count, reserva) => {
+          const ingreso = new Date(reserva.fechaIngreso);
+          const salida = new Date(reserva.fechaSalida);
+          
+          console.log("Comparando:", fechaActual.toISOString().split('T')[0], "con", ingreso.toISOString().split('T')[0], "hasta", salida.toISOString().split('T')[0]);
+
+
+          if (fechaActual >= ingreso && fechaActual <= salida)
+            return count + reserva.detalles.length;
+          return count;
+        }, 0);
+
+        const totalHabitaciones = habitaciones.length;
+        const porcentaje = totalHabitaciones > 0 
+          ? Math.round((ocupadas / totalHabitaciones) * 100)
+          : 0;
+
+        
+
         celdas.push({ dia, porcentaje });
       }
     }
