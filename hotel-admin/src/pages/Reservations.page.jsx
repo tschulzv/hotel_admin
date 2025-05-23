@@ -20,7 +20,7 @@ const Reservations = () => {
   const [filaSeleccionada, setFilaSeleccionada] = useState(null);
   const [show, setShow] = useState(false); // mostrar o no el modal
   const [razon, setRazon] = useState('true');
-  const [reservas, setReservas] = useState([])
+  const [reservas, setReservas] = useState([]);
 
   const getStatusBadge = (statusId) => {
     switch (statusId) {
@@ -56,6 +56,8 @@ const Reservations = () => {
             numsHabitaciones: numsHabitaciones,
             fechaIngreso: isValid(parsedIngreso) ? format(parsedIngreso, 'dd/MM/yyyy') : '',
             fechaSalida: isValid(parsedSalida) ? format(parsedSalida, 'dd/MM/yyyy') : '',
+            ingresoISO: fechaIngreso,
+            salidaISO: fechaSalida,
             llegada: llegadaEstimada?.slice(0, 5) || '',
             estadoId: getStatusBadge(estadoId)
           };
@@ -98,18 +100,27 @@ const Reservations = () => {
   useEffect(() => {
     // Filtrar los datos originales según la fecha seleccionada y estado de reserva
     if (fechaSeleccionada) {
-      const reservasFiltradas = originalData.filter((reserva) =>
-        reserva.checkIn <= fechaSeleccionada &&
-        reserva.checkOut >= fechaSeleccionada &&
-        reserva.estado !== 'Cancelada' &&
-        reserva.estado !== 'Finalizada'
-      );
+      const [anho, mes, dia] = fechaSeleccionada.split('-');
+      const fechaSel = new Date(anho, mes-1, dia);
+
+      const reservasFiltradas = originalData.filter((reserva) => {
+        const fechaIngresoStr = reserva.ingresoISO.split('T')[0];
+        const fechaSalidaStr = reserva.salidaISO.split('T')[0];
+
+        const [anhoIngreso, mesIngreso, diaIngreso] = fechaIngresoStr.split('-');
+        const ingreso = new Date(anhoIngreso, mesIngreso-1, diaIngreso);
+
+        const [anhoSalida, mesSalida, diaSalida] = fechaSalidaStr.split('-');
+        const salida = new Date(anhoSalida, mesSalida-1, diaSalida);
+
+        return fechaSel >= ingreso && fechaSel <= salida;
+    });
       setFilteredData(reservasFiltradas);
     } else {
       // Si no hay fecha seleccionada, mostramos todos los datos originales
       setFilteredData(originalData);
     }
-  }, [fechaSeleccionada]);
+  }, [fechaSeleccionada, originalData]);
 
 
   const onSearch = () => {
@@ -218,7 +229,14 @@ const Reservations = () => {
 
   return (
     <Container className="px-5" fluid>
+      <div className="d-flex align-items-center mb-4">
+        {fechaSeleccionada && (
+          <span className="material-icons me-2" role="button" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }} title="Volver">
+            arrow_back
+          </span>
+      )}
       <h1>Reservas</h1>
+      </div>
       {/*Subtitulo de fecha y dia seleccionados */}
       {fechaSeleccionada && (
         <div className="mb-3">

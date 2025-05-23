@@ -48,12 +48,6 @@ const Calendar = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-  if (reservas.length > 0 && habitaciones.length > 0) {
-    console.log("Reservas y habitaciones listas para el cálculo:", reservas, habitaciones);
-  }
-}, [reservas, habitaciones]);
-
 
   const getDiasDelMes = (mesNombre, anho) => {
     const mesIndex = meses.findIndex(m => m.nombre === mesNombre);
