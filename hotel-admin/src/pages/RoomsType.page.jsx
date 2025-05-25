@@ -60,7 +60,7 @@ function RoomTypes() {
             <ToastContainer />
 
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <Button variant="outline-secondary" onClick={() => navigate(-1)}>
+                <Button variant="outline-secondary" onClick={() => navigate("/rooms")}>
                     &larr; Volver
                 </Button>
                 <h4>Tipos de Habitación</h4>
