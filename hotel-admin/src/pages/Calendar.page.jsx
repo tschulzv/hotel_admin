@@ -39,7 +39,7 @@ const Calendar = () => {
           axios.get('/Habitacions'),
         ]);
 
-                setReservas(responseReservas.data);
+        setReservas(responseReservas.data);
         sethabitaciones(responseHabitaciones.data.filter(h => h.activo));
       } catch (err){
         console.error('Error al cargar datos: ', err);
@@ -73,7 +73,9 @@ const Calendar = () => {
         celdas.push(null); // celda vacía
       } else {
         const fechaActual = new Date(anho, mesIndex, dia);
-        const ocupadas = reservas.reduce((count, reserva) => {
+
+        const ocupadas = reservas.filter(reserva => [1, 2, 4, 5].includes(reserva.estadoId))
+        .reduce((count, reserva) => {
           const ingreso = new Date(reserva.fechaIngreso);
           const salida = new Date(reserva.fechaSalida);
           
