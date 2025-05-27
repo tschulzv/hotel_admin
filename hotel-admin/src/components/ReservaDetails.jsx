@@ -201,7 +201,7 @@ const ReservaDetails = ({solicitud}) => {
       {/* Botones para confirmar o rechazar la solicitud */}
       <div className="mt-4 d-flex justify-content-center gap-2">
         <Button disabled={disabled} variant="primary" onClick={handleConfirmar}>Confirmar</Button>
-        <Button disabled={disabled} variant="secondary">Rechazar</Button> {/*agregar funcion*/}
+        <Button disabled={disabled} variant="secondary" onClick={handleReject}>Rechazar</Button> {/*agregar funcion*/}
       </div>
       </>
 )}

@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Dropdown, DropdownButton, Pagination, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Dropdown, DropdownButton, Pagination, Spinner, Modal, Button} from 'react-bootstrap';
 import { BsCircleFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig';
+import { toast } from 'react-toastify';
+
 
 // prueba commit
 const Notifications = () => {
@@ -13,6 +15,8 @@ const Notifications = () => {
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState(estadosDisponibles[0]);
   const [paginaActual, setPaginaActual] = useState(1);
+  const [show, setShow] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
   const elementosPorPagina = 5; 
 
   useEffect(() => {
@@ -51,11 +55,32 @@ const Notifications = () => {
     />
   );
 
+  const handleOpen = () => {
+    setShow(true);
+  }
+  const handleClose = () => {
+    setShow(false);
+  }
+
   const handleVerNotificacion = (notificacion) => {
     navigate(`/notifications/${notificacion.id}`, {
     state: { notificacion }
     });
   };
+
+  const handleEliminar = async () => {
+    if (selectedNotification){
+      try {
+        await axios.delete(`/Solicitudes/${selectedNotification.id}`);
+        setNotificaciones(prev => prev.filter(n => n.id !== selectedNotification.id));
+        setSelectedNotification(null);
+      } catch (error) {
+        toast.error("Error eliminando la notificación");
+      }
+      handleClose();
+    }
+  };
+
 
   const truncarTexto = (texto, maxLongitud) => {
     return texto.length > maxLongitud ? texto.slice(0, maxLongitud - 3) + "..." : texto;
@@ -77,6 +102,7 @@ const Notifications = () => {
 
 
   return (
+    <>
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4>Notificaciones</h4>
@@ -108,33 +134,47 @@ const Notifications = () => {
       
       <div>
         {notificacionesPaginadas.map((n) => (
-          <Row
-            key={n.id}
-            className="border rounded p-3 mb-2 align-items-center"
-            style={{ fontSize: "0.9rem" }}
-          >
-            <Col xs={8}>
-            <p>
-              <strong>{n.tipo === "Consulta" ? "Consulta: " : `Solicitud de ${n.tipo}: `}</strong>
-              {getResumen(n)}
-            </p>
-            </Col>
+       <Row
+        key={n.id}
+        className="border rounded p-3 mb-2 align-items-center justify-content-between hover-shadow"
+        style={{ fontSize: "0.9rem", cursor: 'pointer' }}
+        onClick={() => handleVerNotificacion(n)}
+      >
+        <Col xs={9}>
+          <p className="mb-0">
+            <strong>{n.tipo === "Consulta" ? "Consulta: " : `Solicitud de ${n.tipo}: `}</strong>
+            {getResumen(n)}
+          </p>
+        </Col>
 
-            <Col xs={4} className="text-end">
-              {
-                !n.esLeida && <BsCircleFill
-                  style={{ fontSize: "0.75rem", marginRight: 6 }}
-                  color="#28a745" 
-                />
-              }
-              <button
-                className="btn btn-sm btn-outline-primary"
-                onClick={() => handleVerNotificacion(n)}
-              >
-                Ver
-              </button>
-            </Col>
-          </Row>
+        <Col xs={3} className="d-flex justify-content-end align-items-center gap-2">
+          {/* Icono de estado (no leído) */}
+          {!n.esLeida && (
+            <BsCircleFill
+              style={{ fontSize: "0.75rem" }}
+              color="#28a745"
+              title="No leído"
+            />
+          )}
+
+          {/* Botón eliminar (evita propagar el evento hacia el Row) */}
+          <span
+            className="material-icons"
+            style={{ cursor: 'pointer' }}
+            onClick={(e) => {
+              e.stopPropagation(); // evita que el clic llegue al Row
+              setSelectedNotification(n);
+              handleOpen();
+            }}
+            title="Eliminar"
+          >
+            close
+          </span>
+
+        </Col>
+      </Row>
+
+
         ))}
       </div>
 
@@ -154,6 +194,31 @@ const Notifications = () => {
       </>
     }
     </Container>
+
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar eliminación</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedNotification && (
+            <>
+              <p> ¿Estás seguro de que deseas eliminar esta notificación?</p>
+              { !selectedNotification.esLeida &&
+                <p><strong>Esta notificación aún no fue leída </strong></p>
+              }
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Volver
+          </Button>
+          <Button variant="danger" onClick={handleEliminar}>
+            Confirmar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 
