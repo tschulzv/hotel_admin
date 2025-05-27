@@ -21,6 +21,7 @@ import NotificationDetails from "./pages/NotificationDetails";
 import RoomTypes from "./pages/RoomsType.page";
 import RoomsStatus from "./pages/RoomsStatus.page";
 import RoomStatusForm from "./pages/RoomStatusForm";
+import ReportPage from "./pages/Report.page";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -68,6 +69,7 @@ function App() {
           <Route path="/roomsstatus" element={<RoomsStatus />} />
           <Route path="/roomsstatus/new" element={<RoomStatusForm />} />
           <Route path="/roomsstatus/edit/:id" element={<RoomStatusForm />} />
+          <Route path="/reports" element={<ReportPage/>} />
         </Route>
       </Routes>
     </Router>
