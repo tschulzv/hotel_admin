@@ -23,7 +23,7 @@ const meses = [
 const years = ["2023", "2024", "2025"];
 
 const ReportPage = () => {
-  // Estados para almacenar la data
+  // Estados para almacenar la datos
   const [reservas, setReservas] = useState([]);
   const [cancelacions, setCancelacions] = useState([]);
   const [checkins, setCheckins] = useState([]);
@@ -34,6 +34,7 @@ const ReportPage = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState(""); // "" indica que se muestran todos los meses
 
+  // Función para obtener el badge de estado según el id
   const getStatusBadge = (statusId) => {
     switch (statusId) {
       case 1:
@@ -76,7 +77,7 @@ const ReportPage = () => {
     fetchData();
   }, []);
 
-  // Mapeo de Reservas: se guarda la fecha original (raw) para filtrar y se formatea para la tabla.
+  // Mapeo de Reservas donde se formatea la fecha y se obtiene el estado como badge.
   const reservasData = reservas.map(r => ({
     id: r.id,
     nombreCliente: r.nombreCliente,
@@ -98,7 +99,7 @@ const ReportPage = () => {
     { key: 'habitacionesReservadas', label: 'Habitaciones Reservadas' }
   ];
 
-  // Mapeo de Cancelacions: se usa la fecha de ingreso de la reserva relacionada para filtrar.
+  // Mapeo de Cancelacions donde se usa la fecha de ingreso de la reserva relacionada para filtrar
   const cancelacionesData = cancelacions.map(c => ({
     id: c.id,
     reservaCodigo: c.reserva ? c.reserva.codigo : "",
@@ -115,40 +116,54 @@ const ReportPage = () => {
     { key: 'reservaCodigo', label: 'Reserva Código' },
     { key: 'nombreCliente', label: 'Cliente' },
     { key: 'motivo', label: 'Motivo' },
-    { key: 'fechaIngresoReserva', label: 'Fecha Ingreso Reserva' }
+    { key: 'fechaIngresoReserva', label: 'Fecha de Ingreso' }
   ];
 
-  // Mapeo de Checkins: se asume que se recibe el campo fechaCheckIn.
-  const checkinsData = checkins.map(ci => ({
-    id: ci.id,
-    reservaId: ci.reservaId,
-    fechaCheckIn: ci.fechaCheckIn ? format(parseISO(ci.fechaCheckIn), 'dd/MM/yyyy') : "",
-    rawFechaCheckIn: ci.fechaCheckIn ? ci.fechaCheckIn : "",
-    cantidadHuespedes: ci.detalleHuespedes ? ci.detalleHuespedes.length : 0
-  }));
+  // Mapeo de Checkins donde se asume que se recibe el campo fechaCheckIn.
+  const checkinsData = checkins.map(ci => {
+    const reservaCheckin = reservas.find(r => r.id === ci.reservaId);
+    return {
+      id: ci.id,
+      codigo: reservaCheckin ? reservaCheckin.codigo : "",
+      cliente: reservaCheckin ? reservaCheckin.nombreCliente : "",
+      fechaCheckIn: reservaCheckin.fechaIngreso
+        ? format(parseISO(reservaCheckin.fechaIngreso), 'dd/MM/yyyy')
+        : "",
+        rawFechaCheckIn: reservaCheckin.fechaIngreso ? reservaCheckin.fechaIngreso : "",
+        cantidadHuespedes: ci.detalleHuespedes ? ci.detalleHuespedes.length : 0
+    };
+  });
 
   const checkinsHeaders = [
     { key: 'id', label: 'ID' },
-    { key: 'reservaId', label: 'Reserva ID' },
-    { key: 'fechaCheckIn', label: 'Fecha Check-In' },
+    { key: 'codigo', label: 'Reserva Código' },
+    { key: 'cliente', label: 'Cliente'},
+    { key: 'fechaCheckIn', label: 'Fecha de Ingreso' },
     { key: 'cantidadHuespedes', label: 'Cantidad de Huéspedes' }
   ];
 
   // Mapeo de Checkouts: se asume que se recibe el campo fechaCheckOut.
-  const checkoutsData = checkouts.map(co => ({
-    id: co.id,
-    reservaId: co.reservaId,
-    fechaCheckOut: co.fechaCheckOut ? format(parseISO(co.fechaCheckOut), 'dd/MM/yyyy') : "",
-    rawFechaCheckOut: co.fechaCheckOut ? co.fechaCheckOut : ""
-  }));
+  const checkoutsData = checkouts.map(co => {
+    const reservaCheckout = reservas.find(r => r.id === co.reservaId);
+    return {
+      id: co.id,
+      codigo: reservaCheckout ? reservaCheckout.codigo : "",
+      cliente: reservaCheckout ? reservaCheckout.nombreCliente : "",
+      fechaCheckOut: reservaCheckout.fechaSalida 
+        ? format(parseISO(reservaCheckout.fechaSalida), 'dd/MM/yyyy')
+        : "",
+      rawFechaCheckOut: reservaCheckout.fechaSalida ? reservaCheckout.fechaSalida : ""
+    };
+  });
 
   const checkoutsHeaders = [
     { key: 'id', label: 'ID' },
-    { key: 'reservaId', label: 'Reserva ID' },
-    { key: 'fechaCheckOut', label: 'Fecha Check-Out' }
+    { key: 'codigo', label: 'Reserva Código' },
+    { key: 'cliente', label: 'Cliente' },
+    { key: 'fechaCheckOut', label: 'Fecha de Salida' }
   ];
 
-  // Aplicamos los filtros (año y mes) sobre cada conjunto de datos.
+  // Aplica los filtros de año y mes sobre cada conjunto de datos
   const filteredReservasData = reservasData.filter(r => {
     if (!r.rawFechaIngreso) return false;
     const date = parseISO(r.rawFechaIngreso);
@@ -191,7 +206,7 @@ const ReportPage = () => {
     <Container className="py-4">
       <h1 className="mb-4">Reportes de Reservas</h1>
 
-      {/* Filtros por Año y Mes */}
+      {/* Filtros por año y mes */}
       <Row className="mb-4">
         <Col md={3}>
           <label>Año</label>
