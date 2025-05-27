@@ -1,151 +1,137 @@
-import React, { useState } from "react";
-import { Container, Button, Row, Col, Table } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Container, Button, Row, Col, Card, Table, Form } from "react-bootstrap";
 import { SlCheck, SlClose } from "react-icons/sl";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from '../config/axiosConfig';
 
 const ReservationCheckOut = () => {
-  // reserva de ejemplo, borrar cuando funcione la API
-  const reservation = {
-    id: 1,
-    nombre: "Alejandra Núñez",
-    codigo: "ID33456",
-    habitaciones: "209",
-    checkIn: "2025-04-10",
-    checkOut: "	2025-04-14",
-    estado: "Activa",
-    observaciones: "Solicitó servicio de desayuno a la habitación",
-  };
-  const [roomData, setRoomData] = useState("");
-  const [verified, setVerified] = useState(null);
+  // Posibles ítems y servicios
+  const possibleItems = [
+    { descripcion: "Servicio a la Habitación", tarifa: 75000 },
+    { descripcion: "Gaseosa 500 ml", tarifa: 15000 },
+    { descripcion: "Gaseosa en lata", tarifa: 10000 },
+    { descripcion: "Botella de Agua", tarifa: 5000 },
+    { descripcion: "Snack del Mini Bar", tarifa: 12000 },
+    { descripcion: "Lavandería", tarifa: 30000 },
+  ];
 
-  // Lo que pasa si se apreta el boton "Buscar Habitacion"
+  const [roomData, setRoomData] = useState("");
+  const [reservas, setReservas] = useState([]);
+  const [checkins, setCheckins] = useState([]);
+  const [verified, setVerified] = useState(false);
+  const [error, setError] = useState("");
+  const [services, setServices] = useState([]);
+
+  // Cargar reservas y check-ins
+  useEffect(() => {
+    axios.get('/Reservas')
+      .then(res => setReservas(res.data))
+      .catch(err => console.error(err));
+
+    axios.get('/Checkin')
+      .then(res => setCheckins(res.data))
+      .catch(err => console.error(err));
+  }, []);
+
   const handleVerification = (e) => {
     e.preventDefault();
-    if (roomData === "210") {
-      setVerified(true);
-    } else {
+    const numero = roomData.trim();
+    // Buscar reserva que incluya esa habitación
+    const reserva = reservas.find(r =>
+      r.detalles.some(d => d.numeroHabitacion?.toString() === numero)
+    );
+    if (!reserva) {
+      setError("Habitación no reservada o no existe.");
       setVerified(false);
+      setServices([]);
+      return;
     }
+    // Buscar checkin activo para esa reserva
+    const checkin = checkins.find(c => c.reservaId === reserva.id && c.activo);
+    if (!checkin) {
+      setError("No hay un check-in activo para esta habitación.");
+      setVerified(false);
+      setServices([]);
+      return;
+    }
+    // Todo bien, seleccionar servicios
+    setError("");
+    setVerified(true);
+    const shuffled = [...possibleItems].sort(() => 0.5 - Math.random());
+    const count = Math.floor(Math.random() * possibleItems.length) + 1;
+    setServices(shuffled.slice(0, count));
+  };
+
+  const handleCheckOut = () => {
+    axios.post('/Checkouts', {
+      habitacion: roomData,
+      items: services.map(item => ({ descripcion: item.descripcion, tarifa: item.tarifa })),
+    })
+    .then(() => {
+      toast.success('Check-Out realizado con éxito');
+      setVerified(false);
+      setRoomData("");
+      setServices([]);
+    })
+    .catch(() => {
+      toast.error('Error al procesar Check-Out');
+    });
   };
 
   return (
-    <Container>
-      <h1>Check Out</h1>
-      <h4>Número de Habitación</h4>
-      <Col>
-        <Row className="justify-content-left mb-3">
-          <Col xs="auto">
-            <input
-              type="text"
-              name="NumHabitacion"
-              placeholder="300"
-              value={roomData}
-              onChange={(e) => setRoomData(e.target.value)}
-              style={{ width: "200px" }} // ancho específico
-            />
-          </Col>
-        </Row>
-        <Row className="justify-content-left mb-3">
-          <Col xs="auto">
-            <Button onClick={handleVerification}>Buscar</Button>
-          </Col>
-        </Row>
-        {verified && (
-          <div>
-            <Row>
-              <p style={{ color: "green" }}>
-                <SlCheck />
-                Habitación Con Check-Out Pendiente
-              </p>
-            </Row>
-            <Row className="justify-content-left mb-3">
-              <Col md={8}>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>Tipo de Habitacion</th>
-                      <th>N° de Habitación</th>
-                      <th>Capacidad</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Junior Suite</td>
-                      <td>210</td>
-                      <td>2</td>
-                    </tr>
-                  </tbody>
-                </Table>
+    <Container className="mt-4">
+      <Card className="shadow-sm">
+        <Card.Header>
+          <h2 className="mb-0">Check-Out</h2>
+        </Card.Header>
+        <Card.Body>
+          <Form onSubmit={handleVerification}>
+            <Row className="mb-3">
+              <Col sm={3}><Form.Label>Número de Habitación</Form.Label></Col>
+              <Col sm={6}>
+                <Form.Control
+                  type="text"
+                  placeholder="Ingrese el número de habitación"
+                  value={roomData}
+                  onChange={e => setRoomData(e.target.value)}
+                />
               </Col>
+              <Col sm={3}><Button variant="primary" type="submit">Buscar</Button></Col>
             </Row>
-            <Row>
-              <Row className="mt-4">
-                <Col md={6}>
-                  <Table striped bordered hover>
+          </Form>
+
+          {error && <p style={{ color: 'red', marginBottom: '1rem' }}><SlClose /> {error}</p>}
+
+          {verified && services.length > 0 && (
+            <>
+              <Card className="mb-4">
+                <Card.Header as="h5" className="bg-dark text-white">Ítems y Servicios Consumidos</Card.Header>
+                <Card.Body>
+                  <Table striped bordered hover responsive>
                     <thead>
-                      <tr>
-                        <th>N° de Documento</th>
-                        <th>Nombre del Huésped</th>
-                      </tr>
+                      <tr><th>Ítem/Servicio</th><th>Tarifa (₲)</th></tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>12345678</td>
-                        <td>Alejandra Núñez</td>
-                      </tr>
-                      <tr>
-                        <td>87654321</td>
-                        <td>Juan Pérez</td>
-                      </tr>
+                      {services.map((item, idx) => (
+                        <tr key={idx}><td>{item.descripcion}</td><td>{item.tarifa.toLocaleString()}</td></tr>
+                      ))}
                     </tbody>
                   </Table>
-                </Col>
-                <Col md={6}>
-                  <Table striped bordered hover>
-                    <thead>
-                      <tr>
-                        <th>Item/Servicio</th>
-                        <th>Tarifa</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Servicio a la Habitación</td>
-                        <td>₲ 75.000</td>
-                      </tr>
-                      <tr>
-                        <td>Gaseosa 500 ml</td>
-                        <td>₲ 15.000</td>
-                      </tr>
-                      <tr>
-                        <td>Gaseosa en lata</td>
-                        <td>₲ 10.000</td>
-                      </tr>
-                    </tbody>
-                  </Table>
-                </Col>
-              </Row>
-              <Row className="justify-content-start mt-3">
+                </Card.Body>
+              </Card>
+              <Row className="justify-content-end">
                 <Col xs="auto">
-                  <Button
-                    onClick={() => alert("Check-Out realizado con exito")}
-                  >
-                    Check-Out
-                  </Button>
+                  <Button variant="primary" onClick={handleCheckOut}><SlCheck /> Realizar Check-Out</Button>
                 </Col>
               </Row>
-            </Row>
-          </div>
-        )}
-        {verified === false && (
-          <Row>
-            <p style={{ color: "red" }}>
-              <SlClose />
-              Habitacion Sin Ocupar
-            </p>
-          </Row>
-        )}
-      </Col>
+            </>
+          )}
+        </Card.Body>
+      </Card>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </Container>
   );
 };
+
 export default ReservationCheckOut;
