@@ -37,6 +37,9 @@ function Rooms() {
     const [showModalEliminar, setShowModalEliminar] = useState(false);
     const [habitacionAEliminar, setHabitacionAEliminar] = useState(null);
     const [eliminando, setEliminando] = useState(false);
+    const [paginasPorPiso, setPaginasPorPiso] = useState({});
+
+    const HABITACIONES_POR_PAGINA = 4;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -174,48 +177,86 @@ function Rooms() {
                         }, {})
                     )
                         .sort(([a], [b]) => a - b)
-                        .map(([piso, habs]) => (
-                            <div key={piso} className="mb-4">
-                                <h5 className="mb-3">
-                                    Piso {piso} <span className="text-muted">({habs.length} habitaciones)</span>
-                                </h5>
-                                <Row>
-                                    {habs.sort((a, b) => parseInt(a.numeroHabitacion) - parseInt(b.numeroHabitacion))
-                                        .map(hab => {
-                                            const { color, icono } = getEstado(hab.estadoNombre);
-                                            return (
-                                                <Col xs={6} sm={4} md={4} lg={3} key={hab.id} className="mb-3">
-                                                    <div style={{ position: 'relative' }}>
-                                                        <Link to={`/rooms/edit/${hab.id}`} style={{ textDecoration: 'none' }}>
-                                                            <RoomCard
-                                                                numero={hab.numeroHabitacion}
-                                                                tipo={hab.tipoHabitacionNombre}
-                                                                estado={hab.estadoNombre}
-                                                                color={color}
-                                                                icono={icono}
-                                                            />
-                                                        </Link>
-                                                        <Button
-                                                            variant="danger"
-                                                            size="sm"
-                                                            style={{
-                                                                position: 'absolute',
-                                                                top: '8px',
-                                                                right: '8px',
-                                                                borderRadius: '50%',
-                                                                padding: '4px 6px'
-                                                            }}
-                                                            onClick={() => abrirEliminar(hab)}
-                                                        >
-                                                            <FaTrash />
-                                                        </Button>
-                                                    </div>
-                                                </Col>
-                                            );
-                                        })}
-                                </Row>
-                            </div>
-                        ))
+                        .map(([piso, habs]) => {
+                            const totalPaginas = Math.ceil(habs.length / HABITACIONES_POR_PAGINA);
+                            const paginaActual = paginasPorPiso[piso] || 0;
+                            const inicio = paginaActual * HABITACIONES_POR_PAGINA;
+                            const habitacionesMostradas = habs
+                                .sort((a, b) => parseInt(a.numeroHabitacion) - parseInt(b.numeroHabitacion))
+                                .slice(inicio, inicio + HABITACIONES_POR_PAGINA);
+
+                            return (
+                                <div key={piso} className="mb-4">
+                                    <h5 className="mb-3">
+                                        Piso {piso} <span className="text-muted">({habs.length} habitaciones)</span>
+                                    </h5>
+                                    <div className="position-relative">
+                                        <div className="d-flex align-items-center">
+                                            {paginaActual > 0 && (
+                                                <Button
+                                                    variant="light"
+                                                    className="me-3 rounded-circle"
+                                                    style={{ width: '40px', height: '40px', padding: 0 }}
+                                                    onClick={() => setPaginasPorPiso(prev => ({
+                                                        ...prev,
+                                                        [piso]: prev[piso] - 1
+                                                    }))}
+                                                >
+                                                    <i className="material-icons">chevron_left</i>
+                                                </Button>
+                                            )}
+                                            <div className="d-flex gap-3">
+                                                {habitacionesMostradas.map(hab => {
+                                                    const { color, icono } = getEstado(hab.estadoNombre);
+                                                    return (
+                                                        <div key={hab.id} style={{ width: '250px' }}>
+                                                            <div style={{ position: 'relative' }}>
+                                                                <Link to={`/rooms/edit/${hab.id}`} style={{ textDecoration: 'none' }}>
+                                                                    <RoomCard
+                                                                        numero={hab.numeroHabitacion}
+                                                                        tipo={hab.tipoHabitacionNombre}
+                                                                        estado={hab.estadoNombre}
+                                                                        color={color}
+                                                                        icono={icono}
+                                                                    />
+                                                                </Link>
+                                                                <Button
+                                                                    variant="danger"
+                                                                    size="sm"
+                                                                    style={{
+                                                                        position: 'absolute',
+                                                                        top: '8px',
+                                                                        right: '8px',
+                                                                        borderRadius: '50%',
+                                                                        padding: '4px 6px'
+                                                                    }}
+                                                                    onClick={() => abrirEliminar(hab)}
+                                                                >
+                                                                    <FaTrash />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                            {paginaActual < totalPaginas - 1 && (
+                                                <Button
+                                                    variant="light"
+                                                    className="ms-3 rounded-circle"
+                                                    style={{ width: '40px', height: '40px', padding: 0 }}
+                                                    onClick={() => setPaginasPorPiso(prev => ({
+                                                        ...prev,
+                                                        [piso]: (prev[piso] || 0) + 1
+                                                    }))}
+                                                >
+                                                    <i className="material-icons">chevron_right</i>
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
                 )
             )}
 

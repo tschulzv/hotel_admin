@@ -106,7 +106,11 @@ function RoomTypes() {
                                 )}
                                 <Card.Body>
                                     <Card.Title>{tipo.nombre}</Card.Title>
-                                    <Card.Text>{tipo.descripcion}</Card.Text>
+                                    <Card.Text>
+                                        {tipo.descripcion && tipo.descripcion.length > 100
+                                            ? tipo.descripcion.slice(0, 100) + '...'
+                                            : tipo.descripcion}
+                                    </Card.Text>
                                     <div className="d-flex justify-content-between">
                                         <Button
                                             size="sm"
