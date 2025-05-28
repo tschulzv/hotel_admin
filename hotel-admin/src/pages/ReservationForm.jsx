@@ -28,7 +28,6 @@ const ReservationForm = () => {
   const [newDetalle, setNewDetalle] = useState({
     tipoHabitacionId: "",
     habitacionId: '',
-    tipoHabitacionId: "",
     cantidadAdultos: 0,
     cantidadNinhos: 0,
     pensionId: ''

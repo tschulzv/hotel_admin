@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Home from "./pages/Home.page";
 import Rooms from "./pages/Rooms.page";
 import LoginPage from "./pages/Login.page";
+import RegisterPage from "./pages/Register.page";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import PrivateRoute from "./components/PrivateRoute"
@@ -45,6 +46,7 @@ function App() {
       />
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         {/* rutas protegidas */}
         <Route
           element={

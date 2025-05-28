@@ -16,6 +16,7 @@ const ClientForm = () => {
   const [documentTypes, setDocumentTypes] = useState([]);
   const countries = useMemo(() => countryList().getData(), []);
   const [clientData, setClientData] = useState({});
+  const [validated, setValidated] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -42,7 +43,17 @@ const ClientForm = () => {
   }, [isEditMode, id]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+      e.preventDefault();
+      const form = e.currentTarget;
+
+      if (form.checkValidity() === false) {
+        e.stopPropagation();
+        setValidated(true);
+        return;
+      }
+
+      setValidated(true);
+
   
     try {
       if (isEditMode) {
@@ -89,11 +100,11 @@ const ClientForm = () => {
     <Container className="py-4">
       <Card className="p-4 shadow-sm">
         <h4 className="mb-4">{isEditMode ? "Editar Cliente" : "Nuevo Cliente"}</h4>
-        <Form onSubmit={handleSubmit}>
+        <Form noValidate validated={validated} onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Nombre</Form.Label>
+                <Form.Label>Nombre *</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombre"
@@ -101,11 +112,14 @@ const ClientForm = () => {
                   onChange={handleChange}
                   required
                 />
+                <Form.Control.Feedback type="invalid">
+                  Ingrese el nombre del cliente.
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Apellido</Form.Label>
+                <Form.Label>Apellido *</Form.Label>
                 <Form.Control
                   type="text"
                   name="apellido"
@@ -113,6 +127,9 @@ const ClientForm = () => {
                   onChange={handleChange}
                   required
                 />
+                <Form.Control.Feedback type="invalid">
+                  Ingrese el apellido del cliente.
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
@@ -126,7 +143,6 @@ const ClientForm = () => {
                   name="email"
                   value={clientData.email}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
             </Col>
@@ -134,7 +150,7 @@ const ClientForm = () => {
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Número de Teléfono</Form.Label>
+                <Form.Label>Número de Teléfono *</Form.Label>
                 <Form.Control
                   type="text"
                   name="telefono"
@@ -142,10 +158,13 @@ const ClientForm = () => {
                   onChange={handleChange}
                   required
                 />
+                <Form.Control.Feedback type="invalid">
+                  Ingrese el teléfono del cliente.
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={6}>
-                <Form.Label>País</Form.Label>
+                <Form.Label>País *</Form.Label>
                 <Form.Select
                 name="nacionalidad"
                 value={clientData.nacionalidad || ''}
@@ -159,13 +178,16 @@ const ClientForm = () => {
                   </option>
                 ))}
               </Form.Select>
+              <Form.Control.Feedback type="invalid">
+                  Seleccione el país del cliente.
+              </Form.Control.Feedback>
             </Col>
           </Row>
 
           <Row>
             <Col md={5}>
               <Form.Group className="mb-3">
-                <Form.Label>Número de Documento</Form.Label>
+                <Form.Label>Número de Documento *</Form.Label>
                 <Form.Control
                   type="text"
                   name="numDocumento"
@@ -173,10 +195,14 @@ const ClientForm = () => {
                   onChange={handleChange}
                   required
                 />
+                <Form.Control.Feedback type="invalid">
+                  Ingrese el número de documento del cliente.
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md={2}>
-                <Form.Label>Tipo</Form.Label>
+              <Form.Group className="mb-3">
+                <Form.Label>Tipo de Documento *</Form.Label>
                 <Form.Select
                 name="tipoDocumentoId"
                 value={clientData.tipoDocumentoId || ''}
@@ -190,6 +216,10 @@ const ClientForm = () => {
                   </option>
                 ))}
               </Form.Select>
+              <Form.Control.Feedback type="invalid">
+                Seleccione el tipo de documento del cliente.
+              </Form.Control.Feedback>
+              </Form.Group>
             </Col>
             <Col md={5}>
               <Form.Group className="mb-3">
