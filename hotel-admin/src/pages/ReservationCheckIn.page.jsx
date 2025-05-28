@@ -74,14 +74,10 @@ const ReservationCheckIn = () => {
     };
     axios.post('/Checkins', payload)
       .then(res => {
-        setModalTitle("Éxito");
-        setModalTxt("Check-In realizado con éxito");
-        setShow(true);
+        toast.success("Check-In realizado con éxito")
       })
       .catch(err => {
-        setModalTitle("Error");
-        setModalTxt("Error al procesar Check-In");
-        setShow(true);
+        toast.error("Error al procesar Check-In")
       });
   };
 

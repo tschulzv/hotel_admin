@@ -24,6 +24,7 @@ function ReservationDetails() {
         }
 
         setReservation(reserva);
+        console.log(reserva);
         setDetails(reserva.detalles || []);
       })
       .catch(error => {

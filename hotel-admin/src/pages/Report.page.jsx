@@ -46,7 +46,9 @@ const ReportPage = () => {
       case 4:
         return <Badge bg="primary">Check-In</Badge>;
       case 5:
-        return <Badge bg="secondary">Check-Out</Badge>;
+        return <Badge bg="dark">Check-Out</Badge>;
+      case 6:
+        return <Badge bg="secondary">Rechazada</Badge>
       default:
         return "";
     }

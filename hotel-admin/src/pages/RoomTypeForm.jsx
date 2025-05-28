@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Form, Button, Row, Col, Card, Carousel, Image } from 'react-bootstrap';
+import { Container, Form, Button, Row, Col, Card, Carousel, Image, Dropdown, Modal } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../config/axiosConfig';
+import Select from 'react-select';
+import IconPickerGrid from '../components/IconPickerGrid';
+import { toast } from 'react-toastify';
+
 
 const RoomTypeNewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [servicios, setServicios] = useState([]);
+  const [showCreateServiceModal, setShowCreateServiceModal] = useState(false);
   const [roomTypeData, setRoomTypeData] = useState({
     nombre: '',
     descripcion: '',
@@ -17,20 +22,25 @@ const RoomTypeNewPage = () => {
     servicios: [],
     activo: true
   });
+  const [nuevoServicio, setNuevoServicio] = useState({
+    nombre: '', 
+    iconName: ''
+  })
 
   const [imagenes, setImagenes] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
 
-  useEffect(() => {
-    const fetchServicios = async () => {
+  const fetchServicios = async () => {
       try {
         const response = await axios.get('Servicios');
         setServicios(response.data);
       } catch (error) {
         console.error('Error cargando servicios:', error);
       }
-    };
+  };
 
+  useEffect(() => {
+    
     const fetchRoomType = async () => {
       if (id && id.trim() !== '') {
         try {
@@ -142,6 +152,73 @@ const RoomTypeNewPage = () => {
     }
   };
 
+  // MODAL DE CREACION DE SERVICIO
+  const handleOpenModal = () => {
+    setShowCreateServiceModal(true);
+  }
+
+  const handleCloseModal = () => {
+    setShowCreateServiceModal(false);
+  }
+
+
+  const handleNuevoServicioChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoServicio(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  
+  // Para cada opción, renderizamos un icono + nombre
+  const customSingleValue = ({ data }) => (
+    <div className="d-flex align-items-center">
+      <span className="material-icons me-2">{data.value}</span>
+      {data.label}
+    </div>
+  );
+
+  const customOption = (props) => {
+    const { data, innerRef, innerProps } = props;
+    return (
+      <div ref={innerRef} {...innerProps} className="d-flex align-items-center p-2">
+        <span className="material-icons me-2">{data.value}</span>
+        {data.label}
+      </div>
+    );
+  };
+
+  const handleCrearServicio = async () => {
+    const { nombre, iconName } = nuevoServicio;
+
+    if (nombre.length < 3 || iconName.length < 3) {
+      toast.error("Campos inválidos");
+      return;
+    }
+
+    const payload = {
+      nombre,
+      iconName,
+    };
+
+    try {
+      const response = await axios.post("/Servicios", payload);
+      toast.success("Servicio creado correctamente");
+      
+      await fetchServicios();
+
+      // Limpiar campos
+      setNuevoServicio({ nombre: "", iconName: "" });
+
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error al crear servicio:", error);
+      toast.error("Error al crear el servicio");
+    }
+  };
+
+
   return (
     <Container className="py-4">
       <Card className="p-4 shadow-sm">
@@ -221,23 +298,6 @@ const RoomTypeNewPage = () => {
           </Row>
 
           <Form.Group className="mb-3">
-            <Form.Label>Servicios</Form.Label>
-            <Row>
-              {servicios.map(servicio => (
-                <Col md={4} key={servicio.id}>
-                  <Form.Check
-                    type="checkbox"
-                    id={`servicio-${servicio.id}`}
-                    label={servicio.nombre}
-                    checked={roomTypeData.servicios.includes(servicio.id)}
-                    onChange={() => handleServicioChange(servicio.id)}
-                  />
-                </Col>
-              ))}
-            </Row>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
             <Form.Label>Descripción</Form.Label>
             <Form.Control
               as="textarea"
@@ -248,6 +308,59 @@ const RoomTypeNewPage = () => {
             />
           </Form.Group>
 
+          <Row className="align-items-end">
+            {/* Dropdown de servicios */}
+            <Col md={4}>
+              <Form.Group className="mb-3">
+                <Form.Label>Servicios</Form.Label>
+                <Dropdown>
+                  <Dropdown.Toggle variant="secondary" id="dropdown-servicios">
+                    Seleccionar servicios
+                  </Dropdown.Toggle>
+
+                  <Dropdown.Menu style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    {servicios.map(servicio => (
+                      <Form.Check
+                        key={servicio.id}
+                        type="checkbox"
+                        id={`servicio-${servicio.id}`}
+                        label={servicio.nombre}
+                        className="mx-3"
+                        checked={roomTypeData.servicios.includes(servicio.id)}
+                        onChange={() => handleServicioChange(servicio.id)}
+                      />
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Form.Group>
+            </Col>
+
+            {/* Lista de servicios seleccionados */}
+            <Col md={4}>
+              <Form.Group className="mb-3">
+                <Form.Label>Seleccionados</Form.Label>
+                <div className="border rounded p-2 bg-light" style={{ minHeight: '38px' }}>
+                  {roomTypeData.servicios.length > 0 ? (
+                    roomTypeData.servicios
+                      .map(id => servicios.find(s => s.id === id)?.nombre)
+                      .filter(Boolean)
+                      .join(', ')
+                  ) : (
+                    <span className="text-muted">Ninguno</span>
+                  )}
+                </div>
+              </Form.Group>
+            </Col>
+
+            {/* Botón de crear servicio */}
+            <Col md={2} className="mb-3">
+              <Button variant="primary" onClick={handleOpenModal}>
+                Crear servicio
+              </Button>
+            </Col>
+          </Row>
+
+           
           <Form.Group className="mb-3">
             <Form.Label>Imágenes</Form.Label>
             <Form.Control
@@ -290,6 +403,46 @@ const RoomTypeNewPage = () => {
             </Button>
           </div>
         </Form>
+
+        {/*MODAL CREACION DE SERVICIOS*/ }
+         <Modal show={showCreateServiceModal} onHide={handleCloseModal} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Crear Servicio</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form.Group className="mb-3">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control
+                type="text"
+                name="nombre"
+                value={nuevoServicio.nombre}
+                onChange={handleNuevoServicioChange}
+                placeholder="Ingrese el nombre del servicio"
+                required
+              />
+            </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Ícono</Form.Label>
+            <IconPickerGrid
+              selected={nuevoServicio.iconName}
+              onSelect={(iconName) =>
+                setNuevoServicio(prev => ({ ...prev, iconName }))
+              }
+            />
+          </Form.Group>
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleCrearServicio}>
+              Crear
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
       </Card>
     </Container>
   );

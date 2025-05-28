@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Container, Modal, Button, Form, Spinner } from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable';
+import { Table, Pagination } from 'react-bootstrap';
 import TableFilterBar from '../components/TableFilterBar';
 import axios from '../config/axiosConfig';
 import Badge from 'react-bootstrap/Badge';
@@ -33,7 +34,9 @@ const Reservations = () => {
       case 4:
         return <Badge bg="primary">Check-In</Badge>
       case 5:
-        return <Badge bg="secondary">Check-Out</Badge>
+        return <Badge bg="dark">Check-Out</Badge>
+      case 6:
+        return <Badge bg="secondary">Rechazada</Badge>
     }
   }
   const headers = [{ key: "id", label: "ID" }, { key: "codigo", label: "Código" }, { key: "nombreCliente", label: "Cliente" }, { key: "numsHabitaciones", label: "Habitación(es)" },

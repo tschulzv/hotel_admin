@@ -53,7 +53,7 @@ const NotificationDetails = () => {
           <span className="material-icons me-2" role="button" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }} title="Volver">
             arrow_back
           </span>
-          <h2 className="mb-0" style={{ color: '#2c3e50' }}>Solicitud de {solicitud.tipo}</h2>
+          <h2 className="mb-0" style={{ color: '#2c3e50' }}>{solicitud.tipo === "Consulta" ? "Consulta" : `Solicitud de ${solicitud.tipo}`}</h2>
         </div>
 
       {
