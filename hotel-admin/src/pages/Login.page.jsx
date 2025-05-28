@@ -1,13 +1,21 @@
-import React from "react";
+import React, {useEffect} from "react";
+import { useNavigate } from 'react-router-dom';
 import logo from "../img/blacktextLogo.png";
 import { Button, Container, Form } from "react-bootstrap";
 import axios from '../config/axiosConfig'; 
 
 const LoginPage = () => {
-  // Datos de ejemplo para el inicio de sesión. CAMBIAR LUEGO
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const navigate = useNavigate();
 
+  // redirigir a home si ya se logueó
+  useEffect(() => {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      navigate('/home'); 
+    }
+  }, []);
   
   const handleSubmit = async (e) => {
     e.preventDefault();

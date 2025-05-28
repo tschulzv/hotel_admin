@@ -4,6 +4,7 @@ import Rooms from "./pages/Rooms.page";
 import LoginPage from "./pages/Login.page";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
+import PrivateRoute from "./components/PrivateRoute"
 import Reservations from "./pages/Reservations.page";
 import ReservationCheckIn from "./pages/ReservationCheckIn.page";
 import ReservationCheckOut from "./pages/ReservationCheckOut.page";
@@ -15,6 +16,7 @@ import ClientDetails from "./pages/ClientDetails";
 import ClientHistory from "./pages/ClientHistory";
 import ReservationForm from "./pages/ReservationForm";
 import ReservationDetails from "./pages/ReservationDetails";
+import NotFound from "./pages/NotFound.page";
 import Calendar from "./pages/Calendar.page";
 import Notifications from "./pages/Notifications.page";
 import NotificationDetails from "./pages/NotificationDetails";
@@ -43,7 +45,14 @@ function App() {
       />
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route element={<Layout />}>
+        {/* rutas protegidas */}
+        <Route
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
           <Route path="/home" element={<Home />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/roomstype" element={<RoomTypes />} />
@@ -71,6 +80,8 @@ function App() {
           <Route path="/roomsstatus/edit/:id" element={<RoomStatusForm />} />
           <Route path="/reports" element={<ReportPage/>} />
         </Route>
+        {/* página no encontrada */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
