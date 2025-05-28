@@ -86,7 +86,7 @@ const ReportPage = () => {
     rawFechaIngreso: r.fechaIngreso,
     fechaSalida: r.fechaSalida ? format(parseISO(r.fechaSalida), 'dd/MM/yyyy') : "",
     estadoId: getStatusBadge(r.estadoId),
-    habitacionesReservadas: r.detalles ? r.detalles.length : 0
+    habitacionesReservadas: r.detalles ? r.detalles.map(d => d.numeroHabitacion).join(', ') : 'Sin habitación'
   }));
 
   const reservasHeaders = [
