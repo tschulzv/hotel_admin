@@ -58,12 +58,21 @@ function RoomTypes() {
     return (
         <Container className="mt-4">
             <ToastContainer />
-
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <Button variant="outline-secondary" onClick={() => navigate(-1)}>
-                    &larr; Volver
-                </Button>
-                <h4>Tipos de Habitación</h4>
+               {/* Título + Icono volver */}
+                <div className="d-flex align-items-center">
+                    <span
+                    className="material-icons me-2"
+                    role="button"
+                    onClick={() => navigate(-1)}
+                    style={{ cursor: 'pointer' }}
+                    title="Volver"
+                    >
+                    arrow_back
+                    </span>
+                    <h2 style={{ color: '#2c3e50' }}>Tipos de Habitaciones</h2>
+                </div>
+
                 <div className="d-flex gap-2">
                     <Button
                         variant="outline-primary"
