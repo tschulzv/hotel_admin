@@ -73,8 +73,9 @@ function App() {
           <Route path="/roomstype/edit/:id" element={<RoomTypeForm />} />
           <Route path="/calendar" element={<Calendar />} />{" "}
           <Route path="/checkin" element={<ReservationCheckIn />} />
-          <Route path="/checkin" element={<ReservationCheckIn />} />
           <Route path="/checkout" element={<ReservationCheckOut />} />
+          <Route path="/checkin/:codigo" element={<ReservationCheckIn />} />
+          <Route path="/checkout/:codigo" element={<ReservationCheckOut />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/notifications/:id" element={<NotificationDetails />} />
           <Route path="/roomsstatus" element={<RoomsStatus />} />

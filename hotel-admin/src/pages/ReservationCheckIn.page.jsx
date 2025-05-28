@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Container, Button, Row, Col, Card, Table, Modal, Form } from "react-bootstrap";
 import { SlMinus, SlCheck, SlClose } from "react-icons/sl";
+import { useParams } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from '../config/axiosConfig';
 
 const ReservationCheckIn = () => {
-  const [codigo, setCodigo] = useState("");
+  const { codigo: codigoParam } = useParams();
+  const [codigo, setCodigo] = useState(codigoParam || "");
   const [reservas, setReservas] = useState([]);
   const [reservationData, setReservationData] = useState(null);
   const [checkinId, setCheckinId] = useState(null);
@@ -23,9 +27,23 @@ const ReservationCheckIn = () => {
   // Cargar todas las reservas al montar
   useEffect(() => {
     axios.get('/Reservas')
-      .then(res => setReservas(res.data))
+      .then(res => {
+        setReservas(res.data);
+        // Si hay código en los parámetros, verificar automáticamente
+        if (codigoParam) {
+          const found = res.data.find(r => r.codigo === codigoParam);
+          if (found) {
+            setReservationData(found);
+            setError("");
+            setVerified(true);
+          } else {
+            setError("Reserva No Encontrada.");
+            setVerified(false);
+          }
+        }
+      })
       .catch(err => console.error(err));
-  }, []);
+  }, [codigoParam]);
 
   // Verificar reserva por código
   const handleVerification = e => {
@@ -224,8 +242,8 @@ const ReservationCheckIn = () => {
       <Modal show={show} onHide={handleClose} centered>
         <Modal.Header closeButton><Modal.Title>{modalTitle}</Modal.Title></Modal.Header>
         <Modal.Body><p>{modalTxt}</p></Modal.Body>
-        <Modal.Footer><Button variant="secondary" onClick={handleClose}>Aceptar</Button></Modal.Footer>
-      </Modal>
+        <Modal.Footer><Button variant="secondary" onClick={handleClose}>Aceptar</Button></Modal.Footer>      </Modal>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </Container>
   );
 };
