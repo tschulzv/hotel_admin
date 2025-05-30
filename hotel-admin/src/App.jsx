@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import Home from "./pages/Home.page";
 import Rooms from "./pages/Rooms.page";
 import LoginPage from "./pages/Login.page";
+import RegisterPage from "./pages/Register.page";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
+import PrivateRoute from "./components/PrivateRoute"
 import Reservations from "./pages/Reservations.page";
 import ReservationCheckIn from "./pages/ReservationCheckIn.page";
 import ReservationCheckOut from "./pages/ReservationCheckOut.page";
@@ -15,6 +17,7 @@ import ClientDetails from "./pages/ClientDetails";
 import ClientHistory from "./pages/ClientHistory";
 import ReservationForm from "./pages/ReservationForm";
 import ReservationDetails from "./pages/ReservationDetails";
+import NotFound from "./pages/NotFound.page";
 import Calendar from "./pages/Calendar.page";
 import Notifications from "./pages/Notifications.page";
 import NotificationDetails from "./pages/NotificationDetails";
@@ -43,7 +46,15 @@ function App() {
       />
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route element={<Layout />}>
+        <Route path="/register" element={<RegisterPage />} />
+        {/* rutas protegidas */}
+        <Route
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
           <Route path="/home" element={<Home />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/roomstype" element={<RoomTypes />} />
@@ -62,8 +73,9 @@ function App() {
           <Route path="/roomstype/edit/:id" element={<RoomTypeForm />} />
           <Route path="/calendar" element={<Calendar />} />{" "}
           <Route path="/checkin" element={<ReservationCheckIn />} />
-          <Route path="/checkin" element={<ReservationCheckIn />} />
           <Route path="/checkout" element={<ReservationCheckOut />} />
+          <Route path="/checkin/:codigo" element={<ReservationCheckIn />} />
+          <Route path="/checkout/:codigo" element={<ReservationCheckOut />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/notifications/:id" element={<NotificationDetails />} />
           <Route path="/roomsstatus" element={<RoomsStatus />} />
@@ -71,6 +83,8 @@ function App() {
           <Route path="/roomsstatus/edit/:id" element={<RoomStatusForm />} />
           <Route path="/reports" element={<ReportPage/>} />
         </Route>
+        {/* página no encontrada */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

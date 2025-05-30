@@ -17,7 +17,6 @@ const Clients = () => {
   const headers = [{ key: "id", label: "ID" }, { key: "nombre", label: "Nombre" }, { key: "email", label: "Email" }, { key: "telefono", label: "Teléfono" }, 
     { key: "numDocumento", label: "Documento" }, { key: "tipoDocumento", label: "Tipo" }, { key: "nacionalidad", label: "País" }]
   
-
   const navigate = useNavigate();
 
   useEffect(() => {

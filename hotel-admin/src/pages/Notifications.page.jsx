@@ -17,7 +17,7 @@ const Notifications = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const [show, setShow] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
-  const elementosPorPagina = 5; 
+  const elementosPorPagina = 10; 
 
   useEffect(() => {
     (async () => {
@@ -136,7 +136,7 @@ const Notifications = () => {
         {notificacionesPaginadas.map((n) => (
        <Row
         key={n.id}
-        className="border rounded p-3 mb-2 align-items-center justify-content-between hover-shadow"
+        className="border rounded p-3 mb-2 align-items-center justify-content-between notification-row"
         style={{ fontSize: "0.9rem", cursor: 'pointer' }}
         onClick={() => handleVerNotificacion(n)}
       >

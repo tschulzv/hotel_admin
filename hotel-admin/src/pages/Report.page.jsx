@@ -15,7 +15,7 @@ const meses = [
   { nombre: "Julio", dias: 31 },
   { nombre: "Agosto", dias: 31 },
   { nombre: "Septiembre", dias: 30 },
-  { nombre: "Octubre", dias: 31 },
+  { nombre: "Octubre", dias: 31 },  
   { nombre: "Noviembre", dias: 30 },
   { nombre: "Diciembre", dias: 31 },
 ];

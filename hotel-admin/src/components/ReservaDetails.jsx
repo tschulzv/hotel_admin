@@ -164,38 +164,66 @@ const ReservaDetails = ({solicitud}) => {
       </Row>
 
 
-      {!disabled && reserva?.detalles?.map((detalle, idx) => (
-        <div key={idx} className="mb-3">
-            <h6>Habitación {detalle.tipoHabitacion}</h6>
-            {disponibles.length > 0 ? disponibles.filter((h) => h.tipoHabitacionId === detalle.tipoHabitacionId)
-            .map((h) => (
-                <div
-                key={h.numeroHabitacion}
-                className="border rounded mb-2"
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1rem",
-                    padding: "0.5rem 1rem",
-                    width: "fit-content",
-                    backgroundColor:
-                    habitacionesSeleccionadas[idx] === h.id ? "#d1e7dd" : "white",
-                }}
-                >
-                <span className="me-2">{h.numeroHabitacion}</span>
-                <Button
-                    size="sm"
-                    variant={
-                    habitacionesSeleccionadas[idx] === h.id ? "success" : "primary"
-                    }
-                    onClick={() => seleccionarHabitacion(idx, h.id)}
-                >
-                    {habitacionesSeleccionadas[idx] === h.id ? "Seleccionada" : "Seleccionar"}
-                </Button>
-                </div>
-            )) : <p>No hay habitaciones disponibles para esta solicitud</p>}
-        </div>
-        ))}
+      {!disabled && (
+        <Row className="g-4">
+          {reserva?.detalles?.map((detalle, idx) => (
+            <Col key={idx} md={12 / (reserva.detalles.length || 1)}>
+              <h6 className="mb-3">Habitación {detalle.tipoHabitacion}</h6>
+              <div className="d-flex flex-column gap-2">
+                {disponibles.length > 0 ? (
+                  disponibles
+                    .filter((h) => h.tipoHabitacionId === detalle.tipoHabitacionId)
+                    .map((h) => {
+                      const yaSeleccionada = Object.values(habitacionesSeleccionadas).includes(h.id);
+                      const seleccionadaEnEstaPos = habitacionesSeleccionadas[idx] === h.id;
+                      
+                      return (
+                        <div
+                          key={h.numeroHabitacion}
+                          className="border rounded"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "0.5rem 1rem",
+                            backgroundColor: seleccionadaEnEstaPos 
+                              ? "#d1e7dd" 
+                              : yaSeleccionada 
+                                ? "#f8d7da"
+                                : "white",
+                          }}
+                        >
+                          <span className="me-2">N° {h.numeroHabitacion}</span>
+                          <Button
+                            size="sm"
+                            variant={
+                              seleccionadaEnEstaPos 
+                                ? "success"
+                                : yaSeleccionada
+                                  ? "danger"
+                                  : "primary"
+                            }
+                            onClick={() => seleccionarHabitacion(idx, h.id)}
+                            disabled={yaSeleccionada && !seleccionadaEnEstaPos}
+                          >
+                            {seleccionadaEnEstaPos 
+                              ? "Seleccionada"
+                              : yaSeleccionada
+                                ? "No disponible"
+                                : "Seleccionar"
+                            }
+                          </Button>
+                        </div>
+                      );
+                    })
+                ) : (
+                  <p>No hay habitaciones disponibles para este tipo</p>
+                )}
+              </div>
+            </Col>
+          ))}
+        </Row>
+      )}
 
 
       {/* Botones para confirmar o rechazar la solicitud */}

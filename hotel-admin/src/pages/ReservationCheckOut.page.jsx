@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Container, Button, Row, Col, Card, Table, Form } from "react-bootstrap";
 import { SlCheck, SlClose } from "react-icons/sl";
 import { toast, ToastContainer } from 'react-toastify';
+import { useParams } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from '../config/axiosConfig';
 
 const ReservationCheckOut = () => {
+  const { codigo: codigoParam } = useParams();
   // Posibles ítems y servicios
   const possibleItems = [
     { descripcion: "Servicio a la Habitación", tarifa: 75000 },
@@ -15,59 +17,53 @@ const ReservationCheckOut = () => {
     { descripcion: "Snack del Mini Bar", tarifa: 12000 },
     { descripcion: "Lavandería", tarifa: 30000 },
   ];
-
-  const [codigo, setCodigo] = useState("");
-  const [reservas, setReservas] = useState([]);
+  
+  const [codigo, setCodigo] = useState(codigoParam || "");
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState("");
   const [services, setServices] = useState([]);
   const [reservaSeleccionada, setReservaSeleccionada] = useState(null);
 
-  // Cargar todas las reservas
+  // Si viene código en la URL, actualizar el campo
   useEffect(() => {
-    axios.get('/Reservas')
-      .then(res => setReservas(res.data))
-      .catch(err => console.error(err));
-  }, []);
+    if (codigoParam) {
+      setCodigo(codigoParam);
+      handleVerification(null, codigoParam);
+    }
+  }, [codigoParam]);
 
-  const handleVerification = async (e) => {
-    e.preventDefault();
+  const handleVerification = async (e, codigoToVerify = null) => {
+    if (e) e.preventDefault();
+    const codigoToUse = codigoToVerify || codigo;
+    
     setError("");
     setVerified(false);
     setServices([]);
-    setReservaSeleccionada(null);
-
-    const found = reservas.find(r => r.codigo === codigo.trim());
-    if (!found) {
-      setError("Reserva no encontrada por código.");
-      return;
-    }
-
-    try {
-      // Verificar si ya se realizó checkout
-      const { data: checkout } = await axios.get(`/Checkouts?reservaId=${found.id}`);
-      if (checkout && checkout.activo) {
-        setError("El Check-Out ya fue realizado para esta reserva.");
+    setReservaSeleccionada(null);    try {
+      // Verificar si existe la reserva y tiene check-in
+      const { data } = await axios.get(`/Checkouts/verificarReserva/${codigoToUse.trim()}`);
+      
+      if (!data.success) {
+        toast.error('La reserva no tiene check-in activo o no existe');
         return;
       }
-    } catch (err) {
-      // si el endpoint devuelve 404 o array vacío, no hay checkout previo
+
+      // Si la verificación fue exitosa, guardamos el código de la reserva
+      setReservaSeleccionada({ codigo: codigoToUse.trim() });
+      setVerified(true);
+
+      // Generar servicios consumidos aleatorios
+      const shuffled = [...possibleItems].sort(() => 0.5 - Math.random());
+      const count = Math.floor(Math.random() * possibleItems.length) + 1;
+      setServices(shuffled.slice(0, count));    } catch (err) {
+      toast.error("Error al verificar la reserva");
+      return;
     }
-
-    // Si no hay checkout previo, permitimos
-    setReservaSeleccionada(found);
-    setVerified(true);
-
-    // Generar servicios consumidos aleatorios
-    const shuffled = [...possibleItems].sort(() => 0.5 - Math.random());
-    const count = Math.floor(Math.random() * possibleItems.length) + 1;
-    setServices(shuffled.slice(0, count));
   };
-
   const handleCheckOut = () => {
     if (!reservaSeleccionada) return;
     axios.post('/Checkouts', {
-      reservaId: reservaSeleccionada.id,
+      codigo: reservaSeleccionada.codigo,
       activo: true
     })
       .then(() => {

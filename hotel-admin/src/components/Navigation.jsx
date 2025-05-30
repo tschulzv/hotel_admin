@@ -3,11 +3,12 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import logo from '../img/whitetextLogo.png';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 
 function Navigation() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isActive = (path) => location.pathname === path;
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -40,7 +41,10 @@ function Navigation() {
     return () => clearInterval(intervalId); // Limpiar al desmontar
   }, []);
 
-
+  const logout = () => {
+    localStorage.removeItem('jwtToken');
+    navigate('/');
+  }
 
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
@@ -79,6 +83,14 @@ function Navigation() {
             </Nav.Link>
 
           ))}
+
+          <Nav.Link className={`d-flex align-items-center justify-content-between border-top mt-2 pt-2`}
+            onClick={logout}>
+              <div className="d-flex align-items-center gap-2">
+                <span className="material-icons">exit_to_app</span>
+                <span>Cerrar sesión</span>
+              </div>
+          </Nav.Link>
         </Nav>
       </Container>
     </Navbar>

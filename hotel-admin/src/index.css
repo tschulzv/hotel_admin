@@ -60,3 +60,24 @@
   padding: 1rem;
   background-color: #f8f9fa;
 }
+
+.primary-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  color: #007bff;
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.primary-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.notification-row:hover {
+  background-color: #f8f9fa; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
