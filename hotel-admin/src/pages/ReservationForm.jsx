@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Container, Form, Button, Row, Col, Card, Modal } from 'react-bootstrap';
+import { Container, Form, Button, Row, Col, Card, Modal, CloseButton } from 'react-bootstrap';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import countryList from 'react-select-country-list';
 import axios from '../config/axiosConfig';
@@ -10,7 +10,7 @@ const ReservationForm = () => {
   const countries = useMemo(() => countryList().getData(), []);
   let { id } = useParams();
   let isEditMode = id !== undefined;
-  const [newRooms, setNewRooms] = useState();
+  const [newRooms, setNewRooms] = useState([]);
 
   const [reservationData, setReservationData] = useState({
     nombre: '',
@@ -35,6 +35,7 @@ const ReservationForm = () => {
   });
 
   const [habitacionesDisponibles, setHabitacionesDisponibles] = useState([]);
+  const [tiposHabitaciones, setTiposHabitaciones] = useState([]);
   const [pensiones, setPensiones] = useState([]);
   const [tiposDocumentos, setTiposDocumentos] = useState([]);
   const [cliente, setCliente] = useState({});
@@ -49,6 +50,7 @@ const ReservationForm = () => {
       })
       .catch(error => {
         console.error('Error cargando datos:', error);
+        toast.error("Error cargando datos")
       });
 
     axios.get('/Pensiones')
@@ -56,15 +58,24 @@ const ReservationForm = () => {
         setPensiones(response.data);
       }).catch(error => {
         console.error('Error cargando datos:', error);
+        toast.error("Error cargando datos");
       })
 
+    axios.get('/TiposHabitaciones')
+      .then(response => {
+        setTiposHabitaciones(response.data);
+      }).catch(err => {
+        console.error('Error cargando datos:', error);
+        toast.error("Error cargando datos");
+      })
+    /*
     axios.get('/Habitacions')
       .then(response => {
         const disponibles = response.data.filter(h => h.estadoNombre === "DISPONIBLE");
         setHabitacionesDisponibles(disponibles);
       }).catch(error => {
         console.error('Error cargando datos:', error);
-      })
+      })*/
 
   }, [])
 
@@ -98,21 +109,65 @@ const ReservationForm = () => {
     }));
   };
 
+  const handleTypeChange = (index) => {
+    (e) => handleNewRoomChange(index, "tipoHabitacionId", tipo.id)
+  };
+
   const addNewRoom = () => {
+    setNewRooms([...newRooms, { adults: 1, children: 0 }]);
+  };
 
-  }
+  const removeNewRoom = (index) => {
+    if (newRooms.length > 1) {
+      setNewRooms(newRooms.filter((_, i) => i !== index));
+    }
+  };
 
-  const removeNewRoom = () => {
-    
-  }
+  const handleNewRoomChange = (index, type, value) => {
+    const rooms = [...newRooms];
+    rooms[index][type] = value;
+    setNewRooms(rooms);
+  };
 
-  const handleNewRoomChange = () => {
-    
-  }
 
-  const searchAvailable = () => {
-    
-  }
+  const searchAvailable = async (idx) => {
+      console.log("BUSCARR")
+      //etError("");
+      try {
+        const req = {
+            checkIn: reservationData.checkIn,   // formulario: checkIn
+            checkOut:reservationData.checkOut, 
+            habitacionesSolicitadas: [
+              ...newRooms
+            ], 
+            isRequestRoomData: true
+          };
+          console.log("request", req)
+          const res = await axios.post("Habitacions/disponibles", req);
+          console.log(res.data);
+          const data = res.data
+                .map(rt => {
+                    const alreadySelected = selectedRooms
+                        .slice(0, idx)
+                        .filter(r => r?.id === rt.id).length;
+                    return {
+                        ...rt,
+                        cantidadDisponible: rt.cantidadDisponible - alreadySelected
+                    };
+                })
+                .sort((a, b) =>
+                    a.maximaOcupacion === b.maximaOcupacion
+                        ? b.cantidadDisponible - a.cantidadDisponible
+                        : a.maximaOcupacion - b.maximaOcupacion
+                );
+            setAvailableRoomTypes(data);
+        } catch(err) {
+            console.log(err)
+            //setError("Error al cargar los tipos de habitación disponibles.");
+        } finally {
+            //setLoading(false);
+        }
+    };
 
   const onSearch = async () => {
     if (!reservationData.tipoDocumentoId || !reservationData.numDocumento) {
@@ -397,41 +452,56 @@ const ReservationForm = () => {
         <Modal.Header closeButton>
           <Modal.Title>Agregar Habitaciones</Modal.Title>
         </Modal.Header>
+
         <Modal.Body>
           {newRooms?.map((room, index) => (
-            <div key={index} className="border-bottom pb-2 mb-2">
+            <div key={index} className="border-bottom pb-3 mb-3">
               <div className="d-flex justify-content-between align-items-center">
                 <h6 className="mb-0">Habitación {index + 1}</h6>
-                {rooms.length > 1 && (
-                  <button className="btn btn-danger btn-sm" onClick={() => removeNewRoom(index)}>
-                    ×
-                  </button>
+                {newRooms.length > 1 && (
+                  <CloseButton variant="dark" onClick={() => removeNewRoom(index)} />
                 )}
               </div>
-              <div className="d-flex justify-content-between align-items-center mt-2">
-                <div className="w-50 px-2">
-                  <label className="form-label">Adultos</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={room.adults}
-                    className="form-control"
-                    onChange={(e) => handleNewRoomChange(index, "adults", Number(e.target.value))}
-                  />
+                  <Row className="mt-3">
+                    <Col xs={12} md={4}>
+                      <Form.Group controlId={`adults-${index}`}>
+                        <Form.Label>Adultos</Form.Label>
+                        <Form.Control
+                          type="number"
+                          min="1"
+                          value={room.adultos}
+                          onChange={(e) => handleNewRoomChange(index, "adultos", Number(e.target.value))}
+                        />
+                      </Form.Group>
+                    </Col>
+
+                    <Col xs={12} md={4}>
+                      <Form.Group controlId={`children-${index}`}>
+                        <Form.Label>Niños</Form.Label>
+                        <Form.Control
+                          type="number"
+                          min="0"
+                          value={room.ninos}
+                          onChange={(e) => handleNewRoomChange(index, "ninhos", Number(e.target.value))}
+                        />
+                      </Form.Group>
+                    </Col>
+
+                    <Col xs={12} md={4}>
+                      <Form.Group controlId={`type-${index}`}>
+                        <Form.Label>Tipo</Form.Label>
+                        <Form.Select name="tipoHabitacionId" value={room.tipoHabitacionId} onChange={(e) => handleNewRoomChange(index, "tipoHabitacionId", e.target.value)}>
+                            {tiposHabitaciones?.map((tipo) => (
+                            <option key={tipo.id} value={tipo.id}>
+                            {tipo.nombre}
+                            </option>
+                            ))}
+                          </Form.Select>
+                      </Form.Group>
+                    </Col>
+                  </Row>
                 </div>
-                <div className="w-50 px-2">
-                  <label className="form-label">Niños</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={room.children}
-                    className="form-control"
-                    onChange={(e) => handleNewRoomChange(index, "children", Number(e.target.value))}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+              ))}
           <div className="d-flex">
             <Button variant="outline-secondary" onClick={addNewRoom}>
               + Agregar Habitación
@@ -449,7 +519,7 @@ const ReservationForm = () => {
             Cancelar
           </Button>
           <Button variant="primary" onClick={addDetalle}>
-            Agregar Detalle
+            Agregar Habitaciones
           </Button>
         </Modal.Footer>
       </Modal>
