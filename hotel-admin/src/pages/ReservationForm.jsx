@@ -10,6 +10,7 @@ const ReservationForm = () => {
   const countries = useMemo(() => countryList().getData(), []);
   let { id } = useParams();
   let isEditMode = id !== undefined;
+  const [newRooms, setNewRooms] = useState();
 
   const [reservationData, setReservationData] = useState({
     nombre: '',
@@ -96,6 +97,22 @@ const ReservationForm = () => {
       [name]: value
     }));
   };
+
+  const addNewRoom = () => {
+
+  }
+
+  const removeNewRoom = () => {
+    
+  }
+
+  const handleNewRoomChange = () => {
+    
+  }
+
+  const searchAvailable = () => {
+    
+  }
 
   const onSearch = async () => {
     if (!reservationData.tipoDocumentoId || !reservationData.numDocumento) {
@@ -381,64 +398,51 @@ const ReservationForm = () => {
           <Modal.Title>Agregar Habitaciones</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Habitación</Form.Label>
-              <Form.Control
-                as="select"
-                name="habitacionId"
-                value={newDetalle.habitacionId}
-                onChange={handleDetalleChange}
-                required
-              >
-                <option value="">Seleccione una Habitación</option>
-                {habitacionesParaSeleccionarEnModal.map(habitacion => (
-                  <option key={habitacion.id} value={habitacion.id}>
-                    #{habitacion.numeroHabitacion} - {habitacion.tipoHabitacionNombre}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Cantidad de Adultos</Form.Label>
-              <Form.Control
-                type="number"
-                name="cantidadAdultos"
-                value={newDetalle.cantidadAdultos ?? 0}
-                onChange={handleDetalleChange}
-                min="0"
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Cantidad de Niños</Form.Label>
-              <Form.Control
-                type="number"
-                name="cantidadNinhos"
-                value={newDetalle.cantidadNinhos ?? 0}
-                onChange={handleDetalleChange}
-                min="0"
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>ID de Pensión</Form.Label>
-              <Form.Control
-                as="select"
-                name="pensionId"
-                value={newDetalle.pensionId}
-                onChange={handleDetalleChange}
-                required
-              >
-                <option value="">Seleccione una Pensión</option>
-                {pensiones.map(pension => (
-                  <option key={pension.id} value={pension.id}>
-                    {pension.nombre}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-          </Form>
+          {newRooms?.map((room, index) => (
+            <div key={index} className="border-bottom pb-2 mb-2">
+              <div className="d-flex justify-content-between align-items-center">
+                <h6 className="mb-0">Habitación {index + 1}</h6>
+                {rooms.length > 1 && (
+                  <button className="btn btn-danger btn-sm" onClick={() => removeNewRoom(index)}>
+                    ×
+                  </button>
+                )}
+              </div>
+              <div className="d-flex justify-content-between align-items-center mt-2">
+                <div className="w-50 px-2">
+                  <label className="form-label">Adultos</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={room.adults}
+                    className="form-control"
+                    onChange={(e) => handleNewRoomChange(index, "adults", Number(e.target.value))}
+                  />
+                </div>
+                <div className="w-50 px-2">
+                  <label className="form-label">Niños</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={room.children}
+                    className="form-control"
+                    onChange={(e) => handleNewRoomChange(index, "children", Number(e.target.value))}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="d-flex">
+            <Button variant="outline-secondary" onClick={addNewRoom}>
+              + Agregar Habitación
+            </Button>
+            <Button  variant="outline-primary" onClick={searchAvailable}>
+              Buscar disponibles
+            </Button>
+          </div>
+          
+          {/* BUSCAR DISPONIBILIDAD */}
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDetalleModal(false)}>
