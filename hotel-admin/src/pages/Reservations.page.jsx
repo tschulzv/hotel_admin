@@ -20,7 +20,7 @@ const Reservations = () => {
   const [filteredData, setFilteredData] = useState(originalData);
   const [filaSeleccionada, setFilaSeleccionada] = useState(null);
   const [show, setShow] = useState(false); // mostrar o no el modal
-  const [razon, setRazon] = useState('true');
+  const [razon, setRazon] = useState('');
   const [reservas, setReservas] = useState([]);
 
   const getStatusBadge = (statusId) => {
@@ -150,14 +150,15 @@ const Reservations = () => {
   const handleEliminar = () => {
     // Actualizamos los datos localmente
     let updatedData = filteredData.map(reserv =>
-      reserv.id === filaSeleccionada.id ? { ...reserv, estado: 'Cancelado' } : reserv
+      reserv.id === filaSeleccionada.id ? { ...reserv, estadoId: getStatusBadge(3) } : reserv
     );
     setFilteredData(updatedData);
 
     // Preparamos el payload para la cancelación
     const payload = {
       // No enviamos 'id' porque se genera automáticamente.
-      detalleReservaId: filaSeleccionada.id, // Asumimos que este campo es el id de la reserva o detalle a cancelar
+      detalleReservaId: null,
+      reservaId: filaSeleccionada.id,
       motivo: razon, // El motivo que el usuario ingresó
       activo: true
     };
@@ -266,7 +267,8 @@ const Reservations = () => {
           {filaSeleccionada && (
             <>
               <p> ¿Estás seguro de que deseas cancelar la reserva?</p>
-              <p><strong>Cliente:</strong> {filaSeleccionada.nombre} <strong>Habitación(es):</strong> {filaSeleccionada.habitaciones}</p>
+              <p><strong>Cliente:</strong> {filaSeleccionada.nombreCliente}</p>
+              <p><strong>Habitación(es):</strong> {filaSeleccionada.numsHabitaciones}</p>
               <Form.Group controlId="razonEliminacion">
                 <Form.Label>Razón de la cancelación</Form.Label>
                 <Form.Control
