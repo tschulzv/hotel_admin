@@ -206,7 +206,7 @@ const ReportPage = () => {
 
   return (
     <Container className="py-4">
-      <h1 className="mb-4">Reportes de Reservas</h1>
+      <h1 className="mb-4">Reportes</h1>
 
       {/* Filtros por año y mes */}
       <Row className="mb-4">
@@ -280,36 +280,43 @@ const ReportPage = () => {
           </Row>
 
           {/* Detalle de Reservas */}
-          <h3 className="mt-4">Detalle de Reservas</h3>
-          <PaginatedTable 
-            headers={reservasHeaders} 
-            data={filteredReservasData} 
-            rowsPerPage={10} 
-          />
-
+          <Card className="shadow-sm mb-4">
+            <Card.Header><h2 className="mb-0">Detalle de Reservas</h2></Card.Header>
+            <PaginatedTable 
+              headers={reservasHeaders} 
+              data={filteredReservasData} 
+              rowsPerPage={10} 
+            />
+          </Card>
           {/* Detalle de Cancelaciones */}
-          <h3 className="mt-4">Detalle de Cancelaciones</h3>
-          <PaginatedTable 
-            headers={cancelacionesHeaders} 
-            data={filteredCancelacionesData} 
-            rowsPerPage={10} 
-          />
+          <Card className= "shadow-sm mb-4">
+            <Card.Header><h2 className="mb-0">Detalle de Cancelaciones</h2></Card.Header>
+            <PaginatedTable 
+              headers={cancelacionesHeaders} 
+              data={filteredCancelacionesData} 
+              rowsPerPage={10} 
+            />
+        </Card>
 
           {/* Detalle de Check-Ins */}
-          <h3 className="mt-4">Detalle de Check-Ins</h3>
-          <PaginatedTable 
-            headers={checkinsHeaders} 
-            data={filteredCheckinsData} 
-            rowsPerPage={10} 
-          />
+          <Card className= "shadow-sm mb-4">
+            <Card.Header><h2 className="mb-0">Detalle de Check-Ins</h2></Card.Header>
+            <PaginatedTable 
+              headers={checkinsHeaders} 
+              data={filteredCheckinsData} 
+              rowsPerPage={10} 
+            />
+          </Card>
 
           {/* Detalle de Check-Outs */}
-          <h3 className="mt-4">Detalle de Check-Outs</h3>
-          <PaginatedTable 
-            headers={checkoutsHeaders} 
-            data={filteredCheckoutsData} 
-            rowsPerPage={10} 
-          />
+          <Card className= "shadow-sm mb-4">
+            <Card.Header><h2 className="mb-0">Detalle de Check-Outs</h2></Card.Header>
+            <PaginatedTable 
+              headers={checkoutsHeaders} 
+              data={filteredCheckoutsData} 
+              rowsPerPage={10} 
+            />
+          </Card>
         </>
       )}
     </Container>
