@@ -46,7 +46,7 @@ const Reservations = () => {
   useEffect(() => {
     axios.get("Reservas")
       .then(response => {
-        const limpio = response.data.sort((a, b) => new Date(b.creacion) - new Date(a.creacion)).map(({ id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada, nombreCliente }) => {
+        const limpio = response.data.sort((a, b) => new Date(b.creacion) - new Date(a.creacion)).map(({ id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada, nombreCliente, creacion }) => {
           const parsedIngreso = parseISO(fechaIngreso);
           const parsedSalida = parseISO(fechaSalida);
           const parsedCreacion = parseISO(creacion);
