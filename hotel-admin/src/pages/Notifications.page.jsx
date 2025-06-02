@@ -23,7 +23,6 @@ const Notifications = () => {
     (async () => {
       try {
           const response = await axios.get(`/Solicitudes`);
-          //setNotificaciones(response.data);
           const ordenadas = response.data.sort((a, b) => new Date(b.creacion) - new Date(a.creacion));
           setNotificaciones(ordenadas);
           setLoading(false);

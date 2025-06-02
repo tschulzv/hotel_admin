@@ -2,7 +2,12 @@ import React from 'react'
 import { Button, Row, Col } from 'react-bootstrap'
 
 // Barra que contiene barra de búsqueda, criterios de ordenacion y botón 'crear' para tablas
-const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortOptions, sortKey, setSort, showBtn, btnText, onBtnClick}) => {
+const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortOptions, sortKey, setSort, showBtn, btnText, onBtnClick, sortOrder, setSortOrder}) => {
+
+  const toggleSortOrder = () => {
+    console.log("Cambiando orden:", sortOrder, sortKey);
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
   return (
     <Row className='align-items-center mb-2'>
         {/*primera columna: search bar*/ }
@@ -20,7 +25,14 @@ const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortO
         </Col>
         {/*segunda columna: filtro de ordenacion*/}
         <Col md={4} className="d-flex align-items-center justify-content-evenly">
-        <span className="material-icons">sort</span>
+         <span
+          className="material-icons"
+          style={{ cursor: 'pointer' }}
+          onClick={toggleSortOrder}
+          title={`Orden actual: ${sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}`}
+        >
+          {sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+        </span>
           <select
             className="form-select"
             value={sortKey}

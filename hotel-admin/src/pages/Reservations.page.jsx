@@ -16,12 +16,13 @@ const Reservations = () => {
   const fechaSeleccionada = queryParams.get('fecha');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState();
-  const [sortKey, setSort] = useState(["id"]);
+  const [sortKey, setSort] = useState("creacion");
   const [filteredData, setFilteredData] = useState(originalData);
   const [filaSeleccionada, setFilaSeleccionada] = useState(null);
   const [show, setShow] = useState(false); // mostrar o no el modal
   const [razon, setRazon] = useState('');
   const [reservas, setReservas] = useState([]);
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const getStatusBadge = (statusId) => {
     switch (statusId) {
@@ -45,16 +46,17 @@ const Reservations = () => {
   useEffect(() => {
     axios.get("Reservas")
       .then(response => {
-        //console.log(response.data)
-        const limpio = response.data.map(({ id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada, nombreCliente }) => {
+        console.log(response.data)
+        const limpio = response.data.map(({ id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada, nombreCliente, creacion }) => {
           const parsedIngreso = parseISO(fechaIngreso);
           const parsedSalida = parseISO(fechaSalida);
-          console.log(detalles);
+          const parsedCreacion = parseISO(creacion);
+          console.log("CREACION", creacion, "PARSED:", parsedCreacion);
           const numsHabitaciones = detalles ? detalles.map(d => d.numeroHabitacion || 'Sin habitación').join(', ') : "N/A";
-          console.log(numsHabitaciones);
           return {
             id,
             codigo,
+            creacion: isValid(parsedCreacion) ? format(parsedCreacion, 'dd/MM/yyyy') : '',
             nombreCliente: nombreCliente,
             numsHabitaciones: numsHabitaciones,
             fechaIngreso: isValid(parsedIngreso) ? format(parsedIngreso, 'dd/MM/yyyy') : '',
@@ -179,33 +181,35 @@ const Reservations = () => {
   // sort options
   const sortOptions = [
     { value: 'id', label: 'ID' },
-    { value: 'nombre', label: 'Nombre' },
+    { value: 'nombreCliente', label: 'Nombre' },
     { value: 'codigo', label: 'Código' },
-    { value: 'habitaciones', label: 'Habitación(es)' },
-    { value: 'checkIn', label: 'Check-In' },
-    { value: 'checkOut', label: 'Check-Out' },
+    { value: 'fechaIngreso', label: 'Check-In' },
+    { value: 'fechaSalida', label: 'Check-Out' },
+    { value: 'creacion', label: 'Fecha de Creación' },
   ];
 
   //  ordenar los datos
   let sortedData = [...filteredData].sort((a, b) => {
     const aVal = a[sortKey];
     const bVal = b[sortKey];
+    
+    let result = 0;
 
-    // Si ambos son números válidos
-    if (!isNaN(aVal) && !isNaN(bVal)) {
-      return Number(aVal) - Number(bVal);
-    }
-
-    // Si ambos son fechas válidas
     if (!isNaN(Date.parse(aVal)) && !isNaN(Date.parse(bVal))) {
-      return new Date(aVal) - new Date(bVal);
+      result = new Date(aVal).getTime() - new Date(bVal).getTime();
+    } else if (!isNaN(aVal) && !isNaN(bVal)) {
+      console.log("ORDENANDO POR NUM")
+      result = Number(aVal) - Number(bVal);
+    } else {
+      console.log("ORDENANDO POR STRING")
+      const aStr = aVal?.toString().toLowerCase() || "";
+      const bStr = bVal?.toString().toLowerCase() || "";
+      result = aStr.localeCompare(bStr);
     }
 
-    // Comparar como strings por defecto
-    const aStr = aVal?.toString().toLowerCase() || "";
-    const bStr = bVal?.toString().toLowerCase() || "";
-    return aStr.localeCompare(bStr);
+    return sortOrder === 'asc' ? result : -result;
   });
+
 
   const sortedDataFormatted = sortedData.map((reserva) => ({
     ...reserva,
@@ -250,7 +254,7 @@ const Reservations = () => {
           </h5>
         </div>
       )}
-      <TableFilterBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} onSearch={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Reserva" onBtnClick={onBtnClick} />
+      <TableFilterBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} onSearch={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Reserva" onBtnClick={onBtnClick} sortOrder={sortOrder} setSortOrder={setSortOrder}/>
       
       {
         loading ? <div className="text-center my-5">
