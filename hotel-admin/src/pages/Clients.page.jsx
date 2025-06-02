@@ -11,9 +11,10 @@ const Clients = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState();
-  const [sortKey, setSort] = useState(["id"]);
+  const [sortKey, setSort] = useState("creacion");
   const [filaSeleccionada, setFilaSeleccionada] = useState(null);
   const [show, setShow] = useState(false); // mostrar o no el modal
+  const [sortOrder, setSortOrder] = useState("desc");
   const headers = [{ key: "id", label: "ID" }, { key: "nombre", label: "Nombre" }, { key: "email", label: "Email" }, { key: "telefono", label: "Teléfono" }, 
     { key: "numDocumento", label: "Documento" }, { key: "tipoDocumento", label: "Tipo" }, { key: "nacionalidad", label: "País" }]
   
@@ -23,8 +24,8 @@ const Clients = () => {
     (async () => {
       try {
           const response = await axios.get(`/Clientes`);
-          console.log(response.data)
-          const limpio = response.data.map(({ id, nombre, apellido, email, telefono, numDocumento, tipoDocumento, nacionalidad }) => {
+          const limpio = response.data.map(({ id, nombre, apellido, email, telefono, numDocumento, tipoDocumento, nacionalidad, creacion }) => {
+            const parsedCreacion = parseISO(creacion);
             return {
               id: id,
               nombre: nombre, 
@@ -32,7 +33,8 @@ const Clients = () => {
               telefono: telefono,
               numDocumento: numDocumento, 
               tipoDocumento: tipoDocumento,
-              nacionalidad: nacionalidad
+              nacionalidad: nacionalidad,
+              creacion: isValid(parsedCreacion) ? format(parsedCreacion, 'dd/MM/yyyy') : ''
             };
           });
           setOriginalData(limpio);
@@ -110,33 +112,36 @@ const Clients = () => {
     { value: 'documento', label: 'Documento' },
     { value: 'email', label: 'Email' },
     { value: 'telefono', label: 'Teléfono' },
+    { value: 'creacion', label: 'Fecha de Creación' },
   ];
   
-  //  ordenar los datos
+
+   //  ordenar los datos
   let sortedData = [...filteredData].sort((a, b) => {
     const aVal = a[sortKey];
     const bVal = b[sortKey];
-  
-    // Si ambos son números válidos
-    if (!isNaN(aVal) && !isNaN(bVal)) {
-      return Number(aVal) - Number(bVal);
-    }
-  
-    // Si ambos son fechas válidas
+    
+    let result = 0;
+
     if (!isNaN(Date.parse(aVal)) && !isNaN(Date.parse(bVal))) {
-      return new Date(aVal) - new Date(bVal);
+      result = new Date(aVal).getTime() - new Date(bVal).getTime();
+    } else if (!isNaN(aVal) && !isNaN(bVal)) {
+      console.log("ORDENANDO POR NUM")
+      result = Number(aVal) - Number(bVal);
+    } else {
+      //console.log("ORDENANDO POR STRING")
+      const aStr = aVal?.toString().toLowerCase() || "";
+      const bStr = bVal?.toString().toLowerCase() || "";
+      result = aStr.localeCompare(bStr);
     }
-  
-    // Comparar como strings por defecto
-    const aStr = aVal?.toString().toLowerCase() || "";
-    const bStr = bVal?.toString().toLowerCase() || "";
-    return aStr.localeCompare(bStr);
+
+    return sortOrder === 'asc' ? result : -result;
   });
   
   return (
     <Container className="px-5" fluid>
          <h1>Clientes</h1>
-         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Cliente" onBtnClick={onBtnClick} />
+         <TableFilterBar searchTerm={searchTerm} setSearchTerm = {setSearchTerm} onSearch ={onSearch} clearSearch={clearSearch} sortOptions={sortOptions} sortKey={sortKey} setSort={setSort} showBtn={true} btnText="Crear Cliente" onBtnClick={onBtnClick} sortOrder={sortOrder} setSortOrder={setSortOrder}/>
          {
            loading ? <div className="text-center my-5">
                       <Spinner animation="border" variant="primary" />

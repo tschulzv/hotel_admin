@@ -16,10 +16,10 @@ const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortO
             placeholder="Buscar..." value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button variant="primary" onClick={onSearch}>
+            <Button variant="outline-primary" onClick={onSearch}>
               <i className="material-icons align-middle">search</i>
             </Button>
-            <Button variant="secondary" onClick={clearSearch}>
+            <Button variant="outline-secondary" onClick={clearSearch}>
               <i className="material-icons align-middle">refresh</i>
             </Button>
         </Col>
@@ -49,7 +49,7 @@ const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortO
         {
           showBtn &&
           <Col md={2}>
-            <Button variant="primary" onClick={onBtnClick}>{btnText}</Button>
+            <Button variant="primary" onClick={onBtnClick} className="d-flex align-items-center gap-2"><span className="material-icons">add_circle</span>{btnText}</Button>
           </Col>
         }
 

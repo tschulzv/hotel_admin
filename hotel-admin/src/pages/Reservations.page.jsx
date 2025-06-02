@@ -50,7 +50,7 @@ const Reservations = () => {
           const parsedIngreso = parseISO(fechaIngreso);
           const parsedSalida = parseISO(fechaSalida);
           const parsedCreacion = parseISO(creacion);
-          console.log("CREACION", creacion, "PARSED:", parsedCreacion);
+          //console.log("CREACION", creacion, "PARSED:", parsedCreacion);
           const numsHabitaciones = detalles ? detalles.map(d => d.numeroHabitacion || 'Sin habitación').join(', ') : "N/A";
           return {
             id,
@@ -197,10 +197,10 @@ const Reservations = () => {
     if (!isNaN(Date.parse(aVal)) && !isNaN(Date.parse(bVal))) {
       result = new Date(aVal).getTime() - new Date(bVal).getTime();
     } else if (!isNaN(aVal) && !isNaN(bVal)) {
-      console.log("ORDENANDO POR NUM")
+      //console.log("ORDENANDO POR NUM")
       result = Number(aVal) - Number(bVal);
     } else {
-      console.log("ORDENANDO POR STRING")
+      
       const aStr = aVal?.toString().toLowerCase() || "";
       const bStr = bVal?.toString().toLowerCase() || "";
       result = aStr.localeCompare(bStr);

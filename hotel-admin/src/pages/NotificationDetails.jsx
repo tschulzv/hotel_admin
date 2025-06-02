@@ -46,8 +46,8 @@ const NotificationDetails = () => {
   return (
     <Container >
     { loading ? <div className="text-center my-5">
-                      <Spinner animation="border" variant="primary" />
-                    </div> : 
+        <Spinner animation="border" variant="primary" />
+      </div> : 
       <>
       <div className="d-flex align-items-center mb-4">
           <span className="material-icons me-2" role="button" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }} title="Volver">

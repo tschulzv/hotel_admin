@@ -5,7 +5,8 @@ import { BsCircleFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig';
 import { toast } from 'react-toastify';
-
+import { parseISO, isToday, formatDistanceToNow, format } from 'date-fns';
+import { es } from 'date-fns/locale'; 
 
 // prueba commit
 const Notifications = () => {
@@ -23,8 +24,22 @@ const Notifications = () => {
     (async () => {
       try {
           const response = await axios.get(`/Solicitudes`);
-          const ordenadas = response.data.sort((a, b) => new Date(b.creacion) - new Date(a.creacion));
+          const ordenadas = response.data
+          .sort((a, b) => new Date(b.creacion) - new Date(a.creacion))
+          .map(notificacion => {
+            const parsedCreacion = parseISO(notificacion.creacion);
+            let formatCreacion = '';
+            if (isToday(parsedCreacion)) { // si es hoy, mostrar ej 'hace 2 horas'
+              formatCreacion = formatDistanceToNow(parsedCreacion, { addSuffix: true, locale: es }); 
+            } else { // si no es hoy  mostrar la fecha
+              formatCreacion = format(parsedCreacion, 'dd/MM/yyyy', { locale: es });
+            }
+
+            return { ...notificacion, creacion: formatCreacion };
+          });
+
           setNotificaciones(ordenadas);
+          console.log(ordenadas);
           setLoading(false);
       } catch (error) {
           console.error('Error cargando datos:', error);
@@ -147,6 +162,7 @@ const Notifications = () => {
         </Col>
 
         <Col xs={3} className="d-flex justify-content-end align-items-center gap-2">
+          <span style={{ color: '#6c757d' }}>{n.creacion}</span>
           {/* Icono de estado (no leído) */}
           {!n.esLeida && (
             <BsCircleFill
