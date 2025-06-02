@@ -10,8 +10,15 @@ const ReservationForm = () => {
   const countries = useMemo(() => countryList().getData(), []);
   let { id } = useParams();
   let isEditMode = id !== undefined;
-  const [newRooms, setNewRooms] = useState([]);
-
+  const [newRooms, setNewRooms] = useState([
+    {
+      tipoHabitacionId: 1,
+      habitacionId: 0,
+      cantidadAdultos: 1,
+      cantidadNinhos: 0,
+      pensionId: 1
+    }
+  ]);
   const [reservationData, setReservationData] = useState({
     nombre: '',
     codigo: '',
@@ -26,13 +33,6 @@ const ReservationForm = () => {
   });
 
   const [showDetalleModal, setShowDetalleModal] = useState(false);
-  const [newDetalle, setNewDetalle] = useState({
-    tipoHabitacionId: "",
-    habitacionId: '',
-    cantidadAdultos: 0,
-    cantidadNinhos: 0,
-    pensionId: ''
-  });
 
   const [habitacionesDisponibles, setHabitacionesDisponibles] = useState([]);
   const [tiposHabitaciones, setTiposHabitaciones] = useState([]);
@@ -68,14 +68,7 @@ const ReservationForm = () => {
         console.error('Error cargando datos:', error);
         toast.error("Error cargando datos");
       })
-    /*
-    axios.get('/Habitacions')
-      .then(response => {
-        const disponibles = response.data.filter(h => h.estadoNombre === "DISPONIBLE");
-        setHabitacionesDisponibles(disponibles);
-      }).catch(error => {
-        console.error('Error cargando datos:', error);
-      })*/
+   
 
   }, [])
 
@@ -100,21 +93,21 @@ const ReservationForm = () => {
       [name]: value
     }));
   };
-
+  /*
   const handleDetalleChange = (e) => {
     const { name, value } = e.target;
     setNewDetalle(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+  };*/
 
   const handleTypeChange = (index) => {
-    (e) => handleNewRoomChange(index, "tipoHabitacionId", tipo.id)
+    (e) => handleNewRoomChange(index, "tipoHabitacionId", parseInt(tipo.id))
   };
 
   const addNewRoom = () => {
-    setNewRooms([...newRooms, { adults: 1, children: 0 }]);
+    setNewRooms([...newRooms, { cantidadAdultos: 1, cantidadNinhos: 0, tipoHabitacionId: 1, pensionId: 1}]);
   };
 
   const removeNewRoom = (index) => {
@@ -131,8 +124,6 @@ const ReservationForm = () => {
 
 
   const searchAvailable = async (idx) => {
-      console.log("BUSCARR")
-      //etError("");
       try {
         const req = {
             checkIn: reservationData.checkIn,   // formulario: checkIn
@@ -142,25 +133,11 @@ const ReservationForm = () => {
             ], 
             isRequestRoomData: true
           };
-          console.log("request", req)
+          //console.log("request", req)
           const res = await axios.post("Habitacions/disponibles", req);
           console.log(res.data);
-          const data = res.data
-                .map(rt => {
-                    const alreadySelected = selectedRooms
-                        .slice(0, idx)
-                        .filter(r => r?.id === rt.id).length;
-                    return {
-                        ...rt,
-                        cantidadDisponible: rt.cantidadDisponible - alreadySelected
-                    };
-                })
-                .sort((a, b) =>
-                    a.maximaOcupacion === b.maximaOcupacion
-                        ? b.cantidadDisponible - a.cantidadDisponible
-                        : a.maximaOcupacion - b.maximaOcupacion
-                );
-            setAvailableRoomTypes(data);
+
+          setHabitacionesDisponibles(res.data);
         } catch(err) {
             console.log(err)
             //setError("Error al cargar los tipos de habitación disponibles.");
@@ -193,36 +170,25 @@ const ReservationForm = () => {
 
 
   const addDetalle = () => {
-    const { habitacionId, cantidadAdultos, pensionId, cantidadNinhos } = newDetalle;
+    const detallesValidos = newRooms.filter(r =>
+      r.habitacionId && r.tipoHabitacionId && r.pensionId
+    );
 
-    if (!habitacionId || !cantidadAdultos || !pensionId) {
-      return toast.error('Por favor, complete Habitación, Cantidad de Adultos y Pensión.');
-    }
-    if (parseInt(cantidadAdultos) <= 0 && parseInt(cantidadNinhos || '0') <= 0) {
-      return toast.error('Debe haber al menos un huésped (adulto o niño).');
-    }
-    if (reservationData.detalles.some(d => d.habitacionId === habitacionId)) {
-      return toast.warn('Esta habitación ya ha sido agregada.');
-    }
-
-    const habitacionSeleccionada = habitacionesDisponibles.find(h => h.id.toString() === habitacionId);
+    if (detallesValidos.length === 0) return toast.error("Complete los datos de habitación");
 
     setReservationData(prev => ({
       ...prev,
-      detalles: [...prev.detalles, {
-        ...newDetalle,
-        tipoHabitacionId: habitacionSeleccionada.tipoHabitacionId.toString(),
-        cantidadNinhos: cantidadNinhos || '0',
-        activo: true
-      }]
+      detalles: [...prev.detalles, ...detallesValidos] 
     }));
-    setNewDetalle({
-      habitacionId: '',
-      tipoHabitacionId: '',
-      cantidadAdultos: '',
-      cantidadNinhos: '',
-      pensionId: ''
-    });
+
+    setNewRooms([{
+      tipoHabitacionId: "",
+      habitacionId: "",
+      cantidadAdultos: 1,
+      cantidadNinhos: 0,
+      pensionId: ""
+    }]);
+
     setShowDetalleModal(false);
   };
 
@@ -257,7 +223,7 @@ const ReservationForm = () => {
       fechaSalida: reservationData.checkOut,     // formulario: checkOut
       llegadaEstimada: reservationData.llegadaEstimada,                 // podrías obtener este dato del formulario si lo requieres
       comentarios: reservationData.observaciones,  // observaciones → comentarios
-      estadoId: 1,                               // Asigna un valor por defecto o proveniente de otro campo
+      estadoId: 2,                               
       detalles: reservationData.detalles.map(det => ({
         tipoHabitacionId: parseInt(det.tipoHabitacionId),
         habitacionId: parseInt(det.habitacionId),
@@ -291,6 +257,13 @@ const ReservationForm = () => {
   const habitacionesParaSeleccionarEnModal = habitacionesDisponibles.filter(
     h => !reservationData.detalles.some(d => d.habitacionId === h.id.toString())
   );
+
+  const seleccionarHabitacion = (index, habitacionId) => {
+    const updatedRooms = [...newRooms];
+    updatedRooms[index].habitacionId = habitacionId;
+    setNewRooms(updatedRooms);
+  };
+
 
   return (
     <Container className="py-4">
@@ -448,7 +421,7 @@ const ReservationForm = () => {
       </Card>
 
       {/* Modal para agregar detalle de habitación */}
-      <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)}>
+      <Modal className='modal-lg' show={showDetalleModal} onHide={() => setShowDetalleModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Agregar Habitaciones</Modal.Title>
         </Modal.Header>
@@ -463,35 +436,48 @@ const ReservationForm = () => {
                 )}
               </div>
                   <Row className="mt-3">
-                    <Col xs={12} md={4}>
+                    <Col xs={12} md={3}>
                       <Form.Group controlId={`adults-${index}`}>
                         <Form.Label>Adultos</Form.Label>
                         <Form.Control
                           type="number"
                           min="1"
                           value={room.adultos}
-                          onChange={(e) => handleNewRoomChange(index, "adultos", Number(e.target.value))}
+                          onChange={(e) => handleNewRoomChange(index, "cantidadAdultos", Number(e.target.value))}
                         />
                       </Form.Group>
                     </Col>
 
-                    <Col xs={12} md={4}>
+                    <Col xs={12} md={3}>
                       <Form.Group controlId={`children-${index}`}>
                         <Form.Label>Niños</Form.Label>
                         <Form.Control
                           type="number"
                           min="0"
                           value={room.ninos}
-                          onChange={(e) => handleNewRoomChange(index, "ninhos", Number(e.target.value))}
+                          onChange={(e) => handleNewRoomChange(index, "cantidadNinhos", Number(e.target.value))}
                         />
                       </Form.Group>
                     </Col>
 
-                    <Col xs={12} md={4}>
+                    <Col xs={12} md={3}>
                       <Form.Group controlId={`type-${index}`}>
                         <Form.Label>Tipo</Form.Label>
-                        <Form.Select name="tipoHabitacionId" value={room.tipoHabitacionId} onChange={(e) => handleNewRoomChange(index, "tipoHabitacionId", e.target.value)}>
+                        <Form.Select name="tipoHabitacionId" value={room.tipoHabitacionId} onChange={(e) => handleNewRoomChange(index, "tipoHabitacionId", Number(e.target.value))}>
                             {tiposHabitaciones?.map((tipo) => (
+                            <option key={tipo.id} value={tipo.id}>
+                            {tipo.nombre}
+                            </option>
+                            ))}
+                          </Form.Select>
+                      </Form.Group>
+                    </Col>
+
+                    <Col xs={12} md={3}>
+                      <Form.Group controlId={`type-${index}`}>
+                        <Form.Label>Pensión</Form.Label>
+                        <Form.Select name="pensionId" value={room.pensionId} onChange={(e) => handleNewRoomChange(index, "pensionId", Number(e.target.value))}>
+                            {pensiones?.map((tipo) => (
                             <option key={tipo.id} value={tipo.id}>
                             {tipo.nombre}
                             </option>
@@ -512,6 +498,61 @@ const ReservationForm = () => {
           </div>
           
           {/* BUSCAR DISPONIBILIDAD */}
+        {habitacionesDisponibles && (
+        <Row className="g-4">
+          {newRooms?.map((room, idx) => (
+            <Col key={idx} md={12 / (newRooms.length || 1)}>
+              <h6 className="mb-3">Habitación {idx + 1}</h6>
+              <div className="d-flex flex-column gap-2">
+                { habitacionesDisponibles?.filter((h) => h.tipoHabitacionId == room.tipoHabitacionId)
+                    .map((h) => {
+                      const yaSeleccionada = newRooms.some((r, i) => r.habitacionId === h.id && i !== idx);
+                      const seleccionadaEnEstaPos = newRooms[idx]?.habitacionId === h.id;
+                      
+                      return (
+                        <div
+                          key={h.numeroHabitacion}
+                          className="border rounded"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "0.5rem 1rem",
+                            backgroundColor: seleccionadaEnEstaPos 
+                              ? "#d1e7dd" 
+                              : yaSeleccionada 
+                                ? "#f8d7da"
+                                : "white",
+                          }}
+                        >
+                          <span className="me-2">N° {h.numeroHabitacion}</span>
+                          <Button
+                            size="sm"
+                            variant={
+                              seleccionadaEnEstaPos 
+                                ? "success"
+                                : yaSeleccionada
+                                  ? "danger"
+                                  : "primary"
+                            }
+                            onClick={() => seleccionarHabitacion(idx, h.id)}
+                            disabled={yaSeleccionada && !seleccionadaEnEstaPos}
+                          >
+                            {seleccionadaEnEstaPos 
+                              ? "Seleccionada"
+                              : yaSeleccionada
+                                ? "No disponible"
+                                : "Seleccionar"
+                            }
+                          </Button>
+                        </div>
+                      );
+                    })
+                }
+              </div>
+            </Col>
+          ))}
+        </Row>)}
 
         </Modal.Body>
         <Modal.Footer>
