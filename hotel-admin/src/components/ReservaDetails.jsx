@@ -163,7 +163,6 @@ const ReservaDetails = ({solicitud}) => {
         </Col>
       </Row>
 
-
       {!disabled && (
         <Row className="g-4">
           {reserva?.detalles?.map((detalle, idx) => (

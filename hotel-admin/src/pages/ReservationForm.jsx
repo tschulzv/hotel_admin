@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Container, Form, Button, Row, Col, Card, Modal } from 'react-bootstrap';
+import { Container, Form, Button, Row, Col, Card, Modal, CloseButton } from 'react-bootstrap';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import countryList from 'react-select-country-list';
 import axios from '../config/axiosConfig';
@@ -10,7 +10,15 @@ const ReservationForm = () => {
   const countries = useMemo(() => countryList().getData(), []);
   let { id } = useParams();
   let isEditMode = id !== undefined;
-
+  const [newRooms, setNewRooms] = useState([
+    {
+      tipoHabitacionId: 1,
+      habitacionId: 0,
+      cantidadAdultos: 1,
+      cantidadNinhos: 0,
+      pensionId: 1
+    }
+  ]);
   const [reservationData, setReservationData] = useState({
     nombre: '',
     codigo: '',
@@ -25,15 +33,9 @@ const ReservationForm = () => {
   });
 
   const [showDetalleModal, setShowDetalleModal] = useState(false);
-  const [newDetalle, setNewDetalle] = useState({
-    tipoHabitacionId: "",
-    habitacionId: '',
-    cantidadAdultos: 0,
-    cantidadNinhos: 0,
-    pensionId: ''
-  });
 
   const [habitacionesDisponibles, setHabitacionesDisponibles] = useState([]);
+  const [tiposHabitaciones, setTiposHabitaciones] = useState([]);
   const [pensiones, setPensiones] = useState([]);
   const [tiposDocumentos, setTiposDocumentos] = useState([]);
   const [cliente, setCliente] = useState({});
@@ -48,6 +50,7 @@ const ReservationForm = () => {
       })
       .catch(error => {
         console.error('Error cargando datos:', error);
+        toast.error("Error cargando datos")
       });
 
     axios.get('/Pensiones')
@@ -55,15 +58,17 @@ const ReservationForm = () => {
         setPensiones(response.data);
       }).catch(error => {
         console.error('Error cargando datos:', error);
+        toast.error("Error cargando datos");
       })
 
-    axios.get('/Habitacions')
+    axios.get('/TiposHabitaciones')
       .then(response => {
-        const disponibles = response.data.filter(h => h.estadoNombre === "DISPONIBLE");
-        setHabitacionesDisponibles(disponibles);
-      }).catch(error => {
+        setTiposHabitaciones(response.data);
+      }).catch(err => {
         console.error('Error cargando datos:', error);
+        toast.error("Error cargando datos");
       })
+   
 
   }, [])
 
@@ -88,14 +93,58 @@ const ReservationForm = () => {
       [name]: value
     }));
   };
-
+  /*
   const handleDetalleChange = (e) => {
     const { name, value } = e.target;
     setNewDetalle(prev => ({
       ...prev,
       [name]: value
     }));
+  };*/
+
+  const handleTypeChange = (index) => {
+    (e) => handleNewRoomChange(index, "tipoHabitacionId", parseInt(tipo.id))
   };
+
+  const addNewRoom = () => {
+    setNewRooms([...newRooms, { cantidadAdultos: 1, cantidadNinhos: 0, tipoHabitacionId: 1, pensionId: 1}]);
+  };
+
+  const removeNewRoom = (index) => {
+    if (newRooms.length > 1) {
+      setNewRooms(newRooms.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleNewRoomChange = (index, type, value) => {
+    const rooms = [...newRooms];
+    rooms[index][type] = value;
+    setNewRooms(rooms);
+  };
+
+
+  const searchAvailable = async (idx) => {
+      try {
+        const req = {
+            checkIn: reservationData.checkIn,   // formulario: checkIn
+            checkOut:reservationData.checkOut, 
+            habitacionesSolicitadas: [
+              ...newRooms
+            ], 
+            isRequestRoomData: true
+          };
+          //console.log("request", req)
+          const res = await axios.post("Habitacions/disponibles", req);
+          console.log(res.data);
+
+          setHabitacionesDisponibles(res.data);
+        } catch(err) {
+            console.log(err)
+            //setError("Error al cargar los tipos de habitación disponibles.");
+        } finally {
+            //setLoading(false);
+        }
+    };
 
   const onSearch = async () => {
     if (!reservationData.tipoDocumentoId || !reservationData.numDocumento) {
@@ -121,36 +170,25 @@ const ReservationForm = () => {
 
 
   const addDetalle = () => {
-    const { habitacionId, cantidadAdultos, pensionId, cantidadNinhos } = newDetalle;
+    const detallesValidos = newRooms.filter(r =>
+      r.habitacionId && r.tipoHabitacionId && r.pensionId
+    );
 
-    if (!habitacionId || !cantidadAdultos || !pensionId) {
-      return toast.error('Por favor, complete Habitación, Cantidad de Adultos y Pensión.');
-    }
-    if (parseInt(cantidadAdultos) <= 0 && parseInt(cantidadNinhos || '0') <= 0) {
-      return toast.error('Debe haber al menos un huésped (adulto o niño).');
-    }
-    if (reservationData.detalles.some(d => d.habitacionId === habitacionId)) {
-      return toast.warn('Esta habitación ya ha sido agregada.');
-    }
-
-    const habitacionSeleccionada = habitacionesDisponibles.find(h => h.id.toString() === habitacionId);
+    if (detallesValidos.length === 0) return toast.error("Complete los datos de habitación");
 
     setReservationData(prev => ({
       ...prev,
-      detalles: [...prev.detalles, {
-        ...newDetalle,
-        tipoHabitacionId: habitacionSeleccionada.tipoHabitacionId.toString(),
-        cantidadNinhos: cantidadNinhos || '0',
-        activo: true
-      }]
+      detalles: [...prev.detalles, ...detallesValidos] 
     }));
-    setNewDetalle({
-      habitacionId: '',
-      tipoHabitacionId: '',
-      cantidadAdultos: '',
-      cantidadNinhos: '',
-      pensionId: ''
-    });
+
+    setNewRooms([{
+      tipoHabitacionId: "",
+      habitacionId: "",
+      cantidadAdultos: 1,
+      cantidadNinhos: 0,
+      pensionId: ""
+    }]);
+
     setShowDetalleModal(false);
   };
 
@@ -185,7 +223,7 @@ const ReservationForm = () => {
       fechaSalida: reservationData.checkOut,     // formulario: checkOut
       llegadaEstimada: reservationData.llegadaEstimada,                 // podrías obtener este dato del formulario si lo requieres
       comentarios: reservationData.observaciones,  // observaciones → comentarios
-      estadoId: 1,                               // Asigna un valor por defecto o proveniente de otro campo
+      estadoId: 2,                               
       detalles: reservationData.detalles.map(det => ({
         tipoHabitacionId: parseInt(det.tipoHabitacionId),
         habitacionId: parseInt(det.habitacionId),
@@ -219,6 +257,13 @@ const ReservationForm = () => {
   const habitacionesParaSeleccionarEnModal = habitacionesDisponibles.filter(
     h => !reservationData.detalles.some(d => d.habitacionId === h.id.toString())
   );
+
+  const seleccionarHabitacion = (index, habitacionId) => {
+    const updatedRooms = [...newRooms];
+    updatedRooms[index].habitacionId = habitacionId;
+    setNewRooms(updatedRooms);
+  };
+
 
   return (
     <Container className="py-4">
@@ -376,76 +421,146 @@ const ReservationForm = () => {
       </Card>
 
       {/* Modal para agregar detalle de habitación */}
-      <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)}>
+      <Modal className='modal-lg' show={showDetalleModal} onHide={() => setShowDetalleModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Agregar Habitaciones</Modal.Title>
         </Modal.Header>
+
         <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Habitación</Form.Label>
-              <Form.Control
-                as="select"
-                name="habitacionId"
-                value={newDetalle.habitacionId}
-                onChange={handleDetalleChange}
-                required
-              >
-                <option value="">Seleccione una Habitación</option>
-                {habitacionesParaSeleccionarEnModal.map(habitacion => (
-                  <option key={habitacion.id} value={habitacion.id}>
-                    #{habitacion.numeroHabitacion} - {habitacion.tipoHabitacionNombre}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Cantidad de Adultos</Form.Label>
-              <Form.Control
-                type="number"
-                name="cantidadAdultos"
-                value={newDetalle.cantidadAdultos ?? 0}
-                onChange={handleDetalleChange}
-                min="0"
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Cantidad de Niños</Form.Label>
-              <Form.Control
-                type="number"
-                name="cantidadNinhos"
-                value={newDetalle.cantidadNinhos ?? 0}
-                onChange={handleDetalleChange}
-                min="0"
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>ID de Pensión</Form.Label>
-              <Form.Control
-                as="select"
-                name="pensionId"
-                value={newDetalle.pensionId}
-                onChange={handleDetalleChange}
-                required
-              >
-                <option value="">Seleccione una Pensión</option>
-                {pensiones.map(pension => (
-                  <option key={pension.id} value={pension.id}>
-                    {pension.nombre}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-          </Form>
+          {newRooms?.map((room, index) => (
+            <div key={index} className="border-bottom pb-3 mb-3">
+              <div className="d-flex justify-content-between align-items-center">
+                <h6 className="mb-0">Habitación {index + 1}</h6>
+                {newRooms.length > 1 && (
+                  <CloseButton variant="dark" onClick={() => removeNewRoom(index)} />
+                )}
+              </div>
+                  <Row className="mt-3">
+                    <Col xs={12} md={3}>
+                      <Form.Group controlId={`adults-${index}`}>
+                        <Form.Label>Adultos</Form.Label>
+                        <Form.Control
+                          type="number"
+                          min="1"
+                          value={room.adultos}
+                          onChange={(e) => handleNewRoomChange(index, "cantidadAdultos", Number(e.target.value))}
+                        />
+                      </Form.Group>
+                    </Col>
+
+                    <Col xs={12} md={3}>
+                      <Form.Group controlId={`children-${index}`}>
+                        <Form.Label>Niños</Form.Label>
+                        <Form.Control
+                          type="number"
+                          min="0"
+                          value={room.ninos}
+                          onChange={(e) => handleNewRoomChange(index, "cantidadNinhos", Number(e.target.value))}
+                        />
+                      </Form.Group>
+                    </Col>
+
+                    <Col xs={12} md={3}>
+                      <Form.Group controlId={`type-${index}`}>
+                        <Form.Label>Tipo</Form.Label>
+                        <Form.Select name="tipoHabitacionId" value={room.tipoHabitacionId} onChange={(e) => handleNewRoomChange(index, "tipoHabitacionId", Number(e.target.value))}>
+                            {tiposHabitaciones?.map((tipo) => (
+                            <option key={tipo.id} value={tipo.id}>
+                            {tipo.nombre}
+                            </option>
+                            ))}
+                          </Form.Select>
+                      </Form.Group>
+                    </Col>
+
+                    <Col xs={12} md={3}>
+                      <Form.Group controlId={`type-${index}`}>
+                        <Form.Label>Pensión</Form.Label>
+                        <Form.Select name="pensionId" value={room.pensionId} onChange={(e) => handleNewRoomChange(index, "pensionId", Number(e.target.value))}>
+                            {pensiones?.map((tipo) => (
+                            <option key={tipo.id} value={tipo.id}>
+                            {tipo.nombre}
+                            </option>
+                            ))}
+                          </Form.Select>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </div>
+              ))}
+          <div className="d-flex">
+            <Button variant="outline-secondary" onClick={addNewRoom}>
+              + Agregar Habitación
+            </Button>
+            <Button  variant="outline-primary" onClick={searchAvailable}>
+              Buscar disponibles
+            </Button>
+          </div>
+          
+          {/* BUSCAR DISPONIBILIDAD */}
+        {habitacionesDisponibles && (
+        <Row className="g-4">
+          {newRooms?.map((room, idx) => (
+            <Col key={idx} md={12 / (newRooms.length || 1)}>
+              <h6 className="mb-3">Habitación {idx + 1}</h6>
+              <div className="d-flex flex-column gap-2">
+                { habitacionesDisponibles?.filter((h) => h.tipoHabitacionId == room.tipoHabitacionId)
+                    .map((h) => {
+                      const yaSeleccionada = newRooms.some((r, i) => r.habitacionId === h.id && i !== idx);
+                      const seleccionadaEnEstaPos = newRooms[idx]?.habitacionId === h.id;
+                      
+                      return (
+                        <div
+                          key={h.numeroHabitacion}
+                          className="border rounded"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "0.5rem 1rem",
+                            backgroundColor: seleccionadaEnEstaPos 
+                              ? "#d1e7dd" 
+                              : yaSeleccionada 
+                                ? "#f8d7da"
+                                : "white",
+                          }}
+                        >
+                          <span className="me-2">N° {h.numeroHabitacion}</span>
+                          <Button
+                            size="sm"
+                            variant={
+                              seleccionadaEnEstaPos 
+                                ? "success"
+                                : yaSeleccionada
+                                  ? "danger"
+                                  : "primary"
+                            }
+                            onClick={() => seleccionarHabitacion(idx, h.id)}
+                            disabled={yaSeleccionada && !seleccionadaEnEstaPos}
+                          >
+                            {seleccionadaEnEstaPos 
+                              ? "Seleccionada"
+                              : yaSeleccionada
+                                ? "No disponible"
+                                : "Seleccionar"
+                            }
+                          </Button>
+                        </div>
+                      );
+                    })
+                }
+              </div>
+            </Col>
+          ))}
+        </Row>)}
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDetalleModal(false)}>
             Cancelar
           </Button>
           <Button variant="primary" onClick={addDetalle}>
-            Agregar Detalle
+            Agregar Habitaciones
           </Button>
         </Modal.Footer>
       </Modal>

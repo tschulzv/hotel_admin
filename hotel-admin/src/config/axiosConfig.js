@@ -35,7 +35,8 @@ axiosInstance.interceptors.response.use(
       // Si el error es 401 (Unauthorized), redirigir al login
       console.error('Token expirado o no válido');
       // Aquí puedes redirigir a la página de login, por ejemplo:
-      //window.location.href = '/'; // Usar React Router si lo tienes
+      localStorage.removeItem('jwtToken')
+      window.location.href = '/'; // Usar React Router si lo tienes
     }
 
     return Promise.reject(error); // Si es otro tipo de error, rechazarlo
