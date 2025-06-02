@@ -39,7 +39,8 @@ const ReservationCheckOut = () => {
     setError("");
     setVerified(false);
     setServices([]);
-    setReservaSeleccionada(null);    try {
+    setReservaSeleccionada(null);    
+    try {
       // Verificar si existe la reserva y tiene check-in
       const { data } = await axios.get(`/Checkouts/verificarReserva/${codigoToUse.trim()}`);
       
@@ -47,21 +48,24 @@ const ReservationCheckOut = () => {
         toast.error('La reserva no tiene check-in activo o no existe');
         return;
       }
-
+      console.log("RESERVA: ", data)
       // Si la verificación fue exitosa, guardamos el código de la reserva
       setReservaSeleccionada({ codigo: codigoToUse.trim() });
+      console.log("EXITO,", reservaSeleccionada.codigo)
       setVerified(true);
 
       // Generar servicios consumidos aleatorios
       const shuffled = [...possibleItems].sort(() => 0.5 - Math.random());
       const count = Math.floor(Math.random() * possibleItems.length) + 1;
-      setServices(shuffled.slice(0, count));    } catch (err) {
+      setServices(shuffled.slice(0, count)); 
+    } catch (err) {
       toast.error("Error al verificar la reserva");
       return;
     }
   };
   const handleCheckOut = () => {
     if (!reservaSeleccionada) return;
+    console.log(reservaSeleccionada)
     axios.post('/Checkouts', {
       codigo: reservaSeleccionada.codigo,
       activo: true
