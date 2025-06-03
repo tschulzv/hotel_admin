@@ -25,7 +25,8 @@ const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viern
 const anhos = ["2023", "2024", "2025"];
 
 const Calendar = () => {
-  const [mesSeleccionado, setMesSeleccionado] = useState(meses[4].nombre); // Mayo por defecto
+  const mesActual = meses[new Date().getMonth()].nombre;
+  const [mesSeleccionado, setMesSeleccionado] = useState(mesActual); // Mayo por defecto
   const [anhoSeleccionado, setAnhoSeleccionado] = useState(anhos[2]); // 2025 por defecto
   const [reservas, setReservas] = useState([]);
   const [habitaciones, sethabitaciones] = useState([]);
