@@ -216,6 +216,7 @@ const ReservationForm = () => {
     }
     if (reservationData.detalles.length === 0) {
       return toast.error("Debe agregar al menos un detalle de habitación.");
+      // hola prueba
     }
 
     const payload = {
@@ -296,6 +297,7 @@ const ReservationForm = () => {
                     onChange={handleChange}
                     required
                   >
+                    
                     <option value="">Seleccione</option>
                     {tiposDocumentos.map((tipo) => (
                       <option key={tipo.id} value={tipo.id}>
