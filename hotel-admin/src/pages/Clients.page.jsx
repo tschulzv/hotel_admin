@@ -25,7 +25,6 @@ const Clients = () => {
       try {
           const response = await axios.get(`/Clientes`);
           const limpio = response.data.map(({ id, nombre, apellido, email, telefono, numDocumento, tipoDocumento, nacionalidad, creacion }) => {
-            const parsedCreacion = parseISO(creacion);
             return {
               id: id,
               nombre: nombre, 
@@ -34,7 +33,7 @@ const Clients = () => {
               numDocumento: numDocumento, 
               tipoDocumento: tipoDocumento,
               nacionalidad: nacionalidad,
-              creacion: isValid(parsedCreacion) ? format(parsedCreacion, 'dd/MM/yyyy') : ''
+              creacion
             };
           });
           setOriginalData(limpio);

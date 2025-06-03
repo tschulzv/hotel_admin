@@ -49,13 +49,11 @@ const Reservations = () => {
         const limpio = response.data.sort((a, b) => new Date(b.creacion) - new Date(a.creacion)).map(({ id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada, nombreCliente, creacion }) => {
           const parsedIngreso = parseISO(fechaIngreso);
           const parsedSalida = parseISO(fechaSalida);
-          const parsedCreacion = parseISO(creacion);
-          //console.log("CREACION", creacion, "PARSED:", parsedCreacion);
           const numsHabitaciones = detalles ? detalles.map(d => d.numeroHabitacion || 'Sin habitación').join(', ') : "N/A";
           return {
             id,
             codigo,
-            creacion: isValid(parsedCreacion) ? format(parsedCreacion, 'dd/MM/yyyy') : '',
+            creacion,
             nombreCliente: nombreCliente,
             numsHabitaciones: numsHabitaciones,
             fechaIngreso: isValid(parsedIngreso) ? format(parsedIngreso, 'dd/MM/yyyy') : '',
@@ -182,8 +180,8 @@ const Reservations = () => {
     { value: 'id', label: 'ID' },
     { value: 'nombreCliente', label: 'Nombre' },
     { value: 'codigo', label: 'Código' },
-    { value: 'fechaIngreso', label: 'Check-In' },
-    { value: 'fechaSalida', label: 'Check-Out' },
+    { value: 'ingresoISO', label: 'Check-In' },
+    { value: 'salidaISO', label: 'Check-Out' },
     { value: 'creacion', label: 'Fecha de Creación' },
   ];
 
