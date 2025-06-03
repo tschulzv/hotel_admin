@@ -216,7 +216,6 @@ const ReservationForm = () => {
     }
     if (reservationData.detalles.length === 0) {
       return toast.error("Debe agregar al menos un detalle de habitación.");
-      // hola prueba
     }
 
     const payload = {
