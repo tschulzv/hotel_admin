@@ -22,8 +22,8 @@ const ReservationForm = () => {
   const [reservationData, setReservationData] = useState({
     nombre: '',
     codigo: '',
-    checkIn: '',
-    checkOut: '',
+    fechaIngreso: '',
+    fechaSalida: '',
     llegadaEstimada: '',
     observaciones: '',
     tipoDocumentoId: 0,
@@ -79,6 +79,8 @@ const ReservationForm = () => {
           const resData = response.data;
           setReservationData({
             ...resData,
+            fechaIngreso: resData.fechaIngreso ? resData.fechaIngreso.split('T')[0] : '',
+            fechaSalida: resData.fechaSalida ? resData.fechaSalida.split('T')[0] : '',
             observaciones: resData.comentarios || ''
           });
         })
@@ -126,8 +128,8 @@ const ReservationForm = () => {
   const searchAvailable = async (idx) => {
       try {
         const req = {
-            checkIn: reservationData.checkIn,   // formulario: checkIn
-            checkOut:reservationData.checkOut, 
+            checkIn: reservationData.checkIn,   // formulario: fechaIngreso
+            checkOut:reservationData.fechaSalida, 
             habitacionesSolicitadas: [
               ...newRooms
             ], 
@@ -206,10 +208,10 @@ const ReservationForm = () => {
     if (!cliente || !cliente.id) {
       return toast.error("Por favor, busque y seleccione un cliente válido.");
     }
-    if (!reservationData.checkIn || !reservationData.checkOut) {
+    if (!reservationData.fechaIngreso || !reservationData.fechaSalida) {
       return toast.error("Las fechas de Check-In y Check-Out son obligatorias.");
     }
-    if (new Date(reservationData.checkIn) >= new Date(reservationData.checkOut)) {
+    if (new Date(reservationData.fechaIngreso) >= new Date(reservationData.fechaSalida)) {
       return toast.error("La fecha de Check-Out debe ser posterior a la de Check-In.");
     }
     if (reservationData.detalles.length === 0) {
@@ -219,8 +221,8 @@ const ReservationForm = () => {
     const payload = {
       clienteId: cliente.id,
       //codigo: reservationData.codigo,
-      fechaIngreso: reservationData.checkIn,   // formulario: checkIn
-      fechaSalida: reservationData.checkOut,     // formulario: checkOut
+      fechaIngreso: reservationData.fechaIngreso,   // formulario: checkIn
+      fechaSalida: reservationData.fechaSalida,     // formulario: fechaSalida
       llegadaEstimada: reservationData.llegadaEstimada,                 // podrías obtener este dato del formulario si lo requieres
       comentarios: reservationData.observaciones,  // observaciones → comentarios
       estadoId: 2,                               
@@ -270,64 +272,82 @@ const ReservationForm = () => {
       <Card className="p-4 shadow-sm">
         <h4 className="mb-4">{isEditMode ? "Editar reserva" : "Nueva reserva"}</h4>
         <Form onSubmit={handleSubmit}>
-          <Row className='d-flex align-items-end'>
-            <p class="fs-5">Buscar Cliente</p>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>N° Documento</Form.Label>
+            { !isEditMode ? <>
+            <Row className='d-flex align-items-end'>
+              <p class="fs-5">Buscar Cliente</p>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>N° Documento</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="numDocumento"
+                    value={reservationData.numDocumento}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={5}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Tipo de Documento</Form.Label>
+                  <Form.Select
+                    name="tipoDocumentoId"
+                    value={reservationData.tipoDocumentoId || ''}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccione</option>
+                    {tiposDocumentos.map((tipo) => (
+                      <option key={tipo.id} value={tipo.id}>
+                        {tipo.nombre}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={1} className="d-flex align-items-end mb-3">
+                <Button variant="primary" onClick={onSearch}>
+                  <i className="material-icons align-middle">search</i>
+                </Button>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={8}>
+                <p>{afterSearchText}</p>
+              </Col>
+              <Col md={4}>
+                {clienteNoEncontrado && (
+                  <p>
+                    <Link to="/clientes/nuevo">¿Crear nuevo cliente?</Link>
+                  </p>)}
+              </Col>
+            </Row>
+            </> 
+            : 
+            <>
+              <Row>
+                <Col md={12}>
+                <Form.Group className="mb-3">
+                <Form.Label>Cliente</Form.Label>
                 <Form.Control
                   type="text"
-                  name="numDocumento"
-                  value={reservationData.numDocumento}
-                  onChange={handleChange}
-                  required
+                  disabled
+                  name="nombreCliente"
+                  value={reservationData.nombreCliente}
                 />
               </Form.Group>
             </Col>
-            <Col md={5}>
-              <Form.Group className="mb-3">
-                <Form.Label>Tipo de Documento</Form.Label>
-                <Form.Select
-                  name="tipoDocumentoId"
-                  value={reservationData.tipoDocumentoId || ''}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccione</option>
-                  {tiposDocumentos.map((tipo) => (
-                    <option key={tipo.id} value={tipo.id}>
-                      {tipo.nombre}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={1} className="d-flex align-items-end mb-3">
-              <Button variant="primary" onClick={onSearch}>
-                <i className="material-icons align-middle">search</i>
-              </Button>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={8}>
-              <p>{afterSearchText}</p>
-            </Col>
-            <Col md={4}>
-              {clienteNoEncontrado && (
-                <p>
-                  <Link to="/clientes/nuevo">¿Crear nuevo cliente?</Link>
-                </p>)}
-            </Col>
-          </Row>
-
+              </Row>
+            </>}
+          
           <Row>
             <Col md={4}>
               <Form.Group className="mb-3">
                 <Form.Label>Check-In</Form.Label>
                 <Form.Control
                   type="date"
-                  name="checkIn"
-                  value={reservationData.checkIn}
+                  name="fechaIngreso"
+                  value={reservationData.fechaIngreso}
                   onChange={handleChange}
                   required
                   min={!isEditMode ? new Date().toISOString().split('T')[0] : undefined}
@@ -339,11 +359,11 @@ const ReservationForm = () => {
                 <Form.Label>Check-Out</Form.Label>
                 <Form.Control
                   type="date"
-                  name="checkOut"
-                  value={reservationData.checkOut}
+                  name="fechaSalida"
+                  value={reservationData.fechaSalida}
                   onChange={handleChange}
                   required
-                  min={reservationData.checkIn || (!isEditMode ? new Date().toISOString().split('T')[0] : undefined)}
+                  min={reservationData.fechaIngreso || (!isEditMode ? new Date().toISOString().split('T')[0] : undefined)}
                 />
               </Form.Group>
             </Col>
@@ -385,16 +405,14 @@ const ReservationForm = () => {
               <h6>Habitaciones Agregadas:</h6>
               <ul className="list-unstyled">
                 {reservationData.detalles.map((detalle, index) => {
-                  const habitacion = habitacionesDisponibles.find(
-                    h => h.id.toString() === detalle.habitacionId
-                  );
+                  console.log(detalle)
                   const pension = pensiones.find(
-                    p => p.id.toString() === detalle.pensionId
+                    p => p.id === detalle.pensionId
                   );
                   return (
                     <li key={index} className="d-flex justify-content-between align-items-center p-2 mb-2 border-bottom">
                       <div>
-                        <strong>Habitación:</strong> {habitacion ? `#${habitacion.numeroHabitacion} - ${habitacion.tipoHabitacionNombre}` : `ID ${detalle.habitacionId}`}<br />
+                        <strong>Habitación:</strong> {detalle.numeroHabitacion} - {detalle.tipoHabitacion}<br />
                         <strong>Huéspedes:</strong> {detalle.cantidadAdultos} Adulto(s)
                         {detalle.cantidadNinhos && parseInt(detalle.cantidadNinhos) > 0 ? `, ${detalle.cantidadNinhos} Niño(s)` : ''}<br />
                         <strong>Pensión:</strong> {pension ? pension.nombre : `ID ${detalle.pensionId}`}
