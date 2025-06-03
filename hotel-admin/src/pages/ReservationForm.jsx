@@ -46,7 +46,6 @@ const ReservationForm = () => {
     axios.get('/TiposDocumentos')
       .then(response => {
         setTiposDocumentos(response.data);
-        console.log(response.data)
       })
       .catch(error => {
         console.error('Error cargando datos:', error);
@@ -137,7 +136,6 @@ const ReservationForm = () => {
           };
           //console.log("request", req)
           const res = await axios.post("Habitacions/disponibles", req);
-          console.log(res.data);
 
           setHabitacionesDisponibles(res.data);
         } catch(err) {
@@ -205,8 +203,8 @@ const ReservationForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!cliente || !cliente.id) {
-      return toast.error("Por favor, busque y seleccione un cliente válido.");
+    if (!reservationData.clienteId && !cliente.id) {
+      return toast.error("Por favor seleccione un cliente válido.");
     }
     if (!reservationData.fechaIngreso || !reservationData.fechaSalida) {
       return toast.error("Las fechas de Check-In y Check-Out son obligatorias.");
@@ -219,8 +217,9 @@ const ReservationForm = () => {
     }
 
     const payload = {
-      clienteId: cliente.id,
-      //codigo: reservationData.codigo,
+      id: reservationData.id ?? 0,
+      clienteId: cliente.id ? cliente.id : reservationData.clienteId,
+      codigo: reservationData.codigo ?? 0,
       fechaIngreso: reservationData.fechaIngreso,   // formulario: checkIn
       fechaSalida: reservationData.fechaSalida,     // formulario: fechaSalida
       llegadaEstimada: reservationData.llegadaEstimada,                 // podrías obtener este dato del formulario si lo requieres
@@ -235,8 +234,6 @@ const ReservationForm = () => {
         activo: true
       }))
     };
-
-    console.log('Nueva reserva a enviar:', payload);
 
     try {
       if (isEditMode) {
@@ -406,7 +403,6 @@ const ReservationForm = () => {
               <h6>Habitaciones Agregadas:</h6>
               <ul className="list-unstyled">
                 {reservationData.detalles.map((detalle, index) => {
-                  console.log(detalle)
                   const pension = pensiones.find(
                     p => p.id === detalle.pensionId
                   );
