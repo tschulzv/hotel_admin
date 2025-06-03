@@ -41,26 +41,46 @@ const ReservationCheckIn = () => {
 
   // Cargar todas las reservas al montar
   useEffect(() => {
-    axios.get('/Reservas')
-      .then(res => {
-        setReservas(res.data);
-        // Si hay código en los parámetros, verificar automáticamente
-        if (codigoParam !== undefined) {
-          const found = res.data.find(r => r.codigo === codigoParam);
-          } if (!found) {
-            toast.error("Reserva No Encontrada.");
-            setVerified(false);
-            return;
-          } else if (!validateCheckinDate(found)) {
-            toast.error("Solo se puede hacer Check-In el mismo día de la fecha programada.")
-            return
-          } else {
-            setReservationData(found);
-            setVerified(true);
-          }
-        })
-      .catch(err => console.error(err));
-  }, [codigoParam]);
+  axios.get('/Reservas')
+    .then(res => {
+      setReservas(res.data);
+      let found = null;
+      if (codigoParam !== undefined) {
+        found = res.data.find(r => r.codigo === codigoParam);
+        if (!found) {
+          toast.error("Reserva No Encontrada.");
+          setVerified(false);
+          return;
+        } else if (!validateCheckinDate(found)) {
+          toast.error("Solo se puede hacer Check-In el mismo día de la fecha programada.");
+          return;
+        } else {
+          setReservationData(found);
+          setVerified(true);
+
+          axios.get(`/Checkins?reservaId=${found.id}`)
+            .then(response => {
+              const checkin = response.data;
+              if (checkin && checkin.id) {
+                setCheckinId(checkin.id);
+                if (Array.isArray(checkin.detalleHuespedes)) {
+                  setGuestList(checkin.detalleHuespedes.map(h => ({
+                    nombre: h.nombre,
+                    numDocumento: h.numDocumento
+                  })));
+                }
+              }
+            })
+            .catch(err => {
+              console.error("No se encontró check-in previo:", err);
+              // no hacer nada si no existe
+            });
+        }
+      }
+    })
+    .catch(err => console.error(err));
+}, [codigoParam]);
+
 
   // Verificar reserva por código
   const handleVerification = e => {

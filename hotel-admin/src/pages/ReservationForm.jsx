@@ -578,7 +578,7 @@ const ReservationForm = () => {
             Cancelar
           </Button>
           <Button variant="primary" onClick={addDetalle}>
-            Agregar Habitaciones
+            Confirmar
           </Button>
         </Modal.Footer>
       </Modal>
