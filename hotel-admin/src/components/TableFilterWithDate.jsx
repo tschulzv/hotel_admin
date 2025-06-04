@@ -1,16 +1,38 @@
 import React from 'react'
 import { Button, Row, Col } from 'react-bootstrap'
+import DatePicker from './DatePicker';
 
 // Barra que contiene barra de búsqueda, criterios de ordenacion y botón 'crear' para tablas
-const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortOptions, sortKey, setSort, showBtn, btnText, onBtnClick, sortOrder, setSortOrder}) => {
-
+const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortOptions, sortKey, setSort, showBtn, btnText, onBtnClick, sortOrder, setSortOrder, setStartDate, setEndDate, startDate, endDate, setFechaModificada}) => {
+  
   const toggleSortOrder = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
+
+  const handleDateChange = ({ selection }) => {
+    const newStart = selection.startDate;
+    const newEnd = selection.endDate;
+
+    // Si cambió el check-in, resetear el check-out
+    if (!selection.startDate || newStart.getTime() !== startDate.getTime()) {
+        setStartDate(newStart);
+        if (newEnd && newEnd.getTime() !== newStart.getTime()) {
+            setEndDate(newEnd);
+        } else {
+            setEndDate(null);
+        }
+        
+    } else {
+        setEndDate(newEnd);
+    }
+    setFechaModificada(true)
+  };
+
+
   return (
     <Row className='align-items-center mb-2'>
         {/*primera columna: search bar*/ }
-        <Col md={6} className="d-flex align-items-center gap-2">
+        <Col md={3} className="d-flex align-items-center gap-2">
             <input type="text" className="form-control"
             placeholder="Buscar..." value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -18,12 +40,9 @@ const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortO
             <Button variant="outline-primary" onClick={onSearch}>
               <i className="material-icons align-middle">search</i>
             </Button>
-            <Button variant="outline-secondary" onClick={clearSearch}>
-              <i className="material-icons align-middle">filter_alt_off</i>
-            </Button>
         </Col>
         {/*segunda columna: filtro de ordenacion*/}
-        <Col md={4} className="d-flex align-items-center justify-content-evenly">
+        <Col md={3} className="d-flex align-items-center justify-content-evenly">
          <span
           className="material-icons"
           style={{ cursor: 'pointer' }}
@@ -43,6 +62,14 @@ const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortO
               </option>
             ))}
           </select>
+        </Col>
+        {/*tercera columna: datepicker*/}
+        <Col md={4} className="d-flex align-items-center justify-content-evenly">
+            <span className="material-icons">date_range</span>
+            <DatePicker ranges={[{ startDate: startDate, endDate: endDate, key: 'selection' }]}
+            onChange={handleDateChange} />
+            <Button label="Limpiar filtros" variant="outline-secondary" onClick={clearSearch}><span className="material-icons align-middle">filter_alt_off</span>
+            </Button>
         </Col>
         {/* ultima columna: boton */}
         {

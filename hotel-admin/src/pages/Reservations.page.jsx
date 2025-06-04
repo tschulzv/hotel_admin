@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Container, Modal, Button, Form, Spinner } from "react-bootstrap";
 import PaginatedTable from "../components/PaginatedTable";
 import { Table, Pagination } from "react-bootstrap";
-import TableFilterBar from "../components/TableFilterBar";
+import TableFilterBar from "../components/TableFilterWithDate";
 import axios from "../config/axiosConfig";
 import Badge from "react-bootstrap/Badge";
 import { format, parseISO, isValid } from "date-fns";
@@ -12,6 +12,9 @@ const Reservations = () => {
   const [originalData, setOriginalData] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const fechaDefault = new Date();
+  const fechaManhana = new Date();
+  fechaManhana.setDate(fechaDefault.getDate() + 1);
   const queryParams = new URLSearchParams(location.search);
   const fechaSeleccionada = queryParams.get("fecha");
   const [loading, setLoading] = useState(true);
@@ -23,8 +26,9 @@ const Reservations = () => {
   const [razon, setRazon] = useState("");
   const [reservas, setReservas] = useState([]);
   const [sortOrder, setSortOrder] = useState("desc");
-  const [fechaDesde, setFechaDesde] = useState("");
-  const [fechaHasta, setFechaHasta] = useState("");
+  const [fechaDesde, setFechaDesde] = useState(fechaDefault);
+  const [fechaHasta, setFechaHasta] = useState(fechaManhana);
+  const [fechaModificada, setFechaModificada] = useState(false);
 
   const getStatusBadge = (statusId) => {
     switch (statusId) {
@@ -159,6 +163,30 @@ const Reservations = () => {
   // funcion para manejar el cierre del modal
   const handleClose = () => setShow(false);
 
+  useEffect(() => {
+    if (!fechaModificada) {
+      setFilteredData(originalData);
+      return;
+    }
+
+    if (!fechaDesde || !fechaHasta) {
+      setFilteredData(originalData);
+      return;
+    }
+
+    const desde = new Date(fechaDesde);
+    const hasta = new Date(fechaHasta);
+    hasta.setHours(23, 59, 59, 999);
+
+    const filtradas = originalData.filter((reserva) => {
+      const ingreso = new Date(reserva.ingresoISO);
+      return ingreso >= desde && ingreso <= hasta;
+    });
+
+    setFilteredData(filtradas);
+  }, [fechaDesde, fechaHasta, fechaModificada, originalData]);
+
+
   const handleEliminar = () => {
     // Actualizamos los datos localmente
     let updatedData = filteredData.map((reserv) =>
@@ -288,42 +316,6 @@ const Reservations = () => {
           </h5>
         </div>
       )}
-      <div className="d-flex gap-3 mb-3">
-        <Form.Group controlId="fechaDesde">
-          <Form.Label>Desde</Form.Label>
-          <Form.Control
-            type="date"
-            value={fechaDesde}
-            onChange={(e) => setFechaDesde(e.target.value)}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="fechaHasta">
-          <Form.Label>Hasta</Form.Label>
-          <Form.Control
-            type="date"
-            value={fechaHasta}
-            onChange={(e) => setFechaHasta(e.target.value)}
-          />
-        </Form.Group>
-
-        <div className="d-flex align-items-end">
-          <Button variant="primary" onClick={filtrarPorRangoDeFechas}>
-            Filtrar
-          </Button>
-        </div>
-      </div>
-      <Button
-        variant="outline-secondary"
-        onClick={() => {
-          setFechaDesde("");
-          setFechaHasta("");
-          setFilteredData(originalData);
-        }}
-      >
-        Limpiar filtro
-      </Button>
-
       <TableFilterBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -337,6 +329,11 @@ const Reservations = () => {
         onBtnClick={onBtnClick}
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
+        startDate={fechaDesde}
+        endDate={fechaHasta}
+        setStartDate={setFechaDesde}
+        setEndDate={setFechaHasta}
+        setFechaModificada={setFechaModificada}
       />
 
       {loading ? (
