@@ -310,14 +310,17 @@ const ReservationForm = () => {
               </Col>
             </Row>
             <Row>
-              <Col md={8}>
-                <p>{afterSearchText}</p>
-              </Col>
-              <Col md={4}>
-                {clienteNoEncontrado && (
-                  <p>
-                    <Link to="/clients/new">¿Crear nuevo cliente?</Link>
-                  </p>)}
+               <Col>
+                <p className="mb-1 fw-semibold text-secondary">
+                  {afterSearchText}
+                  {clienteNoEncontrado && (
+                    <span className="ms-3">
+                      <Link to="/clients/new" className="text-primary text-decoration-none fw-normal">
+                        ¿Crear nuevo cliente?
+                      </Link>
+                    </span>
+                  )}
+                </p>
               </Col>
             </Row>
             </> 
@@ -405,10 +408,18 @@ const ReservationForm = () => {
                   const pension = pensiones.find(
                     p => p.id === detalle.pensionId
                   );
+                  let habitacion;
+                  if (habitacionesDisponibles !== undefined) {
+                    habitacion = habitacionesDisponibles.find(
+                      h => h.id === detalle.habitacionId
+                    );
+                  } 
+                  //console.log(habitacionesDisponibles)
+                  console.log(detalle)
                   return (
                     <li key={index} className="d-flex justify-content-between align-items-center p-2 mb-2 border-bottom">
                       <div>
-                        <strong>Habitación:</strong> {detalle.numeroHabitacion} - {detalle.tipoHabitacion}<br />
+                        <strong>Habitación:</strong> {detalle.numeroHabitacion ?? habitacion?.numeroHabitacion} { detalle.tipoHabitacion ?? habitacion?.tipoHabitacionNombre}<br />
                         <strong>Huéspedes:</strong> {detalle.cantidadAdultos} Adulto(s)
                         {detalle.cantidadNinhos && parseInt(detalle.cantidadNinhos) > 0 ? `, ${detalle.cantidadNinhos} Niño(s)` : ''}<br />
                         <strong>Pensión:</strong> {pension ? pension.nombre : `ID ${detalle.pensionId}`}
