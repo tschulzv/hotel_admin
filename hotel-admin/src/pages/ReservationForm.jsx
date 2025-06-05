@@ -70,7 +70,7 @@ const ReservationForm = () => {
    
 
   }, [])
-
+//kholamanusoy
   useEffect(() => {
     if (isEditMode) {
       axios.get(`/Reservas/${id}`)
