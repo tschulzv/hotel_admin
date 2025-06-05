@@ -85,7 +85,7 @@ const ClientForm = () => {
       }
       toast.success(`Cliente ${isEditMode ? "editado" : "creado"} con éxito`, {
       onClose: () => {
-        navigate('/clients'); // Navega después que el toast desaparece
+        navigate(-1); // Navega después que el toast desaparece
       },
       autoClose: 3000, 
     });

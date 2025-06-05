@@ -316,7 +316,7 @@ const ReservationForm = () => {
               <Col md={4}>
                 {clienteNoEncontrado && (
                   <p>
-                    <Link to="/clientes/nuevo">¿Crear nuevo cliente?</Link>
+                    <Link to="/clients/new">¿Crear nuevo cliente?</Link>
                   </p>)}
               </Col>
             </Row>
@@ -341,7 +341,7 @@ const ReservationForm = () => {
           <Row>
             <Col md={4}>
               <Form.Group className="mb-3">
-                <Form.Label>Check-In</Form.Label>
+                <Form.Label>Check-In *</Form.Label>
                 <Form.Control
                   type="date"
                   name="fechaIngreso"
@@ -354,7 +354,7 @@ const ReservationForm = () => {
             </Col>
             <Col md={4}>
               <Form.Group className="mb-3">
-                <Form.Label>Check-Out</Form.Label>
+                <Form.Label>Check-Out *</Form.Label>
                 <Form.Control
                   type="date"
                   name="fechaSalida"
@@ -373,7 +373,6 @@ const ReservationForm = () => {
                   name="llegadaEstimada"
                   value={reservationData.llegadaEstimada}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
             </Col>
