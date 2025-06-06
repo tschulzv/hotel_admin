@@ -108,7 +108,6 @@ const Clients = () => {
   const sortOptions = [
     { value: 'id', label: 'ID' },
     { value: 'nombre', label: 'Nombre' },
-    { value: 'documento', label: 'Documento' },
     { value: 'email', label: 'Email' },
     { value: 'telefono', label: 'Teléfono' },
     { value: 'creacion', label: 'Fecha de Creación' },

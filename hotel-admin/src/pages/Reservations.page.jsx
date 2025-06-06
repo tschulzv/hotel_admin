@@ -30,6 +30,25 @@ const Reservations = () => {
   const [fechaHasta, setFechaHasta] = useState(fechaManhana);
   const [fechaModificada, setFechaModificada] = useState(false);
 
+  const getEstadoString = (statusId) => {
+    switch (statusId) {
+      case 1:
+        return "Pendiente";
+      case 2:
+        return "Confirmada";
+      case 3:
+        return "Cancelada";
+      case 4:
+        return "Check-In";
+      case 5:
+        return "Check-Out";
+      case 6:
+        return "Rechazada";
+      default:
+        return "Desconocido"
+    }
+  };
+
   const getStatusBadge = (statusId) => {
     switch (statusId) {
       case 1:
@@ -60,7 +79,8 @@ const Reservations = () => {
   useEffect(() => {
     axios.get("Reservas")
       .then(response => {
-        const limpio = response.data.sort((a, b) => new Date(b.creacion) - new Date(a.creacion)).map(({ id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada, nombreCliente, creacion }) => {
+        console.log(response.data)
+          const limpio = response.data.sort((a, b) => new Date(b.creacion) - new Date(a.creacion)).map(({ id, codigo, fechaIngreso, fechaSalida, estadoId, detalles, llegadaEstimada, nombreCliente, creacion }) => {
           const parsedIngreso = parseISO(fechaIngreso);
           const parsedSalida = parseISO(fechaSalida);
           const numsHabitaciones = detalles ? detalles.map(d => d.numeroHabitacion || 'Sin habitación').join(', ') : "N/A";
@@ -75,7 +95,8 @@ const Reservations = () => {
             ingresoISO: fechaIngreso,
             salidaISO: fechaSalida,
             llegada: llegadaEstimada?.slice(0, 5) || '',
-            estadoId: getStatusBadge(estadoId)
+            estadoId: getStatusBadge(estadoId),
+            estadoString: getEstadoString(estadoId)
           };
         });
         setReservas(limpio);
