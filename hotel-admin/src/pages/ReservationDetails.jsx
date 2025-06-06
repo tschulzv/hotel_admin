@@ -1,21 +1,31 @@
-import React, { useState, useEffect } from 'react'
-import { Container, Row, Col, Card, ListGroup, Accordion } from 'react-bootstrap'
-import { useParams, useNavigate } from 'react-router-dom'
-import axios from '../config/axiosConfig'
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  ListGroup,
+  Accordion,
+} from "react-bootstrap";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "../config/axiosConfig";
 
 function ReservationDetails() {
-  const { id } = useParams() // id de la reserva pasada en la URL
-  const [reservation, setReservation] = useState(null)
-  const [details, setDetails] = useState([])
-  const navigate = useNavigate()
+  const { id } = useParams(); // id de la reserva pasada en la URL
+  const [reservation, setReservation] = useState(null);
+  const [details, setDetails] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`/Reservas/${id}`)
-      .then(async response => {
+    axios
+      .get(`/Reservas/${id}`)
+      .then(async (response) => {
         const reserva = response.data;
 
         try {
-          const estadoResponse = await axios.get(`/EstadoReservas/${reserva.estadoId}`);
+          const estadoResponse = await axios.get(
+            `/EstadoReservas/${reserva.estadoId}`
+          );
           const estado = estadoResponse.data;
 
           reserva.estadoNombre = estado.nombre;
@@ -28,41 +38,62 @@ function ReservationDetails() {
         //console.log(reserva.detalles)
         setDetails(reserva.detalles || []);
       })
-      .catch(error => {
-        console.error("Error al obtener la reserva:", error)
-      })
-  }, [id])
+      .catch((error) => {
+        console.error("Error al obtener la reserva:", error);
+      });
+  }, [id]);
 
   if (!reservation) {
     return (
-      <Container className="py-4" style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+      <Container
+        className="py-4"
+        style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}
+      >
         <div>Cargando...</div>
       </Container>
-    )
+    );
   }
 
   // formatear la fecha
   const obtenerFormatoFecha = (fechaStr) => {
-    const fecha = new Date(fechaStr)
-    const opciones = { year: 'numeric', month: '2-digit', day: '2-digit' }
-    const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones)
-    return fechaFormateada 
+    const fecha = new Date(fechaStr);
+    const opciones = { year: "numeric", month: "2-digit", day: "2-digit" };
+    const fechaFormateada = fecha.toLocaleDateString("es-ES", opciones);
+    return fechaFormateada;
+  };
+
+  const getPensionString = (pensionId) => {
+    switch (pensionId) {
+      case 1:
+        return "Sin Pensión";
+      case 2:
+        return "Desayuno";
+      case 3:
+        return "Media Pensión";
+      case 4:
+        return "Pensión Completa";
+      default:
+        return "Desconocido";
+    }
   };
 
   return (
-    <Container className="py-4" style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+    <Container
+      className="py-4"
+      style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}
+    >
       {/* Título + Icono volver */}
       <div className="mb-4 d-flex align-items-center">
         <span
           className="material-icons me-2"
           role="button"
           onClick={() => navigate(-1)}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           title="Volver"
         >
           arrow_back
         </span>
-        <h2 style={{ color: '#2c3e50' }}>Reserva</h2>
+        <h2 style={{ color: "#2c3e50" }}>Reserva</h2>
       </div>
 
       <Row className="gy-4">
@@ -71,13 +102,30 @@ function ReservationDetails() {
           <h4 className="mb-3">Detalles</h4>
           <Card className="p-4 shadow-sm border-0 rounded-4">
             <ListGroup variant="flush no-borders">
-              <ListGroup.Item><strong>Titular:</strong> {reservation.nombreCliente}</ListGroup.Item>
-              <ListGroup.Item><strong>Código:</strong> {reservation.codigo}</ListGroup.Item>
-              <ListGroup.Item><strong>Check-In:</strong> {obtenerFormatoFecha(reservation.fechaIngreso)}</ListGroup.Item>
-              <ListGroup.Item><strong>Check-Out:</strong> {obtenerFormatoFecha(reservation.fechaSalida)}</ListGroup.Item>
-              <ListGroup.Item><strong>Hora estimada de llegada:</strong> {reservation.llegadaEstimada}</ListGroup.Item>
-              <ListGroup.Item><strong>Estado:</strong> {reservation.estadoNombre}</ListGroup.Item>
-              <ListGroup.Item><strong>Observaciones:</strong> {reservation.comentarios}</ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Titular:</strong> {reservation.nombreCliente}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Código:</strong> {reservation.codigo}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Check-In:</strong>{" "}
+                {obtenerFormatoFecha(reservation.fechaIngreso)}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Check-Out:</strong>{" "}
+                {obtenerFormatoFecha(reservation.fechaSalida)}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Hora estimada de llegada:</strong>{" "}
+                {reservation.llegadaEstimada}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Estado:</strong> {reservation.estadoNombre}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <strong>Observaciones:</strong> {reservation.comentarios}
+              </ListGroup.Item>
             </ListGroup>
           </Card>
         </Col>
@@ -85,7 +133,7 @@ function ReservationDetails() {
         {/* Acordeón de Habitaciones */}
         <Col md={6}>
           <h4 className="mb-3">Habitaciones</h4>
-          {reservation.estado === 'Pendiente' || details.length === 0 ? (
+          {reservation.estado === "Pendiente" || details.length === 0 ? (
             <h5 className="text-muted">Aún no se asignaron habitaciones</h5>
           ) : (
             <Accordion alwaysOpen defaultActiveKey="0">
@@ -93,22 +141,28 @@ function ReservationDetails() {
                 <Accordion.Item eventKey={i.toString()} key={i}>
                   <Accordion.Header>
                     {/* Si la reserva incluye la información de la habitación, se muestra el número y tipo; sino se muestra el id */}
-                    Habitación {detail.habitacion && detail.habitacion.numeroHabitacion 
-                      ? `#${detail.habitacion.numeroHabitacion} - ${detail.habitacion.tipoHabitacionNombre}` 
+                    Habitación{" "}
+                    {detail.habitacion && detail.habitacion.numeroHabitacion
+                      ? `#${detail.habitacion.numeroHabitacion} - ${detail.habitacion.tipoHabitacionNombre}`
                       : detail.habitacionId}
                   </Accordion.Header>
                   <Accordion.Body>
-                    <ListGroup variant="flush no-borders" className="no-item-borders">
+                    <ListGroup
+                      variant="flush no-borders"
+                      className="no-item-borders"
+                    >
                       <ListGroup.Item>
-                        <strong>Cantidad de Adultos:</strong> {detail.cantidadAdultos}
+                        <strong>Cantidad de Adultos:</strong>{" "}
+                        {detail.cantidadAdultos}
                       </ListGroup.Item>
                       <ListGroup.Item>
-                        <strong>Cantidad de Niños:</strong> {detail.cantidadNinhos}
+                        <strong>Cantidad de Niños:</strong>{" "}
+                        {detail.cantidadNinhos}
                       </ListGroup.Item>
                       <ListGroup.Item>
-                        <strong>Tipo de Pensión:</strong> {detail.pension && detail.pension.nombre 
-                          ? detail.pension.nombre 
-                          : detail.pensionId}
+                        {console.log(detail)}
+                        <strong>Tipo de Pensión:</strong>{" "}
+                        {getPensionString(detail.pensionId)}
                       </ListGroup.Item>
                     </ListGroup>
                   </Accordion.Body>
@@ -119,7 +173,7 @@ function ReservationDetails() {
         </Col>
       </Row>
     </Container>
-  )
+  );
 }
 
-export default ReservationDetails
+export default ReservationDetails;

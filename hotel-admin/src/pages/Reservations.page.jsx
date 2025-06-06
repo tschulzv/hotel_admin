@@ -7,6 +7,7 @@ import TableFilterBar from "../components/TableFilterWithDate";
 import axios from "../config/axiosConfig";
 import Badge from "react-bootstrap/Badge";
 import { format, parseISO, isValid } from "date-fns";
+import { toast } from "react-toastify";
 
 const Reservations = () => {
   const [originalData, setOriginalData] = useState([]);
@@ -233,10 +234,10 @@ const Reservations = () => {
     axios
       .post("/Cancelacions", payload)
       .then((response) => {
-        console.log("Cancelación realizada:", response.data);
+        toast.success("Reserva cancelada correctamente");
       })
       .catch((error) => {
-        console.error("Error al cancelar reserva:", error);
+        toast.error("Error al cancelar la reserva: ");
       });
 
     // Cerramos el modal
