@@ -127,14 +127,14 @@ const ReservationForm = () => {
   const searchAvailable = async (idx) => {
       try {
         const req = {
-            checkIn: reservationData.checkIn,   // formulario: fechaIngreso
+            checkIn: reservationData.fechaIngreso,   // formulario: fechaIngreso
             checkOut:reservationData.fechaSalida, 
             habitacionesSolicitadas: [
               ...newRooms
             ], 
             isRequestRoomData: true
           };
-          //console.log("request", req)
+          console.log("request", req)
           const res = await axios.post("Habitacions/disponibles", req);
 
           setHabitacionesDisponibles(res.data);
@@ -271,7 +271,7 @@ const ReservationForm = () => {
         <Form onSubmit={handleSubmit}>
             { !isEditMode ? <>
             <Row className='d-flex align-items-end'>
-              <p class="fs-5">Buscar Cliente</p>
+              <p className="fs-5">Buscar Cliente</p>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>N° Documento</Form.Label>
