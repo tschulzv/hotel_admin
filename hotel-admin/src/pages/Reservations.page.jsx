@@ -150,7 +150,7 @@ const Reservations = () => {
 
         const [anhoSalida, mesSalida, diaSalida] = fechaSalidaStr.split("-");
         const salida = new Date(anhoSalida, mesSalida - 1, diaSalida);
-
+        
         return fechaSel >= ingreso && fechaSel <= salida;
       });
       setFilteredData(reservasFiltradas);
@@ -185,6 +185,9 @@ const Reservations = () => {
   const handleClose = () => setShow(false);
 
   useEffect(() => {
+    if (fechaSeleccionada) {
+      return;
+    }
     if (!fechaModificada) {
       setFilteredData(originalData);
       return;
@@ -293,24 +296,6 @@ const Reservations = () => {
     };
   };
 
-  const filtrarPorRangoDeFechas = () => {
-    if (!fechaDesde || !fechaHasta) {
-      setFilteredData(originalData);
-      return;
-    }
-
-    const desde = new Date(fechaDesde);
-    const hasta = new Date(fechaHasta);
-    hasta.setHours(23, 59, 59, 999); // incluir todo el día
-
-    const filtradas = originalData.filter((reserva) => {
-      const ingreso = new Date(reserva.ingresoISO);
-      return ingreso >= desde && ingreso <= hasta;
-    });
-
-    setFilteredData(filtradas);
-  };
-
   return (
     <Container className="px-5" fluid>
       <div className="d-flex align-items-center mb-4">
@@ -355,6 +340,7 @@ const Reservations = () => {
         setStartDate={setFechaDesde}
         setEndDate={setFechaHasta}
         setFechaModificada={setFechaModificada}
+        showDateSelect = {fechaSeleccionada ? false : true}
       />
 
       {loading ? (

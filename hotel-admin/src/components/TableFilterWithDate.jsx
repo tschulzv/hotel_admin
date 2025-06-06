@@ -3,7 +3,7 @@ import { Button, Row, Col } from 'react-bootstrap'
 import DatePicker from './DatePicker';
 
 // Barra que contiene barra de búsqueda, criterios de ordenacion y botón 'crear' para tablas
-const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortOptions, sortKey, setSort, showBtn, btnText, onBtnClick, sortOrder, setSortOrder, setStartDate, setEndDate, startDate, endDate, setFechaModificada}) => {
+const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortOptions, sortKey, setSort, showBtn, btnText, onBtnClick, sortOrder, setSortOrder, setStartDate, setEndDate, startDate, endDate, setFechaModificada, showDateSelect = true}) => {
   
   const toggleSortOrder = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -64,17 +64,20 @@ const TableFilterBar = ({searchTerm, setSearchTerm, onSearch, clearSearch, sortO
           </select>
         </Col>
         {/*tercera columna: datepicker*/}
-        <Col md={4} className="d-flex align-items-center justify-content-evenly">
-            <span className="material-icons">date_range</span>
-            <DatePicker ranges={[{ startDate: startDate, endDate: endDate, key: 'selection' }]}
-            onChange={handleDateChange} />
-            <Button label="Limpiar filtros" variant="outline-secondary" onClick={clearSearch}><span className="material-icons align-middle">filter_alt_off</span>
-            </Button>
-        </Col>
+        {
+          showDateSelect &&
+          <Col md={3} >
+              <span className="material-icons">date_range</span>
+              <DatePicker ranges={[{ startDate: startDate, endDate: endDate, key: 'selection' }]}
+              onChange={handleDateChange} />
+          </Col>
+        }
         {/* ultima columna: boton */}
         {
           showBtn &&
-          <Col md={2}>
+          <Col md={3} className="d-flex align-items-center justify-content-evenly">
+             <Button label="Limpiar filtros" variant="outline-secondary" onClick={clearSearch}><span className="material-icons align-middle">filter_alt_off</span>
+            </Button>
             <Button variant="primary" onClick={onBtnClick} className="d-flex align-items-center gap-2"><span className="material-icons">add_circle</span>{btnText}</Button>
           </Col>
         }
