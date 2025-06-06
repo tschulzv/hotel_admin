@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Dropdown, DropdownButton, Pagination, Spinner, Modal, Button} from 'react-bootstrap';
+import { Container, Row, Col, Dropdown, DropdownButton, Pagination, Spinner, Modal, Button } from 'react-bootstrap';
 import { BsCircleFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import axios from '../config/axiosConfig';
@@ -8,9 +7,24 @@ import { toast } from 'react-toastify';
 import { parseISO, isToday, formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale'; 
 
-// prueba commit
+// Función auxiliar para obtener el título de la solicitud según el tipo.
+const getSolicitudTitle = (tipo) => {
+  switch (tipo) {
+    case "CancelacionReserva":
+      return "Solicitud de Cancelación de Reserva: ";
+    case "CancelacionHabitacion":
+      return "Solicitud de Cancelación de Habitación: ";
+    case "Reserva":
+      return "Solicitud de Reserva: ";
+    case "Consulta":
+      return "Consulta: ";
+    default:
+      return `Solicitud de ${tipo}: `;
+  }
+};
+
 const Notifications = () => {
-  const estadosDisponibles = [{ key: "Todos", value: "todos" }, { key: "Leído", value: 1 }, {key: "No leído", value: 0 }]; // Estados de las notificaciones
+  const estadosDisponibles = [{ key: "Todos", value: "todos" }, { key: "Leído", value: 1 }, { key: "No leído", value: 0 }]; // Estados de las notificaciones
   const navigate = useNavigate();
   const [notificaciones, setNotificaciones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,8 +37,8 @@ const Notifications = () => {
   useEffect(() => {
     (async () => {
       try {
-          const response = await axios.get(`/Solicitudes`);
-          const ordenadas = response.data
+        const response = await axios.get(`/Solicitudes`);
+        const ordenadas = response.data
           .sort((a, b) => new Date(b.creacion) - new Date(a.creacion))
           .map(notificacion => {
             const parsedCreacion = parseISO(notificacion.creacion);
@@ -38,13 +52,13 @@ const Notifications = () => {
             return { ...notificacion, creacion: formatCreacion };
           });
 
-          setNotificaciones(ordenadas);
-          console.log(ordenadas);
-          setLoading(false);
+        setNotificaciones(ordenadas);
+        console.log(ordenadas);
+        setLoading(false);
       } catch (error) {
-          console.error('Error cargando datos:', error);
+        console.error('Error cargando datos:', error);
       }
-  })();
+    })();
   }, []);
 
   // Filtrar las notificaciones según el estado seleccionado
@@ -78,7 +92,7 @@ const Notifications = () => {
 
   const handleVerNotificacion = (notificacion) => {
     navigate(`/notifications/${notificacion.id}`, {
-    state: { notificacion }
+      state: { notificacion }
     });
   };
 
@@ -95,7 +109,6 @@ const Notifications = () => {
     }
   };
 
-
   const truncarTexto = (texto, maxLongitud) => {
     return texto.length > maxLongitud ? texto.slice(0, maxLongitud - 3) + "..." : texto;
   };
@@ -103,112 +116,112 @@ const Notifications = () => {
   const getResumen = (n) => {
     let resumen = "";
 
-    if (n.tipo === "Cancelación") {
-      resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} desea cancelar su reserva`;
+    if (n.tipo === "CancelacionReserva") {
+      resumen = `${n.reserva.nombreCliente || "Cliente"} desea cancelar su reserva completa.`;
+    } else if (n.tipo === "CancelacionHabitacion") { 
+      resumen = `${n.reserva.nombreCliente || "Cliente"} desea cancelar una habitación.`;
     } else if (n.tipo === "Reserva") {
-      resumen = `${n.reserva.nombreCliente ? n.reserva.nombreCliente : "Cliente"} solicita reserva de ${n.reserva.detalles[0].tipoHabitacion}`;
+      resumen = `${n.reserva.nombreCliente || "Cliente"} solicita reserva de ${n.reserva.detalles[0]?.tipoHabitacion || ""}.`;
     } else if (n.tipo === "Consulta") {
-      resumen = `${n.consulta.nombre} desea saber "${n.consulta.mensaje}"`;
+      resumen = `${n.consulta.nombre || "Cliente"} desea saber "${n.consulta.mensaje}"`;
+    } else if (n.tipo === "Cancelacion") {
+      resumen = `${n.reserva.nombreCliente || "Cliente"} solicita cancelación.`;
     }
 
     return truncarTexto(resumen, 100); 
   };
 
-
   return (
     <>
-    <Container className="mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4>Notificaciones</h4>
-        {/* Desplegable de los estados */}
-        <DropdownButton
-          variant="outline-secondary"
-          title={`Estado: ${filtroEstado.key || filtroEstado}`}
-        >
-          {estadosDisponibles.map((estado, index) => (
-            <Dropdown.Item
-              key={index}
-              onClick={() => {
-                setFiltroEstado(estado);
-                setPaginaActual(1);
-              }}
-            >
-              {estado.key || estado}
-            </Dropdown.Item>
-          ))}
-        </DropdownButton>
-      </div>
-
-      {/* Tabla de notificaciones */}
-      {
-        loading ? <div className="text-center my-5">
-          <Spinner animation="border" variant="primary" />
-          </div> : 
-      <>
-      
-      <div>
-        {notificacionesPaginadas.map((n) => (
-       <Row
-        key={n.id}
-        className="border rounded p-3 mb-2 align-items-center justify-content-between notification-row"
-        style={{ fontSize: "0.9rem", cursor: 'pointer' }}
-        onClick={() => handleVerNotificacion(n)}
-      >
-        <Col xs={9}>
-          <p className="mb-0">
-            <strong>{n.tipo === "Consulta" ? "Consulta: " : `Solicitud de ${n.tipo}: `}</strong>
-            {getResumen(n)}
-          </p>
-        </Col>
-
-        <Col xs={3} className="d-flex justify-content-end align-items-center gap-2">
-          <span style={{ color: '#6c757d' }}>{n.creacion}</span>
-          {/* Icono de estado (no leído) */}
-          {!n.esLeida && (
-            <BsCircleFill
-              style={{ fontSize: "0.75rem" }}
-              color="#28a745"
-              title="No leído"
-            />
-          )}
-
-          {/* Botón eliminar (evita propagar el evento hacia el Row) */}
-          <span
-            className="material-icons"
-            style={{ cursor: 'pointer' }}
-            onClick={(e) => {
-              e.stopPropagation(); // evita que el clic llegue al Row
-              setSelectedNotification(n);
-              handleOpen();
-            }}
-            title="Eliminar"
+      <Container className="mt-4">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4>Notificaciones</h4>
+          {/* Desplegable de los estados */}
+          <DropdownButton
+            variant="outline-secondary"
+            title={`Estado: ${filtroEstado.key || filtroEstado}`}
           >
-            close
-          </span>
+            {estadosDisponibles.map((estado, index) => (
+              <Dropdown.Item
+                key={index}
+                onClick={() => {
+                  setFiltroEstado(estado);
+                  setPaginaActual(1);
+                }}
+              >
+                {estado.key || estado}
+              </Dropdown.Item>
+            ))}
+          </DropdownButton>
+        </div>
 
-        </Col>
-      </Row>
+        {/* Tabla de notificaciones */}
+        {loading ? (
+          <div className="text-center my-5">
+            <Spinner animation="border" variant="primary" />
+          </div>
+        ) : (
+          <>
+            <div>
+              {notificacionesPaginadas.map((n) => (
+                <Row
+                  key={n.id}
+                  className="border rounded p-3 mb-2 align-items-center justify-content-between notification-row"
+                  style={{ fontSize: "0.9rem", cursor: 'pointer' }}
+                  onClick={() => handleVerNotificacion(n)}
+                >
+                  <Col xs={9}>
+                    <p className="mb-0">
+                      <strong>{getSolicitudTitle(n.tipo)}</strong>
+                      {getResumen(n)}
+                    </p>
+                  </Col>
 
+                  <Col xs={3} className="d-flex justify-content-end align-items-center gap-2">
+                    <span style={{ color: '#6c757d' }}>{n.creacion}</span>
+                    {/* Icono de estado (no leído) */}
+                    {!n.esLeida && (
+                      <BsCircleFill
+                        style={{ fontSize: "0.75rem" }}
+                        color="#28a745"
+                        title="No leído"
+                      />
+                    )}
 
-        ))}
-      </div>
+                    {/* Botón eliminar (evita propagar el evento hacia el Row) */}
+                    <span
+                      className="material-icons"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => {
+                        e.stopPropagation(); // evita que el clic llegue al Row
+                        setSelectedNotification(n);
+                        handleOpen();
+                      }}
+                      title="Eliminar"
+                    >
+                      close
+                    </span>
+                  </Col>
+                </Row>
+              ))}
+            </div>
 
-      <div className="d-flex justify-content-center mt-3">
-        <Pagination>
-          {[...Array(totalPaginas)].map((_, i) => (
-            <Pagination.Item
-              key={i + 1}
-              active={i + 1 === paginaActual}
-              onClick={() => cambiarPagina(i + 1)}
-            >
-              {i + 1}
-            </Pagination.Item>
-          ))}
-        </Pagination>
-      </div>
-      </>
-    }
-    </Container>
+            <div className="d-flex justify-content-center mt-3">
+              <Pagination>
+                {[...Array(totalPaginas)].map((_, i) => (
+                  <Pagination.Item
+                    key={i + 1}
+                    active={i + 1 === paginaActual}
+                    onClick={() => cambiarPagina(i + 1)}
+                  >
+                    {i + 1}
+                  </Pagination.Item>
+                ))}
+              </Pagination>
+            </div>
+          </>
+        )}
+      </Container>
 
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -218,9 +231,9 @@ const Notifications = () => {
           {selectedNotification && (
             <>
               <p> ¿Estás seguro de que deseas eliminar esta notificación?</p>
-              { !selectedNotification.esLeida &&
+              {!selectedNotification.esLeida && (
                 <p><strong>Esta notificación aún no fue leída </strong></p>
-              }
+              )}
             </>
           )}
         </Modal.Body>
