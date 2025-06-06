@@ -40,6 +40,9 @@ const CancelacionDetails = ({ solicitud }) => {
         if (reservaId) {
           const responseReserva = await axios.get(`/Reservas/${reservaId}`);
           setReserva(responseReserva.data);
+          if(responseReserva.data.estadoId == 3){
+            setCancelacionConfirmada(true)
+          } 
         }
 
         // Obtener los datos del cliente 
