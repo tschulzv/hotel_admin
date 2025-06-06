@@ -16,11 +16,11 @@ import { FaBars, FaThLarge, FaTrash } from 'react-icons/fa';
 const getEstado = estado => {
     if (!estado) return { color: 'secondary', icono: 'desconocido' };
     switch (estado.toUpperCase()) {
-        case 'DISPONIBLE': return { color: 'success', icono: 'disponible' };
-        case 'OCUPADO': return { color: 'danger', icono: 'ocupado' };
-        case 'EN LIMPIEZA': return { color: 'primary', icono: 'en limpieza' };
-        case 'LATE CHECKOUT': return { color: 'warning', icono: 'late checkout' };
-        default: return { color: 'secondary', icono: 'desconocido' };
+        case 'DISPONIBLE': return { color: '#388E3C', icono: 'bed', accent: '#1B5E20'};
+        case 'OCUPADO': return { color: '#d43131', icono: 'hotel', accent: '#B71C1C' };
+        case 'EN LIMPIEZA': return { color: '#1976D2', icono: 'cleaning_services', accent: '#115293'};
+        case 'FUERA DE SERVICIO': return { color: '#546E7A', icono: 'cancel', accent: '#37474F' };
+        default: return { color: 'secondary', icono: 'question_mark',  accent: '#555' };
     }
 };
 
@@ -207,7 +207,7 @@ function Rooms() {
                                             )}
                                             <div className="d-flex gap-3">
                                                 {habitacionesMostradas.map(hab => {
-                                                    const { color, icono } = getEstado(hab.estadoNombre);
+                                                    const { color, icono, accent } = getEstado(hab.estadoNombre);
                                                     return (
                                                         <div key={hab.id} style={{ width: '250px' }}>
                                                             <div style={{ position: 'relative' }}>
@@ -218,16 +218,18 @@ function Rooms() {
                                                                         estado={hab.estadoNombre}
                                                                         color={color}
                                                                         icono={icono}
+                                                                        accent={accent}
                                                                     />
                                                                 </Link>
                                                                 <Button
-                                                                    variant="danger"
                                                                     size="sm"
                                                                     style={{
+                                                                        backgroundColor: '#B71C1C',
                                                                         position: 'absolute',
                                                                         top: '8px',
                                                                         right: '8px',
                                                                         borderRadius: '50%',
+                                                                        borderColor: '#B71C1C',
                                                                         padding: '4px 6px'
                                                                     }}
                                                                     onClick={() => abrirEliminar(hab)}

@@ -120,7 +120,7 @@ const ReportPage = () => {
     { key: 'motivo', label: 'Motivo' },
     { key: 'fechaIngresoReserva', label: 'Fecha de Ingreso' }
   ];
-
+   {console.log("Cancelaciones", cancelacionesData)}
   // Mapeo de Checkins donde se asume que se recibe el campo fechaCheckIn.
   const checkinsData = checkins.map(ci => {
     const reservaCheckin = reservas.find(r => r.id === ci.reservaId);
