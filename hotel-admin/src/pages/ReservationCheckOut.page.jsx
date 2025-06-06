@@ -108,10 +108,11 @@ const ReservationCheckOut = () => {
   
   const handleCheckOut = () => {
     if (!reservaSeleccionada) return;
-    console.log(reservaSeleccionada);
+    console.log(checkoutData);
     axios
       .post("/Checkouts", {
         reservaId: checkoutData.reservaId,
+        codigo: checkoutData.codigoReserva,
         activo: true,
       })
       .then(() => {
