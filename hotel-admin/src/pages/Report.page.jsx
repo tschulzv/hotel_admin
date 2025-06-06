@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Spinner, Button } from 'react-bootstrap';
 import PaginatedTable from '../components/PaginatedTable.jsx';
 import axios from '../config/axiosConfig';
 import { format, parseISO } from 'date-fns';
 import Badge from 'react-bootstrap/Badge';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
 
 const meses = [
   { nombre: "Enero", dias: 31 },
@@ -33,6 +38,41 @@ const ReportPage = () => {
   // Estados para los filtros
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState(""); // "" indica que se muestran todos los meses
+
+  // Función para exportar a Excel
+  const exportToExcel = (data, fileName = "reporte", sheetName = "Hoja1") => {
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+  saveAs(blob, `${fileName}.xlsx`);
+};
+
+// Función para exportar a PDF usando jsPDF y autoTable
+const exportToPDF = (data, columns, title = "Reporte", fileName = "reporte") => {
+  const doc = new jsPDF();
+
+  doc.text(title, 14, 16); // Título
+
+  const plainData = data.map(row =>
+    columns.map(c => {
+      const value = row[c.key];
+      if (typeof value === "string" || typeof value === "number") return value;
+      if (typeof value === "object" && value !== null && "props" in value) return ""; // JSX
+      return value?.toString() ?? "";
+    })
+  );
+
+  autoTable(doc, {
+    head: [columns.map(c => c.label)],
+    body: plainData,
+    startY: 20
+  });
+
+  doc.save(`${fileName}.pdf`);
+};
 
   // Función para obtener el badge de estado según el id
   const getStatusBadge = (statusId) => {
@@ -81,7 +121,6 @@ const ReportPage = () => {
 
   // Mapeo de Reservas donde se formatea la fecha y se obtiene el estado como badge.
   const reservasData = reservas.map(r => ({
-    id: r.id,
     nombreCliente: r.nombreCliente,
     codigo: r.codigo,
     fechaIngreso: r.fechaIngreso ? format(parseISO(r.fechaIngreso), 'dd/MM/yyyy') : "",
@@ -92,7 +131,6 @@ const ReportPage = () => {
   }));
 
   const reservasHeaders = [
-    { key: 'id', label: 'ID' },
     { key: 'nombreCliente', label: 'Cliente' },
     { key: 'codigo', label: 'Código' },
     { key: 'fechaIngreso', label: 'Fecha Ingreso' },
@@ -102,24 +140,30 @@ const ReportPage = () => {
   ];
 
   // Mapeo de Cancelacions donde se usa la fecha de ingreso de la reserva relacionada para filtrar
-  const cancelacionesData = cancelacions.map(c => ({
-    id: c.id,
-    reservaCodigo: c.reserva ? c.reserva.codigo : "",
-    nombreCliente: c.reserva ? c.reserva.nombreCliente : "",
-    motivo: c.motivo,
-    fechaIngresoReserva: c.reserva && c.reserva.fechaIngreso 
-      ? format(parseISO(c.reserva.fechaIngreso), 'dd/MM/yyyy')
-      : "",
-    rawFechaIngresoReserva: c.reserva && c.reserva.fechaIngreso ? c.reserva.fechaIngreso : ""
-  }));
+  const cancelacionesData = cancelacions.map(c => {
+    const esCancelacionTotal = !c.detalleReservaIds || c.detalleReservaIds.length === 0;
+
+    return {
+      reservaCodigo: c.reserva ? c.reserva.codigo : "",
+      nombreCliente: c.reserva ? c.reserva.nombreCliente : "",
+      motivo: c.motivo,
+      tipoCancelacion: esCancelacionTotal ? "Reserva completa" : "Habitación(es)",
+      fechaIngresoReserva: c.reserva?.fechaIngreso 
+        ? format(parseISO(c.reserva.fechaIngreso), 'dd/MM/yyyy')
+        : "",
+      rawFechaIngresoReserva: c.reserva?.fechaIngreso || ""
+    };
+  });
+
 
   const cancelacionesHeaders = [
-    { key: 'id', label: 'ID' },
     { key: 'reservaCodigo', label: 'Reserva Código' },
     { key: 'nombreCliente', label: 'Cliente' },
     { key: 'motivo', label: 'Motivo' },
+    { key: 'tipoCancelacion', label: 'Tipo de Cancelación' },
     { key: 'fechaIngresoReserva', label: 'Fecha de Ingreso' }
   ];
+
    {console.log("Cancelaciones", cancelacionesData)}
   // Mapeo de Checkins donde se asume que se recibe el campo fechaCheckIn.
   const checkinsData = checkins.map(ci => {
@@ -144,7 +188,7 @@ const ReportPage = () => {
     { key: 'cantidadHuespedes', label: 'Cantidad de Huéspedes' }
   ];
 
-  // Mapeo de Checkouts: se asume que se recibe el campo fechaCheckOut.
+  // Mapeo de Checkouts se asume que se recibe el campo fechaCheckOut
   const checkoutsData = checkouts.map(co => {
     const reservaCheckout = reservas.find(r => r.id === co.reservaId);
     return {
@@ -281,7 +325,27 @@ const ReportPage = () => {
 
           {/* Detalle de Reservas */}
           <Card className="shadow-sm mb-4">
-            <Card.Header><h2 className="mb-0">Detalle de Reservas</h2></Card.Header>
+            <Card.Header>
+              <h2 className="mb-0 d-flex justify-content-between align-items-center">
+                Detalle de Reservas
+                <div>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => exportToExcel(filteredReservasData, "Reservas")}
+                  >
+                    Exportar a Excel
+                  </Button>{' '}
+                  <Button 
+                    variant="outline-danger" 
+                    size="sm"
+                    onClick={() => exportToPDF(filteredReservasData, reservasHeaders, "Reporte de Reservas", "Reservas")}
+                  >
+                    Exportar a PDF
+                  </Button>
+                </div>
+            </h2>
+            </Card.Header>
             <PaginatedTable 
               headers={reservasHeaders} 
               data={filteredReservasData} 
@@ -290,7 +354,27 @@ const ReportPage = () => {
           </Card>
           {/* Detalle de Cancelaciones */}
           <Card className= "shadow-sm mb-4">
-            <Card.Header><h2 className="mb-0">Detalle de Cancelaciones</h2></Card.Header>
+            <Card.Header>
+              <h2 className="mb-0 d-flex justify-content-between align-items-center">
+                Detalle de Cancelaciones
+                <div>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => exportToExcel(filteredCancelacionesData, "Cancelaciones")}
+                  >
+                    Exportar a Excel
+                  </Button>{' '}
+                  <Button 
+                    variant="outline-danger" 
+                    size="sm"
+                    onClick={() => exportToPDF(filteredCancelacionesData, cancelacionesHeaders, "Reporte de Cancelaciones", "Cancelaciones")}
+                  >
+                    Exportar a PDF
+                  </Button>
+                </div>
+            </h2>
+            </Card.Header>
             <PaginatedTable 
               headers={cancelacionesHeaders} 
               data={filteredCancelacionesData} 
@@ -300,7 +384,27 @@ const ReportPage = () => {
 
           {/* Detalle de Check-Ins */}
           <Card className= "shadow-sm mb-4">
-            <Card.Header><h2 className="mb-0">Detalle de Check-Ins</h2></Card.Header>
+            <Card.Header>
+              <h2 className="mb-0 d-flex justify-content-between align-items-center">
+                Detalle de Check-Ins
+                <div>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => exportToExcel(filteredCheckinsData, "Check-Ins")}
+                  >
+                    Exportar a Excel
+                  </Button>{' '}
+                  <Button 
+                    variant="outline-danger" 
+                    size="sm"
+                    onClick={() => exportToPDF(filteredCheckinsData, checkinsHeaders, "Reporte de Check-Ins", "Check-Ins")}
+                  >
+                    Exportar a PDF
+                  </Button>
+                </div>
+            </h2>
+            </Card.Header>
             <PaginatedTable 
               headers={checkinsHeaders} 
               data={filteredCheckinsData} 
@@ -310,7 +414,27 @@ const ReportPage = () => {
 
           {/* Detalle de Check-Outs */}
           <Card className= "shadow-sm mb-4">
-            <Card.Header><h2 className="mb-0">Detalle de Check-Outs</h2></Card.Header>
+            <Card.Header>
+              <h2 className="mb-0 d-flex justify-content-between align-items-center">
+                Detalle de Check-Outs
+                <div>
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => exportToExcel(filteredCheckoutsData, "Check-Outs")}
+                  >
+                    Exportar a Excel
+                  </Button>{' '}
+                  <Button 
+                    variant="outline-danger" 
+                    size="sm"
+                    onClick={() => exportToPDF(filteredCheckoutsData, checkoutsHeaders, "Reporte de Check-Outs", "Check-Outs")}
+                  >
+                    Exportar a PDF
+                  </Button>
+                </div>
+            </h2>
+            </Card.Header>
             <PaginatedTable 
               headers={checkoutsHeaders} 
               data={filteredCheckoutsData} 
